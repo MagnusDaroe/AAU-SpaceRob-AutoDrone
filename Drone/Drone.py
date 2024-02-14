@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import time
+import csv
+import random as rnd
 
 class DronePose:
-    def __init__(self, x=None, y=None, z=None, w=None, qx=None, qy=None, qz=None, roll=None, pitch=None, yaw=None):
+    def __init__(self, x=None, y=None, z=None, w=None, qx=None, qy=None, qz=None, roll=None, pitch=None, yaw=None, t = None):
         """
         Initialize a DronePose object.
 
@@ -21,19 +22,23 @@ class DronePose:
             roll (float): Roll angle (in radians).
             pitch (float): Pitch angle (in radians).
             yaw (float): Yaw angle (in radians).
+            t: time in seconds. 
         """
         # Check if we have enough information to create a pose
-        if x is not None and y is not None and z is not None:
+        if x is not None and y is not None and z is not None and t is not None:
             self.x = x
             self.y = y
             self.z = z
-        if w is not None and qx is not None and qy is not None and qz is not None:
-            self.w = w
-            self.qx = qx
-            self.qy = qy
-            self.qz = qz
-        elif roll is not None and pitch is not None and yaw is not None:
-            self.w, self.qx, self.qy, self.qz = self.__eul2quat(roll, pitch, yaw)
+            self.t = t
+            if w is not None and qx is not None and qy is not None and qz is not None:
+                self.w = w
+                self.qx = qx
+                self.qy = qy
+                self.qz = qz
+            elif roll is not None and pitch is not None and yaw is not None:
+                self.w, self.qx, self.qy, self.qz = self.__eul2quat(roll, pitch, yaw)
+            else:
+                raise ValueError("Not enough information to create a pose.")
         else:
             raise ValueError("Not enough information to create a pose.")
 
@@ -73,7 +78,21 @@ class DronePose:
 
         return w, qx, qy, qz
 
-    def __quat2eul(self):
+    @property
+    def coordinates(self):
+        """Return the coordinates as a numpy array [w, qx, qy, qz]."""
+        return np.array([self.x, self.y, self.z])
+    @property
+    def quaternion(self):
+        """Return the quaternion as a numpy array [w, qx, qy, qz]."""
+        return np.array([self.w, self.qx, self.qy, self.qz])
+    
+    @property
+    def quaternion_inv(self):
+        """Return the inverse of the quaternion as a numpy array [w, qx, qy, qz]."""
+        return np.array([self.w, -self.qx, -self.qy, -self.qz])
+    @property
+    def euler(self):
         """
         Convert Quaternion to Euler representation
         :return: Euler representation of the Quaternion
@@ -81,13 +100,7 @@ class DronePose:
         roll = np.arctan2(2 * (self.w * self.qx + self.qy * self.qz), 1 - 2 * (self.qx ** 2 + self.qy ** 2))
         pitch = np.arcsin(2 * (self.w * self.qy - self.qz * self.qx))
         yaw = np.arctan2(2 * (self.w * self.qz + self.qx * self.qy), 1 - 2 * (self.qy ** 2 + self.qz ** 2))
-
-        return roll, pitch, yaw
-
-    @property
-    def quaternion(self):
-        """Return the quaternion as a numpy array [w, qx, qy, qz]."""
-        return np.array([self.w, self.qx, self.qy, self.qz])
+        return np.array([roll, pitch, yaw])
 
 def HamiltonProd(q1, q2):
     """
@@ -101,6 +114,8 @@ def HamiltonProd(q1, q2):
     :param q1: Quaternion 1
     :param q2: Quaternion 2
     :return: The product of the two quaternions
+
+    Based on wikipedia: https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Hamilton_product
     """
     # Unpack the quaternions
     w1, x1, y1, z1 = q2
@@ -114,23 +129,71 @@ def HamiltonProd(q1, q2):
 
     return w, x, y, z
 
-Trajectory = [((0.0, 20.784609690826528, -4.618802153517007), (-0.9938511382041374, -0.10808782498329239, 0.024019516662953974)), ((-4.468076694851296, 20.29867706647226, -4.510817125882724), (-0.9452765484378205, -0.3185007526974567, 0.07077794504387927)), ((-8.72723108936192, 18.863600862848926, -4.191911302855317), (-0.8512885035911208, -0.512203298057012, 0.11382295512378038)), ((-12.57830985775467, 16.546483648265323, -3.676996366281183), (-0.7176634887856662, -0.6798069662518207, 0.15106821472262702)), ((-15.841240836986136, 13.45567124838456, -2.9901491663076794), (-0.5519286866141979, -0.8140339111037115, 0.18089642468971348)), ((-18.363453000954767, 9.735686615833801, -2.163485914629734), (-0.3624944981487109, -0.9097925868587402, 0.2021761304130534)), ((-20.027010512110873, 5.560472097565162, -1.2356604661255917), (-0.15802684163842282, -0.9639210908823495, 0.21420468686274433)), ((-20.754127270144167, 1.1252560840352424, -0.2500569075633872), (0.05285334718145034, -0.9748226289284274, 0.21662725087298385)), ((-20.51080410358125, -3.362575653351858, 0.7472390340781907), (0.261598614631124, -0.9421930572163523, 0.20937623493696716)), ((-19.308418533256322, -7.693177090422641, 1.709594908982809), (0.459633274596775, -0.8669603253257502, 0.19265785007238906)), ((-17.20319277208221, -11.664054117097471, 2.592012026021661), (0.6382959443481309, -0.7514600790283262, 0.16699112867296131)), ((-14.293564836861021, -15.089532936921879, 3.3532295415381954), (0.7889903075174773, -0.5997748387924334, 0.1332832975094296)), ((-10.71558569602452, -17.80944196742713, 3.957653770539362), (0.903650124963883, -0.4180730668460251, 0.09290512596578336)), ((-6.636557677560024, -19.696601285308567, 4.377022507846348), (0.9755080921812364, -0.21472556847131208, 0.047716792993624864)), ((-2.247211598096915, -20.662769418288992, 4.5917265373975535), (1.0, 0.0, 0.0)), ((2.2472115980969103, -20.662769418288992, 4.5917265373975535), (0.9755080921812364, 0.21472556847131172, -0.04771679299362478)), ((6.6365576775600275, -19.696601285308567, 4.377022507846348), (0.9036501249638829, 0.41807306684602485, -0.09290512596578342)), ((10.715585696024526, -17.80944196742713, 3.9576537705393617), (0.788990307517477, 0.5997748387924335, -0.13328329750942966)), ((14.293564836861027, -15.089532936921877, 3.3532295415381945), (0.6382959443481303, 0.7514600790283267, -0.16699112867296137)), ((17.203192772082208, -11.664054117097475, 2.5920120260216613), (0.4596332745967752, 0.86696032532575, -0.19265785007238895)), ((19.308418533256322, -7.693177090422641, 1.709594908982809), (0.261598614631124, 0.9421930572163523, -0.20937623493696714)), ((20.51080410358125, -3.3625756533518585, 0.7472390340781908), (0.05285334718145034, 0.9748226289284274, -0.21662725087298385)), ((20.754127270144167, 1.125256084035242, -0.25005690756338705), (-0.15802684163842343, 0.9639210908823492, -0.2142046868627443)), ((20.02701051211087, 5.5604720975651665, -1.2356604661255925), (-0.36249449814871015, 0.9097925868587405, -0.20217613041305335)), ((18.363453000954767, 9.735686615833806, -2.1634859146297343), (-0.5519286866141985, 0.8140339111037113, -0.18089642468971362)), ((15.841240836986133, 13.455671248384565, -2.9901491663076807), (-0.7176634887856661, 0.679806966251821, -0.151068214722627)), ((12.578309857754666, 16.54648364826533, -3.6769963662811844), (-0.8512885035911208, 0.5122032980570118, -0.11382295512378039)), ((8.727231089361927, 18.863600862848926, -4.191911302855317), (-0.9452765484378205, 0.31850075269745665, -0.07077794504387926)), ((4.468076694851303, 20.29867706647226, -4.510817125882724), (-0.9938511382041372, 0.10808782498329235, -0.024019516662953964))]
+def ReadTrajec(path):
+    # Read the trajectory data from the CSV file
+    Trajectory = []
+    with open(path, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        next(reader)  # Skip the header row
+        for row in reader:
+            # Convert the row values to the appropriate data types
+            Trajectory.append(row[:6])
+    return Trajectory
 
-# Instantiate the DronePose objects, based on the trajectory
+def Add_sensornoise(Trajectory):
+    Trajectory_temp = []
+    # Maximal error in decimal percentage
+    Max_error = 0.20
+    Accumulative_error = np.zeros(6)  # Initialize as a NumPy array
+    for i in range(len(Trajectory)):
+        # Accumulate the error based on randomness
+        noise = np.random.uniform(0, Max_error, size=6)
+        Accumulative_error += noise
+        # Add the error to the trajectory
+        noisy_data = np.array(Trajectory[i], dtype=float) + Accumulative_error
+        Trajectory_temp.append(noisy_data)
+    return Trajectory_temp
+
+# Get the poses for a given trajectory
+Trajectory = ReadTrajec("trajectory.csv")
+
+# Instantiate the DronePose objects, based on the trajectory - Normally given by measurements. 
 DronePoses = []
 for i in range(len(Trajectory)):
-     print(*Trajectory[i][0],*Trajectory[i][1])
-     DronePoses.append((DronePose(*Trajectory[i][0],None,None,None,None,*Trajectory[i][1])))
+    DronePoses.append(DronePose(float(Trajectory[i][0]), float(Trajectory[i][1]), float(Trajectory[i][2]), roll= float(Trajectory[i][3]), pitch = float(Trajectory[i][4]), yaw = float(Trajectory[i][5]), t = 0))
+
+"""
+relative_orientations = []
+for i, pose in enumerate(reversed(DronePoses[:-1]), start=1):
+    # Compute the relative orientation between the current pose and the previous pose
+    relative_orientation = HamiltonProd(DronePoses[-i].quaternion_inv, pose.quaternion)
+
+    # Add the relative orientation to the list
+    relative_orientations.append(DronePose(*pose.coordinates,None, None, None, None, *relative_orientation, 0))
+"""
+
+Trajectory_noise = Add_sensornoise(Trajectory)
+
+DronePoses_n = []
+for i in range(len(Trajectory_noise)):
+    DronePoses_n.append(DronePose(float(Trajectory_noise[i][0]), float(Trajectory_noise[i][1]), float(Trajectory_noise[i][2]), None, None, None, None, float(Trajectory_noise[i][3]), float(Trajectory_noise[i][4]), float(Trajectory_noise[i][5]), 0))
+
+
+DronePoses_n[1]
 
 # plot the droneposes in 3D
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 for i in range(len(DronePoses)):
-    ax.scatter(DronePoses[i].x, DronePoses[i].y, DronePoses[i].z, c='r', marker='o')
+    if i == 0:
+        ax.text(*DronePoses[i].coordinates, f'{i}', color='black')
+    ax.scatter(*DronePoses[i].coordinates, c='r', marker='o')
+    ax.scatter(*DronePoses[i].coordinates, c='g', marker='o')
     #ax.text(DronePoses[i].x, DronePoses[i].y, DronePoses[i].z, f'{i}', color='black')
     #Unpack the quaternion and convert it to euler angles
-    roll, pitch, yaw = DronePoses[i]._DronePose__quat2eul()
+    roll, pitch, yaw = DronePoses[i].euler
     ax.quiver(DronePoses[i].x, DronePoses[i].y, DronePoses[i].z, roll, pitch, yaw, length=1, normalize=True)
+    ax.quiver(DronePoses_n[i].x, DronePoses_n[i].y, DronePoses_n[i].z, roll, pitch, yaw, length=1, normalize=True)
     
 ax.set_xlabel('X')
 ax.set_ylabel('Y')

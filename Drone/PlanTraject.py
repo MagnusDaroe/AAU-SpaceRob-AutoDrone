@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 def define_3d_circle(center, normal, radius, num_points=30):
     """
@@ -58,4 +59,14 @@ ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 plt.show()
 
+# Specify the file path
+csv_file_path = "trajectory.csv"
+
+# Write the trajectory data to the CSV file
+with open(csv_file_path, 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["x", "y", "z", "roll", "pitch", "yaw"])  # Write header row
+    for point in relative_orientations:
+        position, euler = point
+        writer.writerow(list(position) + list(euler))
 
