@@ -101,7 +101,27 @@ class DronePose:
         pitch = np.arcsin(2 * (self.w * self.qy - self.qz * self.qx))
         yaw = np.arctan2(2 * (self.w * self.qz + self.qx * self.qy), 1 - 2 * (self.qy ** 2 + self.qz ** 2))
         return np.array([roll, pitch, yaw])
+    
+    @property
+    def Pose(self):
+        """
+        Return the pose as a numpy array [x, y, z, w, qx, qy, qz].
 
+        !Notice!: Time is not included in this pose type.
+        
+        """
+        return np.array([self.x, self.y, self.z , self.w, self.qx, self.qy, self.qz])
+
+    @property
+    def PoseT(self):
+        """
+        Return the pose as a numpy array [x, y, z, w, qx, qy, qz, t].
+
+        !WARNING!: Time is included in this pose type.
+        
+        """
+        return np.array([self.x, self.y, self.z , self.w, self.qx, self.qy, self.qz, self.t])
+    
 def HamiltonProd(q1, q2):
     """
     The product of two quaternions - Also called the Hamilton product.
