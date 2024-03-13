@@ -51,6 +51,10 @@ add_executable(vehicle_gps_position_listener src/examples/listeners/vehicle_gps_
 ament_target_dependencies(vehicle_gps_position_listener rclcpp px4_msgs)
 install(TARGETS vehicle_gps_position_listener DESTINATION lib/${PROJECT_NAME})
 
+# ---------------------Til Quadcopter projekt--------------------------
+add_executable(battery_listener src/quadcopter/battery_listener.cpp)
+ament_target_dependencies(battery_listener rclcpp px4_msgs)
+install(TARGETS battery_listener DESTINATION lib/${PROJECT_NAME})
 
 # examples/advertisers/debug_vect_advertiser
 add_executable(debug_vect_advertiser src/examples/advertisers/debug_vect_advertiser.cpp)
