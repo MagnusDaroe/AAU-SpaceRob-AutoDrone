@@ -1,2 +1,7 @@
+ROS_Drone/build/
+ROS_Drone/install/
+ROS_Drone/log/
+ROS_Drone/src/px4_ros_com/.vscode/
+build/
 *.json
 .vscode/
