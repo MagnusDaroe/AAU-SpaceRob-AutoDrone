@@ -15,6 +15,7 @@ public:
             std::cout << "\nRECEIVED BATTERY STATUS DATA" << std::endl;
             std::cout << "==============================" << std::endl;
             std::cout << "ts: " << msg->timestamp << std::endl;
+            std::cout << "voltage: " << msg->voltage_v << std::endl;
         });
     }
     

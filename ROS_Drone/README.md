@@ -12,12 +12,15 @@ colcon build
 
 for at køre programmet:
 cd ~/PX4-Autopilot && make px4_sitl gz_x500  <---------- hvis det skal være med gazebo. ellers undlad.
-
+(start en ny terminal)
 cd sti/til/ROS_Drone
 source /opt/ros/humble/setup.bash
 source install/local_setup.bash
 ros2 launch px4_ros_com >>>dit_yndlings_launchscript<<<.launch.py
 
 
-
+For at lave en ny fil, skal man: 
+    lave en c++ fil i px4_ros_com/src
+    ændre CMakeLists.txt
+    lave en launch script i px4_ros_com/launch
 
