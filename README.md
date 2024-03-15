@@ -12,7 +12,7 @@ Boot the Jetson Nano. Password: Jetson.
 
 Start by fixing keyboard language if needed. And other Usersettings.
 
-1. Fix the partition of the drive.
+## 1. Fix the partition of the drive.
 	Check if the drive only have part of its storage allocated.
 
 Run in terminal:
@@ -27,7 +27,7 @@ Resize current partion until it is taking up as much of the available space as p
 	
 	df -h
 	
-2. Check CMake version. !!! DO THIS BEFORE INSTALLING ROS !!!
+## 2. Check CMake version. !!! DO THIS BEFORE INSTALLING ROS !!!
 	Link: https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 	
 Run:
@@ -63,12 +63,12 @@ Run "Sudo apt update" again to see if it worked. If kitware provides any key err
 	Finish by checking you new version with "cmake --version". I had cmake --version
 
 
-3. PX4 User Guide.
+## 3. PX4 User Guide.
 	It is now time to follow the PX4 user-guide provided as: https://docs.px4.io/main/en/ros/ros2_comm.htmljhnjn 
 	The goal in the end, is to talk with the pixhawk PX-4. !!!KEEP IN MIND THAT WE HAVE UBUNTU 20.04!!! We thus need to install ROS 2 FOXY.
 	
- Install ROS2
-	LINK: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
+### Install ROS2
+LINK: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
 
 Run:
 	
@@ -111,7 +111,7 @@ Install Python dependencies:
 	
 
 				
-Setup Micro XRCE-DDS Agent:
+### Setup Micro XRCE-DDS Agent:
 For ROS 2 to communicate with PX4, uXRCE-DDS client must be running on PX4, connected to a micro XRCE-DDS agent running on the companion computer. The Simulater tool has its own client to simulate, and will itself start it. As we dont need the simulator tool, there is no need to run the client. We now focus on setting up the agent.
 		
 
@@ -155,23 +155,21 @@ https://www.hackster.io/Matchstic/connecting-pixhawk-to-raspberry-pi-and-nvidia-
 https://docs.px4.io/main/en/companion_computer/pixhawk_companion.html#serial-port-setup
 
 
-Try example:
+## Try example
 
-	Find USB:
+Find USB:
 	
 	dmesg | grep tty
 		
-		like: ttyACM0
+like: ttyTHS1
 	
-	Run:
-	sudo MicroXRCEAgent serial --dev /dev/ttyACM0 -b 115200
+Run:
+	
+ 	sudo MicroXRCEAgent serial --dev /dev/ttyTHS1 -b 115200
 	
 	cd ~/P4DroneProject/
 	source /opt/ros/foxy/setup.bash
 	source install/local_setup.bash
 	
 	
-This should yield some Gyro and accelerometer data.
-
-
-Now it is time to develop your own application.
+This should yield some Gyro and accelerometer data. Now it is time to develop your own application.
