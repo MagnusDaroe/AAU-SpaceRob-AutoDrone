@@ -6,18 +6,21 @@ The Flight controller being used is a PX4 Orange cube.
 
 For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to check this, is if the setting UXRCE_DDS_CFG can be found and set to TELEM2 - Using Qgroundcontrol.
 
-Install image included in link on microSD (64 Gb is recommended - space for logging of fligt data). Use a tool as BalenaEtcher. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
+Install image included in link on microSD (64 Gb is recommended - space for logging of flight data). Use a tool as BalenaEtcher. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
 
 Boot the Jetson Nano. Password: Jetson.
 
 Start by fixing keyboard language if needed. And other Usersettings.
 
-1. Fix The Partition Of The Drive.
+1. Fix the partition of the drive.
 	Check if the drive only have part of its storage allocated.
 
 Run in terminal:
 	
 	df -h
+
+If expected valus are returned skip this part. Else:
+ 
  	sudo apt-get install gparted
 	
 Resize current partion until it is taking up as much of the available space as possible. Check again with
@@ -52,8 +55,6 @@ Run "Sudo apt update" again to see if it worked. If kitware provides any key err
 	
 	Sudo apt update
  
-
-
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6AF7F09730B3F0A4
 	
 	sudo apt update
