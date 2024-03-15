@@ -163,13 +163,16 @@ Find USB:
 		
 like: ttyTHS1
 	
-Run:
+Run in a fresh terminal:
 	
  	sudo MicroXRCEAgent serial --dev /dev/ttyTHS1 -b 115200
-	
+
+Run in a fresh terminal:
+
 	cd ~/P4DroneProject/
 	source /opt/ros/foxy/setup.bash
 	source install/local_setup.bash
-	
+
+ 	ros2 launch px4_ros_com sensor_combined_listener.launch.py
 	
 This should yield some Gyro and accelerometer data. Now it is time to develop your own application.
