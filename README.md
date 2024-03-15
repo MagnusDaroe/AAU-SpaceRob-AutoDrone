@@ -6,7 +6,7 @@ The Flight controller being used is a PX4 Orange cube.
 
 For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to check this, is if the setting UXRCE_DDS_CFG can be found and set to TELEM2 - Using Qgroundcontrol.
 
-Install image included in link on microSD (64 Gb is recommended - space for logging of flight data). Use a tool as BalenaEtcher. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
+Download image included in link on microSD (64 Gb is recommended - space for logging of flight data). Use a tool as BalenaEtcher to flash image onto microSD. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
 
 Boot the Jetson Nano. Password: Jetson.
 
