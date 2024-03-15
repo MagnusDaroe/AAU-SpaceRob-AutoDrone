@@ -1,7 +1,8 @@
 # P4_DroneProject
- 
 This guide is for the Jetson Nano - ubuntu 20.04 image. Written 03-2024.
 
+The goal of this project is to control a drone with an onboard computer. In this case the Jetson Nano.
+ 
 The Flight controller being used is a PX4 Orange cube. 
 
 For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to check this, is if the setting UXRCE_DDS_CFG can be found and set to TELEM2 - Using Qgroundcontrol.
@@ -139,7 +140,7 @@ Building workspace - Chose own name. Replace P4DroneProject:
 	colcon build
  
  
-For the agent to talk with the Flight Controller, a connection needs to be established. We will do it trough serial. On the Flight controller, a micro-usb connector is found. This is only used to set it up. Instead the Telem2 port on the flight-controller should be used. 
+For the agent to talk with the Flight Controller, a connection needs to be established. We will do it trough serial. On the Flight controller, a micro-usb connector is found. This is only used to set it up. Instead the Telem2 port on the flight-controller should be used to communicate with the flight controller. 
 
 !!WARNING!!
 
