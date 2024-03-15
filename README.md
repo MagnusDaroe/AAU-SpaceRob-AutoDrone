@@ -8,9 +8,9 @@ For this step-by-step guide to work, you need to make sure your respective fligh
 
 Install image included in link on microSD (64 Gb is recommended - space for logging of fligt data). Use a tool as BalenaEtcher. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
 
-Boot Machine.
+Boot the Jetson Nano. Password: Jetson.
 
-Fix keyboard language if needed
+Start by fixing keyboard language if needed. And other Usersettings.
 
 1. Fix The Partition Of The Drive.
 	Check if the drive only have part of its storage allocated.
