@@ -4,7 +4,7 @@ This guide is for the Jetson Nano - ubuntu 20.04 image. Written 03-2024.
 
 The Flight controller being used is a PX4 Orange cube. 
 
-For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to chech this, is if the setting UXRCE_DDS_CFG can be found set to TELEM2
+For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to check this, is if the setting UXRCE_DDS_CFG can be found and set to TELEM2.
 
 
 Fix keyboard language if needed
