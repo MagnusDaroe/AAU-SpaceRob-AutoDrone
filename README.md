@@ -9,33 +9,34 @@ For this step-by-step guide to work, you need to make sure your respective fligh
 
 Fix keyboard language if needed
 
-First Fix The Partition Of The Drive.
-	Using the "df -h" command will yield a drive having only some of the full capacity
-	
-	Run: sudo apt-get install gparted
-	
-	Resize current partion until it is taking up as much of the available space as possible
-	
-	Check with "df -h" to see if done properly 
-	
+1. Fix The Partition Of The Drive.
+	Check if the drive only have part of its storage allocated.
 
-Check CMake version. DO THIS BEFORE INSTALLING ROS
+Run in terminal:
+	
+	df -h
+ 	sudo apt-get install gparted
+	
+Resize current partion until it is taking up as much of the available space as possible. Check again with
+	
+	df -h
+	
+2. Check CMake version. !!! DO THIS BEFORE INSTALLING ROS !!!
 	Link: https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 	
-	Run: CMake --version
+Run:
 	
-	Should return:
-	cmake version 3.16.3
-
- 	We want CMake 3.20 or later
+ 	CMake --version
+	
+We want CMake 3.20 or later.
  	
- 	Run:
+Run:
+ 
  	sudo apt purge --autoremove cmake
- 	
  	sudo apt update && \
 	sudo apt install -y software-properties-common lsb-release && \
 	sudo apt clean all
-	
+ 
 	sudo apt upgrade
  	
  	wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
@@ -44,9 +45,12 @@ Check CMake version. DO THIS BEFORE INSTALLING ROS
 	sudo apt install kitware-archive-keyring
 	sudo rm /etc/apt/trusted.gpg.d/kitware.gpg
 	
-	Run "Sudo apt update" again to see if it worked. If kitware provides any key errors, you must fix it. (I had one, but fixed it by flashing new os)
+Run "Sudo apt update" again to see if it worked. If kitware provides any key errors, you must fix it. (I had one, but fixed it by flashing new os).
 	
-	
+	Sudo apt update
+ 
+
+
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6AF7F09730B3F0A4
 	
 	sudo apt update
@@ -57,29 +61,25 @@ Check CMake version. DO THIS BEFORE INSTALLING ROS
 
 PX4 User Guide.
 	It is now time to follow the PX4 user-guide provided as: https://docs.px4.io/main/en/ros/ros2_comm.htmljhnjn 
-
-	The goal in the end, is to talk with the pixhawk PX-4. 
+	The goal in the end, is to talk with the pixhawk PX-4. !!!KEEP IN MIND THAT WE HAVE UBUNTU 20.04!!! We thus need to install ROS 2 FOXY.
 	
-	!!!KEEP IN MIND THAT WE HAVE UBUNTU 20.04!!!
-	
-	We thus need to install ROS 2 FOXY.
-		
-	
-	Install ROS2
+ Install ROS2
 	LINK: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
 
-	Run:
-	locale
+Run:
 	
-		Returned expected results. Continue.
+ 	locale
+
+If UTF-8, continue.
 		
-	Run:
-	sudo apt install software-properties-common
+Run:
+	
+ 	sudo apt install software-properties-common
 	sudo add-apt-repository universe
 		
-		Returned expected results. Continue.
+If it returned expected results, then continue.
 	
-	Run:
+Run:
 	
 	sudo apt update && sudo apt install curl -y
 	sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
@@ -87,13 +87,13 @@ PX4 User Guide.
 	sudo apt update
 	sudo apt upgrade
 	
-		Returned expected results. Continue.
+If it returned expected results, then continue.
 	
-	Install ROS2 FOXY with desktop:
+Install ROS2 FOXY with desktop:
 	sudo apt install ros-foxy-desktop python3-argcomplete
 	sudo apt install ros-dev-tools
 		
-		Returned expected results. Continue.
+If it returned expected results, then continue.
 		
 		
 	Install colcon (should be installed with ros-dev-tools):
