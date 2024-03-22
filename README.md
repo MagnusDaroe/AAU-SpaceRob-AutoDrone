@@ -16,5 +16,5 @@ The code prints the states of the drone.<br>
 ### Read attitude parameters
 Run **ReadAttitudeParam.py**<br>
 Change port adress to your specified connection<br>
-Prints Roll, Pitch and Yaw in realtime, example:<br>
+Prints **Roll**, **Pitch** and **Yaw** in realtime, example:<br>
 *"Roll: 2.1942973086095616, Pitch: 1.3729335502999127, Yaw: -155.02535000691302"*<br>
