@@ -13,6 +13,7 @@ from pymavlink import mavutil
 
 
 # Create the connection
+#* edit the port to the one you are using
 master = mavutil.mavlink_connection('/dev/ttyACM0')
 # Wait a heartbeat before sending commands
 master.wait_heartbeat()

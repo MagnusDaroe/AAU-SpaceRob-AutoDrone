@@ -1,7 +1,8 @@
 from pymavlink import mavutil
 import time
-#!https://www.ardusub.com/developers/pymavlink.html#armdisarm-the-vehicle
+#* https://www.ardusub.com/developers/pymavlink.html#armdisarm-the-vehicle
 # Start a connection listening on a UDP port
+#* edit the port to the one you are using
 the_connection = mavutil.mavlink_connection('/dev/ttyACM0')
 #the_connection = mavutil.mavlink_connection('udpin:localhost:14551')
 # Wait for the first heartbeat

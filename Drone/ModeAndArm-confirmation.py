@@ -2,6 +2,7 @@ from pymavlink import mavutil
 import time
 
 # Start a connection listening on a UDP port
+#* edit the port to the one you are using
 master = mavutil.mavlink_connection('/dev/ttyACM0')
 #master = mavutil.mavlink_connection('udpin:localhost:14551')
 # Wait for the first heartbeat
