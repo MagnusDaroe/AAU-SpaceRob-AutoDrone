@@ -14,7 +14,9 @@ Change port adress to your specified connection<br>
 The code prints the states of the drone.<br>
 
 ### Read attitude parameters
-Run **ReadAttitudeParam.py**<br>
+Run **ReadAttitudeAndAccParam.py**<br>
 Change port adress to your specified connection<br>
-Prints **Roll**, **Pitch** and **Yaw** in realtime, example:<br>
-*"Roll: 2.1942973086095616, Pitch: 1.3729335502999127, Yaw: -155.02535000691302"*<br>
+Prints **Roll**, **Pitch**, **Yaw**, **X-**, **Y-**, **Z-** **Acceleration** and **Gyroscope** data in realtime, example:<br>
+*"Roll: 2.2466227475107945 deg, Pitch: 0.7973645012786337 deg, Yaw: -151.5053027351202 deg"* <br>
+*"Acceleration: X: 0.18 m/s^2, Y: -0.32 m/s^2, Z: -9.92 m/s^2"* <br>
+*"Gyroscope: X: 57.3 deg/s, Y: 0.0 deg/s, Z: -343.77 deg/s"* <br>
