@@ -1,7 +1,7 @@
 # P4_DroneProject
-<p align="center">
+
 code inspired by [ArduSub](https://www.ardusub.com/developers/pymavlink.html). <br>
-</p>
+
 ### Test of motors with manual control
 Run **Stabilize-arm-motor_test.py**<br>
 Change port adress to your specified connection<br>
