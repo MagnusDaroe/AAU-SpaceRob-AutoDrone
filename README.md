@@ -1,6 +1,6 @@
 # P4_DroneProject
 
-<p align="right"> code inspired by [ArduSub](https://www.ardusub.com/developers/pymavlink.html). </p> <br>
+code inspired by [ArduSub](https://www.ardusub.com/developers/pymavlink.html). <br>
 
 ### Test of motors with manual control
 Run **Stabilize-arm-motor_test.py**<br>
