@@ -24,7 +24,7 @@ def on_key_press(event):
         control[CONTROL_DICT[key][1]] += CONTROL_DICT[key][0]
         print(control)
         # Publish control command via ROS 2
-        node.send_control_command(control[0], control[1], control[3])
+        node.send_control_command(float(control[0]), float(control[1]), float(control[3]))
     elif key == 'q':
         # Signal to exit the loop
         root.destroy()
