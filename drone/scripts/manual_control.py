@@ -26,7 +26,7 @@ def on_key_press(event):
         print(control)
         # Publish control command via ROS 2
         node.send_control_command(float(control[0]), float(control[1]), float(control[2]), float(control[3]))
-    elif key == 'q':
+    elif key == 'Escape':
         # Signal to exit the loop
         root.destroy()
 
