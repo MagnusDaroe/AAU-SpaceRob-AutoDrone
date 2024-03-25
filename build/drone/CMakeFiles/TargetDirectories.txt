@@ -1,0 +1,10 @@
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/uninstall.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/drone_uninstall.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/cpp_executable.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/test.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/edit_cache.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/rebuild_cache.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/list_install_components.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/install.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/install/local.dir
+/home/jetson/P4_DroneProject/build/drone/CMakeFiles/install/strip.dir
