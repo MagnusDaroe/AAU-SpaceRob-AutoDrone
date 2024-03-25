@@ -64,14 +64,13 @@ class ManualControlListener(Node):
 
             # Sending MAVLink commands based on manual control inputs
             # Example: Here, assuming linear_z represents throttle control
-            g = 15
-            print("Sending:" + f"linear_x={linear_x * g}, linear_y={linear_y * g}, linear_z={linear_z * g}, angular_z={angular_z*g}")
+            print("Sending:" + f"linear_x={linear_x}, linear_y={linear_y}, linear_z={linear_z}, angular_z={angular_z}")
             self.the_connection.mav.manual_control_send(
                 self.the_connection.target_system,
-                int(linear_x * g),         # x/pitch
-                int(linear_y * g),         # y/roll
-                int(linear_z * g),  # z/throttle
-                int(angular_z * g),         # yaw
+                int(linear_x),         # x/pitch
+                int(linear_y),         # y/roll
+                int(linear_z),  # z/throttle
+                int(angular_z),         # yaw
                 0          # buttons
             )
             rate.sleep()
