@@ -62,10 +62,11 @@ def control_loop(node):
         right_x = right_x if abs(right_x) >= 0.1 else 0
         right_y = right_y if abs(right_y) >= 0.1 else 0
 
-        twist.linear.x = float(np.interp(right_x, (-1, 1), (-1000, 1000)))  # linear x from right joystick
-        twist.linear.y = float(np.interp(right_y, (-1, 1), (-1000, 1000)))  # linear y from right joystick
-        twist.linear.z = float(np.interp(left_y, (-1, 1), (1000, -1000)))   # Throttle z from right joystick
-        twist.angular.z = float(np.interp(left_x, (-1, 1), (-1000, 1000)))  # yaw from left joystick's Y-axis
+        #Map values.
+        twist.linear.x = float(np.interp(right_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear x from right joystick
+        twist.linear.y = float(np.interp(right_y, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear y from right joystick
+        twist.linear.z = float(np.interp(left_y, (-1, -0.1, 0.1, 1), (1000, 0, 0, -1000)))   # Throttle z from right joystick
+        twist.angular.z = float(np.interp(left_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # yaw from left joystick's Y-axis
         
         node.send_control_command(twist)
 
