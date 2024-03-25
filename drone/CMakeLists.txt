@@ -33,6 +33,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/fc_command.py
   scripts/manual_control.py
+  scripts/manual_listen.py
   DESTINATION lib/${PROJECT_NAME} # change name of node in python
 )
 ament_package()
