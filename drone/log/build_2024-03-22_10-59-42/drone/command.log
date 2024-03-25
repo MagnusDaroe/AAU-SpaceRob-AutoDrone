@@ -1,2 +1,0 @@
-Invoking command in '/home/jetson/drone_ws/src/drone/build/drone': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/jetson/drone_ws/src/drone -DCMAKE_INSTALL_PREFIX=/home/jetson/drone_ws/src/drone/install/drone
-Invoked command in '/home/jetson/drone_ws/src/drone/build/drone' returned '1': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/jetson/drone_ws/src/drone -DCMAKE_INSTALL_PREFIX=/home/jetson/drone_ws/src/drone/install/drone

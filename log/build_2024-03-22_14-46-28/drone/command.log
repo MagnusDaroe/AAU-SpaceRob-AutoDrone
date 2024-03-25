@@ -1,6 +1,0 @@
-Invoking command in '/home/jetson/P4_DroneProject/build/drone': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/jetson/P4_DroneProject/drone -DCMAKE_INSTALL_PREFIX=/home/jetson/P4_DroneProject/install/drone
-Invoked command in '/home/jetson/P4_DroneProject/build/drone' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /home/jetson/P4_DroneProject/drone -DCMAKE_INSTALL_PREFIX=/home/jetson/P4_DroneProject/install/drone
-Invoking command in '/home/jetson/P4_DroneProject/build/drone': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/jetson/P4_DroneProject/build/drone -- -j4 -l4
-Invoked command in '/home/jetson/P4_DroneProject/build/drone' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /home/jetson/P4_DroneProject/build/drone -- -j4 -l4
-Invoking command in '/home/jetson/P4_DroneProject/build/drone': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /home/jetson/P4_DroneProject/build/drone
-Invoked command in '/home/jetson/P4_DroneProject/build/drone' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /home/jetson/P4_DroneProject/build/drone
