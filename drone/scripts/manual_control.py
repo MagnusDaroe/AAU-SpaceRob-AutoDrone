@@ -11,9 +11,10 @@ class ManualControlNode(Node):
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
         self.control_msg = Twist()
 
-    def send_control_command(self, linear_x, linear_y, angular_z):
+    def send_control_command(self, linear_x, linear_y,linear_z, angular_z):
         self.control_msg.linear.x = linear_x
         self.control_msg.linear.y = linear_y
+        self.control_msg.linear.z = linear_z
         self.control_msg.angular.z = angular_z
         self.publisher_.publish(self.control_msg)
 
@@ -24,7 +25,7 @@ def on_key_press(event):
         control[CONTROL_DICT[key][1]] += CONTROL_DICT[key][0]
         print(control)
         # Publish control command via ROS 2
-        node.send_control_command(float(control[0]), float(control[1]), float(control[3]))
+        node.send_control_command(float(control[0]), float(control[1]), float(control[2]), float(control[3]))
     elif key == 'q':
         # Signal to exit the loop
         root.destroy()
