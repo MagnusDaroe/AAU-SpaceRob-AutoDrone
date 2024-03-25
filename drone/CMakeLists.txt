@@ -35,6 +35,7 @@ install(PROGRAMS
   scripts/fc_command_listen.py
   scripts/manual_control.py
   scripts/manual_listen.py
+  scripts/Manual_control_xbox.py
   DESTINATION lib/${PROJECT_NAME} # change name of node in python
 )
 ament_package()
