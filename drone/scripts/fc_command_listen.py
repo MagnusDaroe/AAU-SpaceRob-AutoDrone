@@ -45,30 +45,37 @@ class ManualControlListener(Node):
         msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
         print(msg)
 
+        self.latest_twist_command = Twist()
 
     def listener_callback(self, msg):
-        linear_x = msg.linear.x
-        linear_y = msg.linear.y
-        linear_z = msg.linear.z
-        angular_z = msg.angular.z
+        self.latest_twist_command = msg
 
-        # Sending MAVLink commands based on manual control inputs
-        # Example: Here, assuming linear_z represents throttle control
-        g = 15
-        print("Sending:" + f"linear_x={linear_x * g}, linear_y={linear_y * g}, linear_z={linear_z * g}, angular_z={angular_z*g}")
-        self.the_connection.mav.manual_control_send(
-            self.the_connection.target_system,
-            int(linear_x * g),         # x/pitch
-            int(linear_y * g),         # y/roll
-            int(linear_z * g),  # z/throttle
-            int(angular_z * g),         # yaw
-            0          # buttons
-        )
+    def send_twist_command(self):
+        rate = self.create_rate(10)  # 10 Hz
+        while rclpy.ok():
+            linear_x = self.latest_twist_command.linear.x
+            linear_y = self.latest_twist_command.linear.y
+            linear_z = self.latest_twist_command.linear.z
+            angular_z = self.latest_twist_command.angular.z
+
+            # Sending MAVLink commands based on manual control inputs
+            # Example: Here, assuming linear_z represents throttle control
+            g = 15
+            print("Sending:" + f"linear_x={linear_x * g}, linear_y={linear_y * g}, linear_z={linear_z * g}, angular_z={angular_z*g}")
+            self.the_connection.mav.manual_control_send(
+                self.the_connection.target_system,
+                int(linear_x * g),         # x/pitch
+                int(linear_y * g),         # y/roll
+                int(linear_z * g),  # z/throttle
+                int(angular_z * g),         # yaw
+                0          # buttons
+            )
+            rate.sleep()
 
 def main(args=None):
     rclpy.init(args=args)
     listener = ManualControlListener()
-    rclpy.spin(listener)
+    listener.send_twist_command()
     listener.destroy_node()
     rclpy.shutdown()
 
