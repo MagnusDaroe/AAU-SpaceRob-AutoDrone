@@ -5,6 +5,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from pymavlink import mavutil
 import time
+import threading
 
 class ManualControlListener(Node):
     def __init__(self):
@@ -21,7 +22,7 @@ class ManualControlListener(Node):
         print("Connected to MAVLink.")
         time.sleep(2)
 
-        #set mode stabilize
+        # Set mode stabilize
         self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
                                      0, 1, 0, 0, 0, 0, 0, 0)
         msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
@@ -46,17 +47,20 @@ class ManualControlListener(Node):
         print(msg)
 
         self.latest_twist_command = Twist()
+        self.command_lock = threading.Lock()
 
     def listener_callback(self, msg):
-        self.latest_twist_command = msg
+        with self.command_lock:
+            self.latest_twist_command = msg
 
     def send_twist_command(self):
         rate = self.create_rate(10)  # 10 Hz
         while rclpy.ok():
-            linear_x = self.latest_twist_command.linear.x
-            linear_y = self.latest_twist_command.linear.y
-            linear_z = self.latest_twist_command.linear.z
-            angular_z = self.latest_twist_command.angular.z
+            with self.command_lock:
+                linear_x = self.latest_twist_command.linear.x
+                linear_y = self.latest_twist_command.linear.y
+                linear_z = self.latest_twist_command.linear.z
+                angular_z = self.latest_twist_command.angular.z
 
             # Sending MAVLink commands based on manual control inputs
             # Example: Here, assuming linear_z represents throttle control
@@ -75,7 +79,8 @@ class ManualControlListener(Node):
 def main(args=None):
     rclpy.init(args=args)
     listener = ManualControlListener()
-    listener.send_twist_command()
+    threading.Thread(target=listener.send_twist_command, daemon=True).start()
+    rclpy.spin(listener)
     listener.destroy_node()
     rclpy.shutdown()
 
