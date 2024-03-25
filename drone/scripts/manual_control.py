@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -16,7 +18,8 @@ class ManualControlNode(Node):
         self.publisher_.publish(self.control_msg)
 
 def on_key_press(event):
-    key = event.char
+    key = event.keysym
+    print(key)
     if key in CONTROL_DICT:
         control[CONTROL_DICT[key][1]] += CONTROL_DICT[key][0]
         print(control)
@@ -35,7 +38,7 @@ def Manual_Control():
     root.title("Manual Control")
 
     # List with values of the keys: ('key', [value increment, index of the control list])
-    CONTROL_DICT = {'w': [1, 0], 's': [-1, 0], 'a': [1, 1], 'd': [-1, 1], ' ': [1, 2], 'Shift_L': [-1, 2], 'q': [1, 3], 'e': [-1, 3]}
+    CONTROL_DICT = {'w': [1, 0], 's': [-1, 0], 'a': [1, 1], 'd': [-1, 1], 'space': [1, 2], 'Shift_L': [-1, 2], 'q': [1, 3], 'e': [-1, 3]}
     control = [0, 0, 0, 0]
 
     # Bind key press event to the function
