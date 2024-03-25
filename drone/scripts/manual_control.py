@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-import keyboard
+from pynput import keyboard as kb
 
 class ManualControlNode(Node):
     def __init__(self):
@@ -27,34 +27,33 @@ def Manual_Control():
     control = [0, 0, 0, 0]
 
     # Function to handle key press
-    def on_key_press(event):
+    def on_key_press(key):
         nonlocal control
+        try:
+            key_name = key.char
+        except AttributeError:
+            # Special keys like 'esc', 'space', etc.
+            key_name = key.name
+
         # Check if the key pressed is in the dictionary
-        if event.name in CONTROL_DICT:
+        if key_name in CONTROL_DICT:
             # Map the input to a value increment/decrement in the control list
-            control[CONTROL_DICT[event.name][1]] += CONTROL_DICT[event.name][0]
+            control[CONTROL_DICT[key_name][1]] += CONTROL_DICT[key_name][0]
             print(control)
             # Publish control command via ROS 2
             node.send_control_command(control[0], control[1], control[3])
         # Check if the escape key is pressed
-        elif event.name == 'esc':
+        elif key_name == 'esc':
             # Signal to exit the loop
             return False
         
         return True
 
     # Subscribe to keyboard events
-    keyboard.on_press(on_key_press)
-    
-    # Loop until escape key is pressed
-    while True:
-        if not keyboard.is_pressed('esc'):
-            continue
-        else:
-            break
-    
-    # Unsubscribe from keyboard events
-    keyboard.unhook_all()
+    with kb.Listener(on_press=on_key_press) as listener:
+        # Wait for the escape key to be pressed
+        listener.join()
+
     print("escaped")
 
     # Shutdown ROS 2 node

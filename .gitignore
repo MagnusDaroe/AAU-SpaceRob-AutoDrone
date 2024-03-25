@@ -1,0 +1,6 @@
+/build
+/install
+/log
+/drone/build
+/drone/install
+/drone/log
