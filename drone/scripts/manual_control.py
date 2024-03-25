@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from pynput import keyboard as kb
+import pygame
 
 class ManualControlNode(Node):
     def __init__(self):
@@ -22,43 +22,34 @@ def Manual_Control():
     rclpy.init()
     node = ManualControlNode()
 
+    # Initialize Pygame
+    pygame.init()
+
     # List with values of the keys: ('key', [value increment, index of the control list])
     CONTROL_DICT = {'w': [1, 0], 's': [-1, 0], 'a': [1, 1], 'd': [-1, 1], 'space': [1, 2], 'shift': [-1, 2], 'q':[1,3], 'e':[-1,3]}
     control = [0, 0, 0, 0]
 
-    # Function to handle key press
-    def on_key_press(key):
-        nonlocal control
-        try:
-            key_name = key.char
-        except AttributeError:
-            # Special keys like 'esc', 'space', etc.
-            key_name = key.name
+    try:
+        # Pygame loop
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    key = pygame.key.name(event.key)
+                    if key in CONTROL_DICT:
+                        control[CONTROL_DICT[key][1]] += CONTROL_DICT[key][0]
+                        print(control)
+                        node.send_control_command(control[0], control[1], control[3])
+                    elif key == 'escape':
+                        running = False
 
-        # Check if the key pressed is in the dictionary
-        if key_name in CONTROL_DICT:
-            # Map the input to a value increment/decrement in the control list
-            control[CONTROL_DICT[key_name][1]] += CONTROL_DICT[key_name][0]
-            print(control)
-            # Publish control command via ROS 2
-            node.send_control_command(control[0], control[1], control[3])
-        # Check if the escape key is pressed
-        elif key_name == 'esc':
-            # Signal to exit the loop
-            return False
-        
-        return True
-
-    # Subscribe to keyboard events
-    with kb.Listener(on_press=on_key_press) as listener:
-        # Wait for the escape key to be pressed
-        listener.join()
-
-    print("escaped")
-
-    # Shutdown ROS 2 node
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        # Shutdown ROS 2 node
+        node.destroy_node()
+        rclpy.shutdown()
+        pygame.quit()
 
 
 if __name__ == '__main__':
