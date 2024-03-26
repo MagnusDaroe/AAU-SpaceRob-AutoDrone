@@ -1,6 +1,6 @@
 # P4_DroneProject
  
-##Rectrive data from vicon
+## Rectrive data from vicon
 Install Vicon SDK here: [Vicon SDK](https://help.vicon.com/space/DSSDK112/10027198/Vicon+DataStream+SDK+Quick+Start+Guide+for+Python)<br>
 Connect your companinon computer to the same router as the Vicon computer.<br>
 Find the ip of the Vicon computer.<br>
