@@ -1,4 +1,14 @@
 # P4_DroneProject
+Nice to have commands:<br>
+Disable firewall:<br>
+sudo ufw disable<br>
+
+source ro2<br>
+source /opt/ros/foxy/setup.bash<br>
+
+Source install<br>
+source install/local_setup.bash<br>
+_______________________________________________________________________<br>
 This guide is for the Jetson Nano - ubuntu 20.04 image. Written 03-2024.
 
 The goal of this project is to control a drone with an onboard computer. In this case the Jetson Nano.
