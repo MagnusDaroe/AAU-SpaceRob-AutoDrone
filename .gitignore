@@ -1,5 +1,14 @@
+ROS_Drone/build/
+ROS_Drone/install/
+ROS_Drone/log/
+build/
+log/
+install/
+ROS_Drone/src/px4_ros_com/.vscode/
+build/
 *.json
 .vscode/
 build/
 install/
 log/
+install/drone/share/drone/local_setup.dsv

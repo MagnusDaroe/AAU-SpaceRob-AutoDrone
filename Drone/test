@@ -1,0 +1,46 @@
+import subprocess
+import asyncio
+from pymavlink import mavutil
+
+from serial.tools.list_ports import comports
+import time
+
+ServerAdress = 'C:/MagnusProjekter/mavsdk-windows-x64-release/bin/mavsdk_server_bin' # Adjust the path as needed
+port = '50052'  # Adjust the port as needed
+USB_search_string = 'Seriel USB-enhed'  # Adjust the search string as needed
+
+def connect_to_drone():
+    while True:
+        try:
+            port = next("serial://{}:57600".format(p.device) for p in comports() if USB_search_string in p.description)
+            print("Drone device found at port:", port)
+            return port
+        except StopIteration:
+            print("No serial port found. Trying again in 5 seconds...")
+            time.sleep(5)
+
+async def main():
+    # Start mavsdk_server and connect to the drone
+    drone_port = connect_to_drone()
+    server_process = subprocess.Popen([ServerAdress, '-p', port, drone_port])  # Adjust the path and port as needed
+    time.sleep(5)  # Let the server start before trying to connect
+
+    try:
+        print("Attempting to connect to MAVSDK server...")
+        drone = mavutil.mavlink_connection("udpin:localhost:50052")
+        print("Connected to Pixhawk via MAVSDK server")
+    except Exception as e:
+        print("Failed to connect to MAVSDK server:", e)
+
+    
+    drone.wait_heartbeat()
+    
+    # Optionally, wait for the drone operation to complete
+    await asyncio.sleep(10)  # Adjust the time as needed
+
+    # Terminate the mavsdk_server process
+    #server_process.terminate()
+    print("mavsdk_server terminated")
+
+# Run the main function asynchronously
+asyncio.run(main())
