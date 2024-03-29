@@ -1,4 +1,5 @@
-# P4_DroneProject
+# AAU-SpaceRob-AutoDrone
+
 Nice to have commands:<br>
 Disable firewall:<br>
 sudo ufw disable<br>
