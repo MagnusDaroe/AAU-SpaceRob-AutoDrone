@@ -61,7 +61,7 @@ Run "Sudo apt update" again to see if it worked. If kitware provides any key err
 	
 	Finish by checking you new version with "cmake --version". I had cmake --version
 
-### Install ROS2
+## 3. Install ROS2
 LINK: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
 
 Run:
