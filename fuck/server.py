@@ -1,6 +1,6 @@
 import socket
 
-HOST = '172.18.64.1'  # Listen on all network interfaces
+HOST = '192.168.60.251'  # Listen on all network interfaces
 PORT = 12345      # Choose a port to listen on
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
