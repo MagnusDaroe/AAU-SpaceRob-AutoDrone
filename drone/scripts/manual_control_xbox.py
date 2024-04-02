@@ -77,7 +77,7 @@ def control_loop(node):
 
         node.send_control_command(twist)
     
-    twist.linear.x, twist.linear.y, twist.linear.z, twist.angular.z = float(0), float(0), float(-999), float(0)
+    twist.linear.x, twist.linear.y, twist.linear.z, twist.angular.z = float(0), float(0), float(0), float(0)
     node.send_control_command(twist)
     print("Exiting control loop")
 
