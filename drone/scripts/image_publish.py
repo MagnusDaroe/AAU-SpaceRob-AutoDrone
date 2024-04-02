@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -8,7 +10,7 @@ class CameraPublisher(Node):
     def __init__(self):
         super().__init__('camera_publisher')
         self.publisher_ = self.create_publisher(Image, 'camera_image', 10)
-        self.timer_ = self.create_timer(1.0 / 30, self.publish_image)  # Capture at 30 fps
+        self.timer_ = self.create_timer(1.0 / 60, self.publish_image)  # Capture at 30 fps
         self.bridge_ = CvBridge()
 
     def publish_image(self):
@@ -17,9 +19,11 @@ class CameraPublisher(Node):
         if ret:
             image_msg = self.bridge_.cv2_to_imgmsg(frame, encoding='bgr8')
             self.publisher_.publish(image_msg)
+            print("sent image")
         cap.release()
 
 def main():
+    print("Startiing the image publisher")
     rclpy.init()
     camera_publisher = CameraPublisher()
     rclpy.spin(camera_publisher)

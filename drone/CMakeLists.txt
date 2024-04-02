@@ -47,6 +47,8 @@ install(PROGRAMS
   scripts/manual_listen.py
   scripts/manual_control_xbox.py
   scripts/manual_control_xbox_wireless.py
+  scripts/image_publish.py
+  scripts/image_listen.py
   DESTINATION lib/${PROJECT_NAME} # change name of node in python
 )
 ament_package()

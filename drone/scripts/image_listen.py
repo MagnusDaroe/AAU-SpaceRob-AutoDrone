@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -9,7 +11,7 @@ class CameraListener(Node):
         super().__init__('camera_listener')
         self.subscription_ = self.create_subscription(
             Image,
-            'camera_publisher',  # Topic name (should match the publisher)
+            'camera_image',  # Topic name (should match the publisher)
             self.image_callback,
             10  # QoS profile depth
         )
@@ -28,6 +30,7 @@ class CameraListener(Node):
             self.get_logger().error(f"Error processing image: {str(e)}")
 
 def main():
+    print("Startiing the image listener")
     rclpy.init()
     camera_listener = CameraListener()
     rclpy.spin(camera_listener)
