@@ -16,6 +16,7 @@ class XboxController:
         self.LeftJoystickX = 0
         self.RightJoystickY = 0
         self.RightJoystickX = 0
+        self.exit_flag = False
         self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
         self._monitor_thread.daemon = True
         self._monitor_thread.start()
@@ -27,19 +28,25 @@ class XboxController:
         right_x = self.RightJoystickX
         right_y = self.RightJoystickY
         return left_x, left_y, right_x, right_y
-
+    
     def _monitor_controller(self):
-        while True:
+        while not self.exit_flag:
             events = get_gamepad()
             for event in events:
-                if event.code == 'ABS_Y':
-                    self.LeftJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
-                elif event.code == 'ABS_X':
-                    self.LeftJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
-                elif event.code == 'ABS_RY':
-                    self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
-                elif event.code == 'ABS_RX':
-                    self.RightJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+                if event.ev_type == 'Key' and event.code == 'BTN_TL':
+                    if event.state == 1:
+                        self.exit_flag = True
+                        return
+                elif event.ev_type == 'Absolute':
+                    if event.code == 'ABS_Y':
+                        self.LeftJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+                    elif event.code == 'ABS_X':
+                        self.LeftJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+                    elif event.code == 'ABS_RY':
+                        self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+                    elif event.code == 'ABS_RX':
+                        self.RightJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+
 
 class XboxControlNode(Node):
     def __init__(self):
@@ -52,23 +59,27 @@ class XboxControlNode(Node):
         self.get_logger().info(f"Throttle: {twist.linear.z}, Linear X: {twist.linear.x}, Linear Y: {twist.linear.y}, Angular Z: {twist.angular.z}")
 
 def control_loop(node):
-    while True:
+    while not node.controller.exit_flag:
         left_x, left_y, right_x, right_y = node.controller.read()
         twist = Twist()
-
+   
         # If any of the values are less than 0.1 of the absolute value, set them to 0
         left_x = left_x if abs(left_x) >= 0.1 else 0
         left_y = left_y if abs(left_y) >= 0.1 else 0
         right_x = right_x if abs(right_x) >= 0.1 else 0
         right_y = right_y if abs(right_y) >= 0.1 else 0
 
-        #Map values.
+        # Map values.
         twist.linear.x = float(np.interp(right_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear x from right joystick
         twist.linear.y = float(np.interp(right_y, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear y from right joystick
         twist.linear.z = float(np.interp(left_y, (-1, -0.1, 0.1, 1), (1000, 0, 0, -1000)))   # Throttle z from right joystick
         twist.angular.z = float(np.interp(left_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # yaw from left joystick's Y-axis
-        
+
         node.send_control_command(twist)
+    
+    twist.linear.x, twist.linear.y, twist.linear.z, twist.angular.z = float(0), float(0), float(-999), float(0)
+    node.send_control_command(twist)
+    print("Exiting control loop")
 
 def main(args=None):
     rclpy.init(args=args)

@@ -62,6 +62,24 @@ class ManualControlListener(Node):
                 linear_z = self.latest_twist_command.linear.z
                 angular_z = self.latest_twist_command.angular.z
 
+            if linear_z < 0:
+                print("disarming the drone...")
+                # Arm the vehicle
+                self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
+                    self.the_connection.target_component,       # Target component ID
+                    mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID
+                    0,                                     # Confirmation
+                    0,                                     # Disarm
+                    0,                                     # Empty
+                    0,                                     # Empty
+                    0,                                     # Empty
+                    0,                                     # Empty
+                    0,                                     # Empty
+                    0                      # Empty
+                )
+                # Stop the program
+                break
+
             # Sending MAVLink commands based on manual control inputs
             # Example: Here, assuming linear_z represents throttle control
             print("Sending:" + f"linear_x={linear_x}, linear_y={linear_y}, linear_z={linear_z}, angular_z={angular_z}")
