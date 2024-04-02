@@ -19,8 +19,8 @@ class CameraPublisher(Node):
             self.publisher_.publish(image_msg)
         cap.release()
 
-def main(args=None):
-    rclpy.init(args=args)
+def main():
+    rclpy.init()
     camera_publisher = CameraPublisher()
     rclpy.spin(camera_publisher)
     camera_publisher.destroy_node()
