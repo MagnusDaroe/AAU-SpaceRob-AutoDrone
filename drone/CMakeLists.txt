@@ -15,6 +15,16 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+#
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/DroneCommand.msg"
+  "msg/DroneControlData.msg"
+  "msg/DroneVideo.msg"
+  DEPENDENCIES geometry_msgs # Add packages that above messages depend on, in this case none.
+)
 
 # Include Cpp "include" directory
 include_directories(include)
@@ -37,6 +47,8 @@ install(PROGRAMS
   scripts/manual_listen.py
   scripts/manual_control_xbox.py
   scripts/manual_control_xbox_wireless.py
+  scripts/image_publish.py
+  scripts/image_listen.py
   DESTINATION lib/${PROJECT_NAME} # change name of node in python
 )
 ament_package()
