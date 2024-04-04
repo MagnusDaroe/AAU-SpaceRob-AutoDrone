@@ -191,3 +191,13 @@ Now calibrate the sensors on the drone. After a calibration is made, the drone s
 
 ## 6. Test out your hardware
 
+Nice to have commands:<br>
+Disable firewall:<br>
+sudo ufw disable<br>
+
+source ro2<br>
+source /opt/ros/foxy/setup.bash<br>
+
+Source install<br>
+source install/local_setup.bash<br>
+
