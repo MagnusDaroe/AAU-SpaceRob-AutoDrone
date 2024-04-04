@@ -132,10 +132,62 @@ Install Python dependencies:
  You should now have working ROS2 Distrubution on the onboard computer. 
  
 ## 4. Build a ROS2 workspace on the Onboard computer.
+Clone the repository to the onboard computer. We used github-desktop, and placed it in the home path contrary to the normal location in the documents folder. This was done to make it more accessible trough the terminal.
 
+Open a terminal on the onboard computer, and navigate the location of the workspace. Use the following command to build it. This must be done every time a modification is made to it.
 
+	colcon build
 
- 
+For simplicity you should also make your terminal echo these commands at startup:
 
+	echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+	echo "sudo chmod 666 /dev/ttyTHS1" >> ~/.bashrc 
+ 	
+In the drone package, there are five things to look out for when you want to modify it yourself: the scripts, msg, and src folders, as well as the CMakeLists.txt and package.xml files.
 
- 
+The setup is as follows:
+
+- The ***scripts*** folder contains Python files.
+- The ***src*** folder contains C++ files.
+- The ***msg*** folder contains message definitions.
+- The ***CMakeLists.txt*** file contains the build commands.
+- Lastly, the ***package.xml*** contain package dependencies.
+
+To use python or cpp files you make yourself add their path to the CMakeLists.txt - specifically under the install(PROGRAMS ... DESTINATION lib/${PROJECT_NAME})
+
+	install(PROGRAMS
+ 	 scripts/example.py
+  	 src/example.cpp
+ 	 DESTINATION lib/${PROJECT_NAME}
+	)
+
+## 5. Assemble drone, setup the FC and the onboard computer.
+Using QGroundControl download the latest firmware to your board. Change the following setting and calibrate it.
+
+Settings to be modified:
+- ARMING_CHECK : 0
+- BRD_SAFETY_DEFLT : 0
+- SERIAL1_BUAD : 57600
+- SERIAL1_OPTIONS : 0
+- SERIAL1_PROTOCOL : MAVLink2
+
+We also disabled the magnetometer, in the calibrations tab.
+
+Assemble the drone - This includes:
+- Mount Battery
+	- Make sure that a power module is connected, such that power can be distrubuted to the FC 
+- Mount the FC
+	- Supply it with power from the power module
+	- Connect Buzzer
+- Mount the Jetson Nano
+	- Supply it with power from the DC-DC converter
+- Make sure the wires from the motors are placed in the FC in the ***correct order***. Follow the guide in the usermanual of the radionlink FC
+- Connect Telem1 or Telem2 to the Nano
+	- FC_RX (PIN 3 from the left) : Nano_TX (pin ***8***)
+ 	- FC_TX (PIN 2 from the left): Nano_RX (pin ***10***)
+   	- FC_GND (PIN 6 from the left): Nano_GND (pin ***9***)
+
+Now calibrate the sensors on the drone. After a calibration is made, the drone should be ready for liftoff!
+
+## 6. Test out your hardware
+
