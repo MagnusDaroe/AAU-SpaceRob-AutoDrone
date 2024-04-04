@@ -17,7 +17,7 @@ class ManualControlListener(Node):
             10
         )
         print("Connecting to MAVLink...")
-        self.the_connection = mavutil.mavlink_connection('/dev/ttyACM0', baud=115200)
+        self.the_connection = mavutil.mavlink_connection('/dev/ttyTHS1', baud=57600)
         self.the_connection.wait_heartbeat()
         print("Connected to MAVLink.")
         time.sleep(2)
@@ -54,7 +54,7 @@ class ManualControlListener(Node):
             self.latest_twist_command = msg
 
     def send_twist_command(self):
-        rate = self.create_rate(10)  # 10 Hz
+        rate = self.create_rate(50)  # 50 Hz
         while rclpy.ok():
             with self.command_lock:
                 linear_x = self.latest_twist_command.linear.x
