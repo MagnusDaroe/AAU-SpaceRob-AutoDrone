@@ -43,9 +43,9 @@ class XboxController:
                     elif event.code == 'ABS_X':
                         self.LeftJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
                     elif event.code == 'ABS_RY':
-                        self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
-                    elif event.code == 'ABS_RX':
                         self.RightJoystickX = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
+                    elif event.code == 'ABS_RX':
+                        self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL  # Normalize between -1 and 1
 
 
 class XboxControlNode(Node):
@@ -70,10 +70,10 @@ def control_loop(node):
         right_y = right_y if abs(right_y) >= 0.1 else 0
 
         # Map values.
-        twist.linear.x = float(np.interp(right_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear x from right joystick
-        twist.linear.y = float(np.interp(right_y, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # linear y from right joystick
-        twist.linear.z = float(np.interp(left_y, (-1, -0.1, 0.1, 1), (1000, 0, 0, -1000)))   # Throttle z from right joystick
-        twist.angular.z = float(np.interp(left_x, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # yaw from left joystick's Y-axis
+        twist.linear.x = float(np.interp(right_x, (-1, -0.1, 0.1, 1), (500, 0, 0, -500)))  # linear x from right joystick
+        twist.linear.y = float(np.interp(right_y, (-1, -0.1, 0.1, 1), (-500, 0, 0, 500)))  # linear y from right joystick
+        twist.linear.z = float(np.interp(left_y, (-1, -0.1, 0.1, 1), (500, 0, 0, -500)))   # Throttle z from right joystick
+        twist.angular.z = float(np.interp(left_x, (-1, -0.1, 0.1, 1), (-500, 0, 0, 500)))  # yaw from left joystick's Y-axis
 
         node.send_control_command(twist)
     
