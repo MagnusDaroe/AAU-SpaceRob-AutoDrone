@@ -1,52 +1,57 @@
 # AAU-SpaceRob-AutoDrone
+This repository contains the code for Robotics Group 465 at AAU. The project was developed in collaboration with AAU Space Robotics and serves as a foundation for further development in preparation for the upcoming ERC competition.
 
-Nice to have commands:<br>
-Disable firewall:<br>
-sudo ufw disable<br>
+### HARDWARE:
+- Unknown Carbon Fiber Drone Kit (V-shape)
+- Motors: Air 2213 kv920 with props.
+- Speed Controllers: Unknown
+- DC-to-DC Converter: UBEC 5A HV
+- Battery: Turnigy 4-cell battery, 4000 mAh - LIPO
+- Onboard Computer: Jetson Nano
 
-source ro2<br>
-source /opt/ros/foxy/setup.bash<br>
+### SOFTWARE:
+- Operating System: Jetson Nano Ubuntu 20.04 image
+- ROS2 Distribution: FOXY - Developed our own package.
 
-Source install<br>
-source install/local_setup.bash<br>
-_______________________________________________________________________<br>
-This guide is for the Jetson Nano - ubuntu 20.04 image. Written 03-2024.
+To get started, download the image from the link provided onto a microSD card (64 GB recommended for flight data logging). Use a tool like BalenaEtcher to flash the image onto the microSD card. Here’s the link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
 
-The goal of this project is to control a drone with an onboard computer. In this case the Jetson Nano.
+
+# Guide
+Written 04-2024.
+
+This guide is for the Jetson Nano - Ubuntu 20.04 image. The goal of this project is to control a drone autonomously with an onboard computer, such that it can compete in the ERC competetion.
  
-The Flight controller being used is a PX4 Orange cube. 
+Flash the image and boot the Jetson Nano. Password: Jetson.
 
-For this step-by-step guide to work, you need to make sure your respective flight controller support PX4-ROS 2/DDS Bridge. One way to check this, is if the setting UXRCE_DDS_CFG can be found and set to TELEM2 - Using Qgroundcontrol.
-
-Download image included in link on microSD (64 Gb is recommended - space for logging of flight data). Use a tool as BalenaEtcher to flash image onto microSD. Link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
-
-Boot the Jetson Nano. Password: Jetson.
-
-Start by fixing keyboard language if needed. And other Usersettings.
+Start by fixing keyboard language if needed. And other user settings.
 
 ## 1. Fix the partition of the drive.
-	Check if the drive only have part of its storage allocated.
+Check if the drive only have part of its storage allocated. In our case only 26 GB was partioned.
 
 Run in terminal:
 	
 	df -h
 
-If expected valus are returned skip this part. Else:
+If expected valus are returned skip this part. Else run the following command:
  
  	sudo apt-get install gparted
 	
-Resize current partion until it is taking up as much of the available space as possible. Check again with
+Resize current partion until it is taking up as much of the available space as possible. Check again with:
 	
 	df -h
 	
-## 2. Check CMake version. !!! DO THIS BEFORE INSTALLING ROS !!!
-	Link: https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
+## 2. Check CMake version. 
+It is imperative the CMake version is updated to the newest available version for our setup. Else there will be problems installing ROS2.
+
+Link: 
+	
+ 	https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 	
 Run:
 	
  	CMake --version
 	
-We want CMake 3.20 or later.
+We want CMake 3.20 or later. If it is newer than this version, you can skip section 2.
  	
 Run:
  
@@ -74,13 +79,16 @@ Run "Sudo apt update" again to see if it worked. If kitware provides any key err
 	
 	Finish by checking you new version with "cmake --version". I had cmake --version
 
+## 3. Install ROS2
+If the ROS2 installation guide in the following link does not work. Use ours based on second link.
 
-## 3. PX4 User Guide.
-	It is now time to follow the PX4 user-guide provided as: https://docs.px4.io/main/en/ros/ros2_comm.htmljhnjn 
-	The goal in the end, is to talk with the pixhawk PX-4. !!!KEEP IN MIND THAT WE HAVE UBUNTU 20.04!!! We thus need to install ROS 2 FOXY.
-	
-### Install ROS2
-LINK: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
+Installation guide:
+
+	https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html
+
+Key issue fix:
+
+ 	https://answers.ros.org/question/398460/how-to-add-a-pubkey/
 
 Run:
 	
@@ -99,7 +107,7 @@ Run:
 	
 	sudo apt update && sudo apt install curl -y
 	sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 	sudo apt update
 	sudo apt upgrade
 	
@@ -120,71 +128,66 @@ If it returned expected results, then continue.
 Install Python dependencies:
 	
 	pip install --user -U empy==3.3.4 pyros-genmsg setuptools
-	
 
-				
-### Setup Micro XRCE-DDS Agent:
-For ROS 2 to communicate with PX4, uXRCE-DDS client must be running on PX4, connected to a micro XRCE-DDS agent running on the companion computer. The Simulater tool has its own client to simulate, and will itself start it. As we dont need the simulator tool, there is no need to run the client. We now focus on setting up the agent.
-		
+ You should now have working ROS2 Distrubution on the onboard computer. 
+ 
+## 4. Build a ROS2 workspace on the Onboard computer.
+Clone the repository to the onboard computer. We used github-desktop, and placed it in the home path contrary to the normal location in the documents folder. This was done to make it more accessible trough the terminal.
 
-Setup the Agent. Open a new terminal:
-	
-	git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
-	cd Micro-XRCE-DDS-Agent
-	mkdir build
-	cd build
-	cmake ..
-	make
-	sudo make install
-	sudo ldconfig /usr/local/lib/
+Open a terminal on the onboard computer, and navigate the location of the workspace. Use the following command to build it. This must be done every time a modification is made to it.
 
-Building workspace - Chose own name. Replace P4DroneProject:
-	
-	mkdir -p ~/P4DroneProject/src/
-	cd ~/P4DroneProject/src/
-	
-	git clone https://github.com/PX4/px4_msgs.git
-	git clone https://github.com/PX4/px4_ros_com.git
-	
-	cd ..
-	source /opt/ros/foxy/setup.bash
 	colcon build
- 
- 
-For the agent to talk with the Flight Controller, a connection needs to be established. We will do it trough serial. On the Flight controller, a micro-usb connector is found. This is only used to set it up. Instead the Telem2 port on the flight-controller should be used to communicate with the flight controller. 
 
-!!WARNING!!
+For simplicity you should also make your terminal echo these commands at startup:
 
-In the setup using QGroundControl make sure to change the settings under Parameters:
+	echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+	echo "sudo chmod 666 /dev/ttyTHS1" >> ~/.bashrc 
+ 	
+In the drone package, there are five things to look out for when you want to modify it yourself: the scripts, msg, and src folders, as well as the CMakeLists.txt and package.xml files.
 
-	UXRCE_DDS_CFG : TELEM2
-	SER_TEL2_BUAD : 115200 8N1
+The setup is as follows:
 
-If you are not able to find this setting, the flight controller is most likely not supporting the PX4-ROS 2/DDS Bridge
+- The ***scripts*** folder contains Python files.
+- The ***src*** folder contains C++ files.
+- The ***msg*** folder contains message definitions.
+- The ***CMakeLists.txt*** file contains the build commands.
+- Lastly, the ***package.xml*** contain package dependencies.
 
-Now the TELEM 2 port should be connected to the jetson nano with the RX, TX and GND pins from the TELEM 2 port. Follow the guides:
-https://www.hackster.io/Matchstic/connecting-pixhawk-to-raspberry-pi-and-nvidia-jetson-b263a7
-https://docs.px4.io/main/en/companion_computer/pixhawk_companion.html#serial-port-setup
+To use python or cpp files you make yourself add their path to the CMakeLists.txt - specifically under the install(PROGRAMS ... DESTINATION lib/${PROJECT_NAME})
 
+	install(PROGRAMS
+ 	 scripts/example.py
+  	 src/example.cpp
+ 	 DESTINATION lib/${PROJECT_NAME}
+	)
 
-## Try example
+## 5. Assemble drone, setup the FC and the onboard computer.
+Using QGroundControl download the latest firmware to your board. Change the following setting and calibrate it.
 
-Find USB:
-	
-	dmesg | grep tty
-		
-like: ttyTHS1
-	
-Run in a fresh terminal:
-	
- 	sudo MicroXRCEAgent serial --dev /dev/ttyTHS1 -b 115200
+Settings to be modified:
+- ARMING_CHECK : 0
+- BRD_SAFETY_DEFLT : 0
+- SERIAL1_BUAD : 57600
+- SERIAL1_OPTIONS : 0
+- SERIAL1_PROTOCOL : MAVLink2
 
-Run in a fresh terminal:
+We also disabled the magnetometer, in the calibrations tab.
 
-	cd ~/P4DroneProject/
-	source /opt/ros/foxy/setup.bash
-	source install/local_setup.bash
+Assemble the drone - This includes:
+- Mount Battery
+	- Make sure that a power module is connected, such that power can be distrubuted to the FC 
+- Mount the FC
+	- Supply it with power from the power module
+	- Connect Buzzer
+- Mount the Jetson Nano
+	- Supply it with power from the DC-DC converter
+- Make sure the wires from the motors are placed in the FC in the ***correct order***. Follow the guide in the usermanual of the radionlink FC
+- Connect Telem1 or Telem2 to the Nano
+	- FC_RX (PIN 3 from the left) : Nano_TX (pin ***8***)
+ 	- FC_TX (PIN 2 from the left): Nano_RX (pin ***10***)
+   	- FC_GND (PIN 6 from the left): Nano_GND (pin ***9***)
 
- 	ros2 launch px4_ros_com sensor_combined_listener.launch.py
-	
-This should yield some Gyro and accelerometer data. Now it is time to develop your own application.
+Now calibrate the sensors on the drone. After a calibration is made, the drone should be ready for liftoff!
+
+## 6. Test out your hardware
+
