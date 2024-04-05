@@ -52,7 +52,7 @@ class FC_Commander(Node):
         
         # Main loop
         while rclpy.ok():
-            if DroneCommand.cmd_arm == 1:
+            if self.latest_fc_command.cmd_arm == 1:
                 with self.command_lock:
                     # Update command variables - if no new command is received, the previous command is sent
                     timestamp = self.latest_fc_command.timestamp
