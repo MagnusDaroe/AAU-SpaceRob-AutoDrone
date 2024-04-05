@@ -16,6 +16,10 @@ class FC_Commander(Node):
             self.listener_callback,
             10
         )
+        while not DroneCommand.cmd_arm:
+            print("Waiting for arm command", end='\r')
+            time.sleep(0.5)
+
         # Initialize the connection to the drone
         self.the_connection = Drone_init(self)
 
@@ -27,7 +31,7 @@ class FC_Commander(Node):
         with self.command_lock:
             self.latest_fc_command = msg
 
-    def send_fc_command(self, updaterate=50, timeout=0.5):
+    def fc_commander(self, updaterate=50, timeout=0.5):
         """
         Allowed msg definitions:
         uint64 timestamp
@@ -39,43 +43,53 @@ class FC_Commander(Node):
         float32 cmd_thrust
         """
         
-        rate = self.create_rate(updaterate)  # 50 Hz
+        # Set the rate of the commander
+        rate = self.create_rate(updaterate)
+
+        # Initialize timout related variables
         previous_timestamp = 0
         last_command_time = time.time()
         
+        # Main loop
         while rclpy.ok():
-            with self.command_lock:
-                # If the latest command is not received, send the previous command
-                timestamp = self.latest_fc_command.timestamp
-                roll = self.latest_fc_command.cmd_roll
-                pitch = self.latest_fc_command.cmd_pitch
-                yaw = self.latest_fc_command.cmd_yaw
-                thrust = self.latest_fc_command.cmd_thrust
+            if DroneCommand.cmd_arm == 1:
+                with self.command_lock:
+                    # Update command variables - if no new command is received, the previous command is sent
+                    timestamp = self.latest_fc_command.timestamp
+                    roll = self.latest_fc_command.cmd_roll
+                    pitch = self.latest_fc_command.cmd_pitch
+                    yaw = self.latest_fc_command.cmd_yaw
+                    thrust = self.latest_fc_command.cmd_thrust
 
-                current_time = time.time()
+                    # Check if the command is new or if the timeout has expired
+                    current_time = time.time()
+                    if previous_timestamp != timestamp or current_time - last_command_time <= timeout:
+                        # Send the command to the flight controller
+                        self.the_connection.mav.manual_control_send(
+                            self.the_connection.target_system,
+                            int(roll),
+                            int(pitch),
+                            int(thrust),
+                            int(yaw),
+                            0
+                        )
+                        print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
+                        
+                        # Update last_command_time only when a new command is sent
+                        if previous_timestamp != timestamp:
+                            last_command_time = current_time  
+                    else:
+                        # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
+                        print("No new command received", end = '\r')
+                        roll = 0
+                        pitch = 0
+                        yaw = 0
+                        thrust = 0
 
-                if previous_timestamp != timestamp or current_time - last_command_time <= timeout:
-                    print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
-                    
-                    self.the_connection.mav.manual_control_send(
-                        self.the_connection.target_system,
-                        int(roll),
-                        int(pitch),
-                        int(thrust),
-                        int(yaw),
-                        0
-                    )
-                    if previous_timestamp != timestamp:
-                        last_command_time = current_time  # Update last_command_time only when a new command is sent
-                else:
-                    print("Timeout", end = '\r')
-                    roll = 0
-                    pitch = 0
-                    yaw = 0
-                    thrust = 0
-
-            previous_timestamp = timestamp
-            rate.sleep()
+                previous_timestamp = timestamp
+                rate.sleep()
+            else:
+                print("Waiting for arm command", end='\r')
 
 def Drone_init(self):
     print("Connecting to MAVLink...")
@@ -122,7 +136,7 @@ def Drone_init(self):
 def main(args=None):
     rclpy.init(args=args)
     listener = FC_Commander()
-    threading.Thread(target=listener.send_fc_command, daemon=True).start()
+    threading.Thread(target=listener.fc_commander, daemon=True).start()
     rclpy.spin(listener)
     listener.destroy_node()
     rclpy.shutdown()

@@ -20,7 +20,7 @@ class JoystickControlNode(Node):
 
     def send_control_command(self, DroneCommand):
         self.publisher_.publish(DroneCommand)
-        print(f"Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
+        print(f"Armed?{DroneCommand.cmd_arm}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
 
 def control_loop(node):
 
@@ -44,6 +44,7 @@ def control_loop(node):
         Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
         Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw
         Drone_cmd.timestamp = float(time.time())
+        Drone_cmd.cmd_arm = True if but0 == 1 else False
 
         node.send_control_command(Drone_cmd)
 
