@@ -26,7 +26,7 @@
     		message(FATAL_ERROR "Could not find builtin_interfaces package")
 	endif()
 
-	find_package(drone REQUIRED)  
+	#find_package(drone REQUIRED)  
 
 	rosidl_generate_interfaces(${PROJECT_NAME}
 	  "msg/DroneCommand.msg"
@@ -49,11 +49,11 @@
 	ament_python_install_package(${PROJECT_NAME})
 	# Install Python executables
 	install(PROGRAMS
-	  scripts/fc_command.py
 	  scripts/fc_command_listen.py
 	  scripts/manual_control.py
 	  scripts/manual_listen.py
 	  scripts/manual_control_xbox.py
+	  scripts/manual_control_joystick.py
 	  scripts/manual_control_xbox_wireless.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py

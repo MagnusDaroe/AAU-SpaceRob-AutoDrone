@@ -1,5 +1,5 @@
 
-uint64 timestamp
+float64 timestamp
 uint8 cmd_arm
 uint8 cmd_mode 
 
