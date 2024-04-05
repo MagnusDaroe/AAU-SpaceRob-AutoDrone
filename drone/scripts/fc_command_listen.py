@@ -2,17 +2,17 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
 from pymavlink import mavutil
 import time
 import threading
+from drone.msg import DroneCommand
 
-class ManualControlListener(Node):
+class FC_Commander(Node):
     def __init__(self):
-        super().__init__('manual_control_listener')
+        super().__init__('fc_command_listener')
         self.subscription = self.create_subscription(
-            Twist,
-            '/cmd_vel',
+            DroneCommand,
+            '/cmd_fc',
             self.listener_callback,
             10
         )
@@ -46,21 +46,21 @@ class ManualControlListener(Node):
         msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
         print(msg)
 
-        self.latest_twist_command = Twist()
+        self.latest_fc_command = DroneCommand()
         self.command_lock = threading.Lock()
 
     def listener_callback(self, msg):
         with self.command_lock:
-            self.latest_twist_command = msg
+            self.latest_fc_command = msg
 
-    def send_twist_command(self):
+    def send_fc_command(self):
         rate = self.create_rate(50)  # 50 Hz
         while rclpy.ok():
             with self.command_lock:
-                linear_x = self.latest_twist_command.linear.x
-                linear_y = self.latest_twist_command.linear.y
-                linear_z = self.latest_twist_command.linear.z
-                angular_z = self.latest_twist_command.angular.z
+                linear_x = self.latest_fc_command.linear.x
+                linear_y = self.latest_fc_command.linear.y
+                linear_z = self.latest_fc_command.linear.z
+                angular_z = self.latest_fc_command.angular.z
 
             # Sending MAVLink commands based on manual control inputs
             # Example: Here, assuming linear_z represents throttle control
@@ -77,8 +77,8 @@ class ManualControlListener(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    listener = ManualControlListener()
-    threading.Thread(target=listener.send_twist_command, daemon=True).start()
+    listener = FC_Commander()
+    threading.Thread(target=listener.send_fc_command, daemon=True).start()
     rclpy.spin(listener)
     listener.destroy_node()
     rclpy.shutdown()
