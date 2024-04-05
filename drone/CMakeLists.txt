@@ -49,12 +49,8 @@
 	ament_python_install_package(${PROJECT_NAME})
 	# Install Python executables
 	install(PROGRAMS
-	  scripts/fc_command_listen.py
-	  scripts/manual_control.py
-	  scripts/manual_listen.py
-	  scripts/manual_control_xbox.py
+	  scripts/fc_cmd.py
 	  scripts/manual_control_joystick.py
-	  scripts/manual_control_xbox_wireless.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
