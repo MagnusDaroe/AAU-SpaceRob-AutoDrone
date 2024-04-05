@@ -16,36 +16,10 @@ class FC_Commander(Node):
             self.listener_callback,
             10
         )
-        print("Connecting to MAVLink...")
-        self.the_connection = mavutil.mavlink_connection('/dev/ttyTHS1', baud=57600)
-        self.the_connection.wait_heartbeat()
-        print("Connected to MAVLink.")
-        time.sleep(2)
+        # Initialize the connection to the drone
+        self.the_connection = Drone_init(self)
 
-        # Set mode stabilize
-        self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
-                                     0, 1, 0, 0, 0, 0, 0, 0)
-        msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
-        print(msg)
-    
-        # Arm the drone
-        print("Arming the drone...")
-        # Arm the vehicle
-        self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
-            self.the_connection.target_component,       # Target component ID
-            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID
-            0,                                     # Confirmation
-            1,                                     # Arm
-            0,                                     # Empty
-            0,                                     # Empty
-            0,                                     # Empty
-            0,                                     # Empty
-            0,                                     # Empty
-            0                      # Empty
-        )
-        msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
-        print(msg)
-
+        # Initialize the latest command to be sent to the flight controller
         self.latest_fc_command = DroneCommand()
         self.command_lock = threading.Lock()
 
@@ -53,27 +27,97 @@ class FC_Commander(Node):
         with self.command_lock:
             self.latest_fc_command = msg
 
-    def send_fc_command(self):
-        rate = self.create_rate(50)  # 50 Hz
+    def send_fc_command(self, updaterate=50, timeout=0.5):
+        """
+        Allowed msg definitions:
+        uint64 timestamp
+        uint8 cmd_arm
+        uint8 cmd_mode
+        float32 cmd_pitch
+        float32 cmd_roll
+        float32 cmd_yaw
+        float32 cmd_thrust
+        """
+        
+        rate = self.create_rate(updaterate)  # 50 Hz
+        previous_timestamp = 0
+        last_command_time = time.time()
+        
         while rclpy.ok():
             with self.command_lock:
-                linear_x = self.latest_fc_command.linear.x
-                linear_y = self.latest_fc_command.linear.y
-                linear_z = self.latest_fc_command.linear.z
-                angular_z = self.latest_fc_command.angular.z
+                # If the latest command is not received, send the previous command
+                timestamp = self.latest_fc_command.timestamp
+                roll = self.latest_fc_command.cmd_roll
+                pitch = self.latest_fc_command.cmd_pitch
+                yaw = self.latest_fc_command.cmd_yaw
+                thrust = self.latest_fc_command.cmd_thrust
 
-            # Sending MAVLink commands based on manual control inputs
-            # Example: Here, assuming linear_z represents throttle control
-            print("Sending:" + f"linear_x={linear_x}, linear_y={linear_y}, linear_z={linear_z}, angular_z={angular_z}")
-            self.the_connection.mav.manual_control_send(
-                self.the_connection.target_system,
-                int(linear_x),         # x/pitch
-                int(linear_y),         # y/roll
-                int(linear_z),  # z/throttle
-                int(angular_z),         # yaw
-                0          # buttons
-            )
+                current_time = time.time()
+
+                if previous_timestamp != timestamp or current_time - last_command_time <= timeout:
+                    print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
+                    
+                    self.the_connection.mav.manual_control_send(
+                        self.the_connection.target_system,
+                        int(roll),
+                        int(pitch),
+                        int(thrust),
+                        int(yaw),
+                        0
+                    )
+                    if previous_timestamp != timestamp:
+                        last_command_time = current_time  # Update last_command_time only when a new command is sent
+                else:
+                    print("Timeout", end = '\r')
+                    roll = 0
+                    pitch = 0
+                    yaw = 0
+                    thrust = 0
+
+            previous_timestamp = timestamp
             rate.sleep()
+
+def Drone_init(self):
+    print("Connecting to MAVLink...")
+    self.the_connection = mavutil.mavlink_connection('/dev/ttyTHS1', baud=57600)
+    self.the_connection.wait_heartbeat()
+    print("Connected to MAVLink.")
+    time.sleep(2)
+
+
+    # Set mode stabilize
+    self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                                 0, 1, 0, 0, 0, 0, 0, 0)
+    Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+    if Ack.result == 0:
+        print("Mode set to stabilize")
+    else:
+        print("Failed to set mode")
+        exit()
+
+    # Arm the drone
+    print("Arming the drone...")
+    # Arm the vehicle
+    self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
+        self.the_connection.target_component,       # Target component ID
+        mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID
+        0,                                     # Confirmation
+        1,                                     # Arm
+        0,                                     # Empty
+        0,                                     # Empty
+        0,                                     # Empty
+        0,                                     # Empty
+        0,                                     # Empty
+        0                      # Empty
+    )
+    msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+    if Ack.result == 0:
+        print("Armed the drone")
+    else:
+        print("Failed arm")
+        exit()
+
+    return self.the_connection
 
 def main(args=None):
     rclpy.init(args=args)
