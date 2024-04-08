@@ -7,6 +7,9 @@ import time
 import threading
 from drone.msg import DroneCommand
 
+# Set test_mode to True to run the script without a drone
+test_mode = True
+
 class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
@@ -21,7 +24,8 @@ class FC_Commander(Node):
             time.sleep(0.5)
 
         # Initialize the connection to the drone
-        self.the_connection = Drone_init(self)
+        if not test_mode:
+            self.the_connection = Drone_init(self)
 
         # Initialize the latest command to be sent to the flight controller
         self.latest_fc_command = DroneCommand()
@@ -52,7 +56,7 @@ class FC_Commander(Node):
         
         # Main loop
         while rclpy.ok():
-            if self.latest_fc_command.cmd_arm == 1:
+            if self.latest_fc_command.cmd_arm == 1 and not self.latest_fc_command.cmd_estop == 1:
                 with self.command_lock:
                     # Update command variables - if no new command is received, the previous command is sent
                     timestamp = self.latest_fc_command.timestamp
@@ -65,14 +69,16 @@ class FC_Commander(Node):
                     current_time = time.time()
                     if previous_timestamp != timestamp or current_time - last_command_time <= timeout:
                         # Send the command to the flight controller
-                        self.the_connection.mav.manual_control_send(
-                            self.the_connection.target_system,
-                            int(roll),
-                            int(pitch),
-                            int(thrust),
-                            int(yaw),
-                            0
-                        )
+                        
+                        if not test_mode:
+                            self.the_connection.mav.manual_control_send(
+                                self.the_connection.target_system,
+                                int(roll),
+                                int(pitch),
+                                int(thrust),
+                                int(yaw),
+                                0
+                            )
                         print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
                         
                         # Update last_command_time only when a new command is sent
@@ -88,8 +94,26 @@ class FC_Commander(Node):
 
                 previous_timestamp = timestamp
                 rate.sleep()
+            elif self.latest_fc_command.cmd_estop == 1:
+                while self.latest_fc_command.cmd_arm == 1 or self.latest_fc_command.cmd_estop == 1:
+                    if not test_mode:
+                         self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
+                            self.the_connection.target_component,       # Target component ID
+                            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID
+                            0,                                     # Confirmation
+                            0,                                     # Disarm
+                            21196,                                 # Force disarm
+                            0,                                     # Empty
+                            0,                                     # Empty
+                            0,                                     # Empty
+                            0,                                     # Empty
+                            0                      # Empty
+                            )
+                    print("Emergency stop mode activted. Release Arm and Estop to regain control                                                       ", end='\r')
+                    time.sleep(0.5)
+                print("Emergency stop command released                                     ", end='\r')
             else:
-                print("Waiting for arm command", end='\r')
+                print("Waiting for arm command                                               ", end='\r')
 
 def Drone_init(self):
     print("Connecting to MAVLink...")
