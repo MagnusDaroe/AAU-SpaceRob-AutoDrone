@@ -8,7 +8,7 @@ import threading
 from drone.msg import DroneCommandManual, DroneCommandAutonomous
 
 # Set test_mode to True to run the script without a drone
-test_mode = True
+test_mode = False
 
 # Check battery voltage
 do_battery_check = False
@@ -38,6 +38,10 @@ class FC_Commander(Node):
             print("Waiting for arm command", end='\r')
             time.sleep(0.5)
 
+        # Fc command variables
+        self.usb_port = '/dev/ttyTHS1'
+        self.baudrate = 57600
+
         # Initialize the connection to the drone
         if not test_mode:
             self.drone_init()
@@ -47,10 +51,6 @@ class FC_Commander(Node):
         self.last_command_time = time.time()
         self.current_time = 0
         self.timeout = 0.5
-
-        # Fc command variables
-        self.usb_port = '/dev/ttyTHS1'
-        self.baudrate = 57600
 
         # Initialize the battery check
         self.battery_ok = True
@@ -78,7 +78,7 @@ class FC_Commander(Node):
         """
 
         print("Connecting to MAVLink...")
-        self.the_connection = mavutil.mavlink_connection(self.usb_port, baud=self.baudrate)
+        self.the_connection = mavutil.mavlink_connection(self.usb_port,baud=self.baudrate)
         self.the_connection.wait_heartbeat()
         print("Connected to MAVLink.")
         time.sleep(2)
