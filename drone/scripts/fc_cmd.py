@@ -8,7 +8,7 @@ import threading
 from drone.msg import DroneCommand
 
 # Set test_mode to True to run the script without a drone
-test_mode = True
+test_mode = False
 
 class FC_Commander(Node):
     def __init__(self):
@@ -114,6 +114,12 @@ class FC_Commander(Node):
                 print("Emergency stop command released                                     ", end='\r')
             else:
                 print("Waiting for arm command                                               ", end='\r')
+                while not self.latest_fc_command.cmd_arm and self.latest_fc_command.cmd_estop or not self.latest_fc_command.cmd_arm:
+                    time.sleep(0.5)
+                
+                # Arm the drone again
+                if not test_mode:
+                    drone_arm(self)
 
 def Drone_init(self):
     print("Connecting to MAVLink...")
@@ -122,7 +128,12 @@ def Drone_init(self):
     print("Connected to MAVLink.")
     time.sleep(2)
 
+    # Arm the drone
+    drone_arm(self)
 
+    return self.the_connection
+
+def drone_arm(self):
     # Set mode stabilize
     self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
                                  0, 1, 0, 0, 0, 0, 0, 0)
@@ -135,27 +146,18 @@ def Drone_init(self):
 
     # Arm the drone
     print("Arming the drone...")
-    # Arm the vehicle
-    self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
-        self.the_connection.target_component,       # Target component ID
-        mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID
-        0,                                     # Confirmation
-        1,                                     # Arm
-        0,                                     # Empty
-        0,                                     # Empty
-        0,                                     # Empty
-        0,                                     # Empty
-        0,                                     # Empty
-        0                      # Empty
-    )
+    # Arm the vehicle - run it two times
+    for _ in range(2):
+        self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                                     0, 1, 0, 0, 0, 0, 0, 0)
+        time.sleep(1)
+
     msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
     if Ack.result == 0:
         print("Armed the drone")
     else:
         print("Failed arm")
         exit()
-
-    return self.the_connection
 
 def main(args=None):
     rclpy.init(args=args)
