@@ -29,7 +29,8 @@
 	#find_package(drone REQUIRED)  
 
 	rosidl_generate_interfaces(${PROJECT_NAME}
-	  "msg/DroneCommand.msg"
+	  "msg/DroneCommandManual.msg"
+	  "msg/DroneCommandAutonomous.msg"
 	  "msg/DroneControlData.msg"
 	  "msg/DroneVideo.msg"
 	  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)

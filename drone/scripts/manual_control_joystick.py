@@ -5,7 +5,7 @@ from rclpy.node import Node
 import threading
 import pygame
 import numpy as np
-from drone.msg import DroneCommand
+from drone.msg import DroneCommandManual
 import time
 
 # Mode dictionary
@@ -15,7 +15,7 @@ class JoystickControlNode(Node):
     def __init__(self):
         time.time() 
         super().__init__('joystick_control')
-        self.publisher_ = self.create_publisher(DroneCommand, '/cmd_fc', 10)
+        self.publisher_ = self.create_publisher(DroneCommandManual, '/cmd_fc_manual_control', 10)
         pygame.init()
         pygame.joystick.init()
         self.controller = pygame.joystick.Joystick(0)
@@ -39,7 +39,7 @@ def control_loop(node):
         estop = int(node.controller.get_axis(4))+1  # SG 3-way switch 0 is normal operation, above 0 is Emergency stop
 
 
-        Drone_cmd = DroneCommand()
+        Drone_cmd = DroneCommandManual()
 
         # Map values.   
         Drone_cmd.cmd_roll = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
