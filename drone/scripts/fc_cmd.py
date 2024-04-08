@@ -10,6 +10,10 @@ from drone.msg import DroneCommand
 # Set test_mode to True to run the script without a drone
 test_mode = False
 
+# Check battery voltage
+do_battery_check = False
+
+
 class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
@@ -37,6 +41,15 @@ class FC_Commander(Node):
         self.usb_port = '/dev/ttyTHS1'
         self.baudrate = 57600
 
+        # Initialize the battery check
+        self.battery_ok = True
+        if not test_mode:
+            if do_battery_check:
+                self.battery_ok = False
+                self.battery_check_interval = 10
+                self.battery_min_voltage = 16.00
+                self.check_battery()
+        
         # Initialize the latest command to be sent to the flight controller
         self.latest_fc_command = DroneCommand()
         self.command_lock = threading.Lock()
@@ -97,11 +110,19 @@ class FC_Commander(Node):
         
         # Main loop
         while rclpy.ok():
-            if self.latest_fc_command.cmd_arm == 1 and not self.latest_fc_command.cmd_estop == 1:
+            
+            # Check the battery level
+            if not test_mode and do_battery_check and time.time() - self.last_command_time > self.battery_check_interval:
+                self.check_battery()
+            
+            if self.latest_fc_command.cmd_arm == 1 and not self.latest_fc_command.cmd_estop == 1 and self.battery_ok:
                 # Call mode which the drone flies in
                 self.flight_mode()
                 # Sleep to keep the update rate
                 rate.sleep()
+            elif not self.battery_ok:
+                print("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ", end='\r')
+                self.emergency_stop() # Implement an emergency land.
             elif self.latest_fc_command.cmd_estop == 1:
                 # Emergency stop
                 self.emergency_stop()
@@ -178,7 +199,19 @@ class FC_Commander(Node):
             time.sleep(0.5)
         print("Emergency stop command released                                     ", end='\r')
     
+    def check_battery(self):
+        """
+        Check the battery level of the drone
+        """
     
+        for _ in range(3):
+            self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE, 0, 0, mavutil.mavlink.MAVLINK_MSG_ID_SYS_STATUS, 0, 0, 0, 0, 0)
+            msg = self.the_connection.recv_match(type='SYS_STATUS', blocking=True)
+            voltage_sum += msg.voltage_battery / 1000.0
+            
+        voltage_avg = voltage_sum / 3
+        
+        self.battery_ok = True if voltage_avg > self.battery_min_voltage else False 
 
 def main(args=None):
     rclpy.init(args=args)
