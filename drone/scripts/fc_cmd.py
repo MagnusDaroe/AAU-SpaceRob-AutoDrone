@@ -35,7 +35,7 @@ class FC_Commander(Node):
             '/status_fc',
             10
         )
-        self.publish_timer = self.create_timer(5, self.status_publisher)
+        #self.publish_timer = self.create_timer(5, self.status_publisher)
 
         while not DroneCommand.cmd_arm:
             print("Waiting for arm command", end='\r')
