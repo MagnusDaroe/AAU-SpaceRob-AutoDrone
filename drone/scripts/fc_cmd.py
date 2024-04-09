@@ -11,7 +11,7 @@ from drone.msg import DroneCommand, DroneStatus
 # Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = True
+test_mode = False
 
 # Check battery voltage
 do_battery_check = True
