@@ -211,6 +211,14 @@ class FC_Commander(Node):
                 if self.previous_timestamp != timestamp:
                     self.last_command_time = self.current_time  
             else:
+                if True:
+                    try:
+
+                        with open('thrust_log_timeout.csv', 'a') as f:
+                            f.write(f"{time.time()},{self.fc_command.cmd_thrust}, {timestamp}, {self.previous_timestamp}, {self.current_time}, {self.last_command_time} \n")
+                    except Exception as e:
+                        print(f"Error occurred while writing to thrust_log.csv: {e}")
+
                 # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
                 print("No new command received. Going into safe mode.", end = '\r')
                 self.safe_mode()
