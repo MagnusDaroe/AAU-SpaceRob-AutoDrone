@@ -100,7 +100,7 @@ class FC_Commander(Node):
         msg.timestamp = time.time()
         msg.battery_ok = self.battery_ok
         msg.battery_percentage = (self.battery_max_voltage - self.battery_min_voltage) / (self.battery_max_voltage - self.battery_min_voltage) * 100
-        msg.drone_mode = self.fc_command.cmd_mode if not self.fc_command.estop else 2
+        msg.drone_mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
 
         self.publish_status.publish(msg)
 
