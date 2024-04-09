@@ -92,6 +92,14 @@ class FC_Commander(Node):
             self.fc_command.cmd_estop = msg.cmd_estop
             self.fc_command.cmd_arm = msg.cmd_arm
 
+            if True:
+                try:
+
+                    with open('thrust_log_received.csv', 'a') as f:
+                        f.write(f"{time.time()},{self.fc_command.cmd_thrust}\n")
+                except Exception as e:
+                    print(f"Error occurred while writing to thrust_log.csv: {e}")
+
     def status_publisher(self):
         """
         Publish the system status
