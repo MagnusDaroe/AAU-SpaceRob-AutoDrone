@@ -11,7 +11,7 @@ from drone.msg import DroneCommand, DroneStatus
 # Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = False
+test_mode = True
 
 # Check battery voltage
 do_battery_check = True
@@ -96,6 +96,11 @@ class FC_Commander(Node):
         """
         Publish the system status
         """
+        # Check the battery level
+        if not test_mode and do_battery_check and time.time() - self.last_command_time > self.battery_check_interval:
+            self.check_battery()
+        
+
         msg = DroneStatus()
         msg.timestamp = time.time()
         msg.battery_ok = self.battery_ok
@@ -154,22 +159,13 @@ class FC_Commander(Node):
         # Main loop
         while rclpy.ok():
             
-            # Check the battery level
-            if not test_mode and do_battery_check and time.time() - self.last_command_time > self.battery_check_interval:
-                self.check_battery()
-            
             if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
                 # Check if the drone is in manual or autonomous mode
                 if self.fc_command.cmd_mode == 0 or self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 else:
                     print("Undefined mode. landing the drone. ", end='\r')
-                    # Set negative thrust to land the drone
-                    self.fc_command.cmd_thrust = float(-500)
-                    self.fc_command.cmd_roll = float(0)
-                    self.fc_command.cmd_pitch = float(0)
-                    self.fc_command.cmd_yaw = float(0)
-                    self.flight_mode()
+                    self.safe_mode()
 
                 # Sleep to keep the update rate
                 rate.sleep()
@@ -200,26 +196,30 @@ class FC_Commander(Node):
             # Check if the command is new or if the timeout has expired
             self.current_time = time.time()
             if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.timeout:
-                roll = self.fc_command.cmd_roll
-                pitch = self.fc_command.cmd_pitch
-                yaw = self.fc_command.cmd_yaw
-                thrust = self.fc_command.cmd_thrust
+                # Send the command to the flight controller
+                self.flight_cmd()
 
                 # Update last_command_time only when a new command is sent
                 if self.previous_timestamp != timestamp:
                     self.last_command_time = self.current_time  
             else:
                 # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
-                print("No new command received", end = '\r')
-                roll = 0
-                pitch = 0
-                yaw = 0
-                thrust = 0
-            
-            print(f"roll={roll}, pitch={pitch}, yaw={yaw}, thrust={thrust}", end='\r')
+                print("No new command received. Going into safe mode.", end = '\r')
+                self.safe_mode()
 
-            # Send the command to the flight controller
-            if not test_mode:
+        self.previous_timestamp = timestamp
+
+    def flight_cmd(self):
+        """
+        Send flight command to the drone
+        """
+        log = True
+        roll = self.fc_command.cmd_roll
+        pitch = self.fc_command.cmd_pitch
+        yaw = self.fc_command.cmd_yaw
+        thrust = self.fc_command.cmd_thrust
+
+        if not test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
                     int(roll),
@@ -228,10 +228,17 @@ class FC_Commander(Node):
                     int(yaw),
                     0
                 )
-            print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
+        print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
 
-        self.previous_timestamp = timestamp
+        if log:
+            try:
 
+                with open('thrust_log.csv', 'a') as f:
+                    f.write(f"{time.time()},{thrust}\n")
+            except Exception as e:
+                print(f"Error occurred while writing to thrust_log.csv: {e}")
+
+            
     def emergency_stop(self):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
@@ -286,8 +293,25 @@ class FC_Commander(Node):
         """
         Safe mode. The drone will land and disarm if the mode is set to safe mode
         """
-        pass
+        decrement_thrust = self.fc_command.cmd_thrust
+        land_thrust = 400
+        decrement = 2
+        self.fc_command.cmd_roll = float(0)
+        self.fc_command.cmd_pitch = float(0)
+        self.fc_command.cmd_yaw = float(0)
+        # decrement start_thrust a set amount, until a lower bound is reached
+        while decrement_thrust > land_thrust:
+            decrement_thrust = decrement_thrust - decrement
 
+            if decrement_thrust < land_thrust:
+                
+                self.fc_command.cmd_thrust  = float(0)
+            else:
+                self.fc_command.cmd_thrust = float(decrement_thrust)
+                
+            # Send command.    
+            self.flight_cmd()
+            
 
 def main(args=None):
     rclpy.init(args=args)

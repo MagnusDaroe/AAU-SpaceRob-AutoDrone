@@ -22,11 +22,13 @@ class JoystickControlNode(Node):
         self.controller.init()
 
     def send_control_command(self, DroneCommand):
+        rate = self.create_rate(100)
         self.publisher_.publish(DroneCommand)
         print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
+        rate.sleep()
 
 def control_loop(node):
-
+    
     while True:
         pygame.event.pump()  # Process event queue
         ax0 = node.controller.get_axis(0)  # Thrust
@@ -50,8 +52,8 @@ def control_loop(node):
             time.sleep(0.2)
         else:
             # Map values.   
-            Drone_cmd.cmd_roll = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
-            Drone_cmd.cmd_pitch = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
+            Drone_cmd.cmd_roll = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
+            Drone_cmd.cmd_pitch = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
             Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
             Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw
         node.send_control_command(Drone_cmd)
