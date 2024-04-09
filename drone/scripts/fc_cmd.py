@@ -11,10 +11,10 @@ from drone.msg import DroneCommand, DroneStatus
 # Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = True
+test_mode = False
 
 # Check battery voltage
-do_battery_check = False
+do_battery_check = True
 
 
 class FC_Commander(Node):
@@ -60,9 +60,10 @@ class FC_Commander(Node):
         self.battery_ok = True
         if not test_mode:
             if do_battery_check:
+                print("Initial battery check")
                 self.battery_ok = False
                 self.battery_check_interval = 10
-                self.battery_min_voltage = 16.00
+                self.battery_min_voltage = 13.00
                 self.check_battery()
         
         # Initialize the latest command to be sent to the flight controller
@@ -103,9 +104,6 @@ class FC_Commander(Node):
         self.the_connection.wait_heartbeat()
         print("Connected to MAVLink.")
         time.sleep(2)
-
-        # Arm the drone
-        self.drone_arm()
 
     def drone_arm(self):
         """
@@ -250,15 +248,29 @@ class FC_Commander(Node):
         """
         Check the battery level of the drone
         """
-    
+        voltage_sum = 0
         for _ in range(3):
-            self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE, 0, 0, mavutil.mavlink.MAVLINK_MSG_ID_SYS_STATUS, 0, 0, 0, 0, 0)
+            self.the_connection.mav.request_data_stream_send(
+                self.the_connection.target_system,           # Target system ID
+                self.the_connection.target_component,       # Target component ID
+                mavutil.mavlink.MAV_DATA_STREAM_ALL,   # All streams
+                1,                                     # Enable
+                1                                      # Rate (Hz)
+            )
             msg = self.the_connection.recv_match(type='SYS_STATUS', blocking=True)
             voltage_sum += msg.voltage_battery / 1000.0
             
         voltage_avg = voltage_sum / 3
         
         self.battery_ok = True if voltage_avg > self.battery_min_voltage else False 
+        print(f"Battery voltage: {voltage_avg}")
+        if self.battery_ok:
+            print(f"Battery ok")
+        else:
+            
+            print("Battery not good")
+
+        time.sleep(2)
 
     def safe_mode(self):
         """
@@ -277,3 +289,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+False
