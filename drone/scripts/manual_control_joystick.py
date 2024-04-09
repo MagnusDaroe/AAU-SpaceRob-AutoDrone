@@ -28,7 +28,7 @@ class JoystickControlNode(Node):
         rate.sleep()
 
 def control_loop(node):
-    
+    log = True
     while True:
         pygame.event.pump()  # Process event queue
         ax0 = node.controller.get_axis(0)  # Thrust
@@ -57,6 +57,14 @@ def control_loop(node):
             Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
             Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw
         node.send_control_command(Drone_cmd)
+
+        if log:
+            try:
+
+                with open('thrust_log_pc.csv', 'a') as f:
+                    f.write(f"{time.time()},{Drone_cmd.cmd_thrust}\n")
+            except Exception as e:
+                print(f"Error occurred while writing to thrust_log.csv: {e}")
         
 
 def main(args=None):
