@@ -35,8 +35,7 @@ class FC_Commander(Node):
             '/status_fc',
             10
         )
-        #self.publish_timer = self.create_timer(1, self.status_publisher)
-
+        self.publish_timer = self.create_timer(5, self.status_publisher)
 
         while not DroneCommand.cmd_arm:
             print("Waiting for arm command", end='\r')
@@ -63,7 +62,9 @@ class FC_Commander(Node):
                 print("Initial battery check")
                 self.battery_ok = False
                 self.battery_check_interval = 10
-                self.battery_min_voltage = 13.00
+                self.battery_min_op_voltage = 13.00
+                self.battery_min_voltage = 12.00
+                self.battery_max_voltage = 16.80
                 self.check_battery()
         
         # Initialize the latest command to be sent to the flight controller
@@ -91,7 +92,16 @@ class FC_Commander(Node):
             self.fc_command.cmd_estop = msg.cmd_estop
             self.fc_command.cmd_arm = msg.cmd_arm
 
-    def status_publisher(self, msg):
+    def status_publisher(self):
+        """
+        Publish the system status
+        """
+        msg = DroneStatus()
+        msg.timestamp = time.time()
+        msg.battery_ok = self.battery_ok
+        msg.battery_percentage = (self.battery_max_voltage - self.battery_min_voltage) / (self.battery_max_voltage - self.battery_min_voltage) * 100
+        msg.drone_mode = self.fc_command.cmd_mode if not self.fc_command.estop else 2
+
         self.publish_status.publish(msg)
 
     def drone_init(self):
@@ -262,7 +272,7 @@ class FC_Commander(Node):
             
         voltage_avg = voltage_sum / 3
         
-        self.battery_ok = True if voltage_avg > self.battery_min_voltage else False 
+        self.battery_ok = True if voltage_avg > self.battery_min_op_voltage else False 
         print(f"Battery voltage: {voltage_avg}")
         if self.battery_ok:
             print(f"Battery ok")
