@@ -5,10 +5,13 @@ from rclpy.node import Node
 from pymavlink import mavutil
 import time
 import threading
-from drone.msg import DroneCommandManual, DroneCommandAutonomous
+import math
+from drone.msg import DroneCommand, DroneStatus
+
+# Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = False
+test_mode = True
 
 # Check battery voltage
 do_battery_check = False
@@ -18,23 +21,24 @@ class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
 
-        # Define subscribers
-        self.subscription_manual = self.create_subscription(
-            DroneCommandManual,
-            '/cmd_fc_manual_control',
-            self.manual_control_callback,
-            10
-        )
-        self.subscription_ = self.create_subscription(
-            DroneCommandAutonomous,
-            '/cmd_fc_autonomous_control',
-            self.autonomous_control_callback,
+        # Define subscriber
+        self.subscription_commands = self.create_subscription(
+            DroneCommand,
+            '/cmd_fc',
+            self.command_callback,
             10
         )
 
-        # Define publishers
+        # Define publisher
+        self.publisher_autonomous = self.create_publisher(
+            DroneStatus,
+            '/status_fc',
+            10
+        )
+        #self.publish_timer = self.create_timer(1, self.status_publisher)
 
-        while not DroneCommandManual.cmd_arm:
+
+        while not DroneCommand.cmd_arm:
             print("Waiting for arm command", end='\r')
             time.sleep(0.5)
 
@@ -62,15 +66,32 @@ class FC_Commander(Node):
                 self.check_battery()
         
         # Initialize the latest command to be sent to the flight controller
-        self.fc_command_manual = DroneCommandManual()
+        self.fc_command = DroneCommand()
         self.command_lock = threading.Lock()
 
-    def manual_control_callback(self, msg):
+    def command_callback(self, msg):
         with self.command_lock:
-            self.fc_command_manual = msg
-    def autonomous_control_callback(self, msg):
-        with self.command_lock:
-            self.fc_command_autonomous = msg
+            # Assign commands only if they are not NaN
+            if not math.isnan(msg.cmd_mode):
+                self.fc_command.cmd_mode = msg.cmd_mode
+                if msg.cmd_mode == 0:
+                    self.fc_command.cmd_thrust = msg.cmd_thrust
+                    self.fc_command.cmd_roll = msg.cmd_roll
+                    self.fc_command.cmd_pitch = msg.cmd_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_yaw
+                elif msg.cmd_mode == 1:
+                    self.fc_command.cmd_thrust = msg.cmd_auto_thrust
+                    self.fc_command.cmd_roll = msg.cmd_auto_roll
+                    self.fc_command.cmd_pitch = msg.cmd_auto_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_auto_yaw
+            
+             # Decide which command to send to the flight controller
+            self.fc_command.timestamp = msg.timestamp
+            self.fc_command.cmd_estop = msg.cmd_estop
+            self.fc_command.cmd_arm = msg.cmd_arm
+
+    def status_publisher(self, msg):
+        self.publish_status.publish(msg)
 
     def drone_init(self):
         """
@@ -129,128 +150,85 @@ class FC_Commander(Node):
             if not test_mode and do_battery_check and time.time() - self.last_command_time > self.battery_check_interval:
                 self.check_battery()
             
-            if self.fc_command_manual.cmd_arm == 1 and not self.fc_command_manual.cmd_estop == 1 and self.battery_ok:
+            if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
                 # Check if the drone is in manual or autonomous mode
-                if self.fc_command_manual.cmd_mode == 0:
-                    self.flight_mode_manual()
-                elif self.fc_command_manual.cmd_mode == 1:
-                    self.flight_mode_autonomous()
+                if self.fc_command.cmd_mode == 0 or self.fc_command.cmd_mode == 1:
+                    self.flight_mode()
                 else:
                     print("Undefined mode. landing the drone. ", end='\r')
                     # Set negative thrust to land the drone
-                    self.fc_command_manual.cmd_thrust = float(-500)
-                    self.fc_command_manual.cmd_roll = float(0)
-                    self.fc_command_manual.cmd_pitch = float(0)
-                    self.fc_command_manual.cmd_yaw = float(0)
-                    self.flight_mode_manual()
+                    self.fc_command.cmd_thrust = float(-500)
+                    self.fc_command.cmd_roll = float(0)
+                    self.fc_command.cmd_pitch = float(0)
+                    self.fc_command.cmd_yaw = float(0)
+                    self.flight_mode()
 
                 # Sleep to keep the update rate
                 rate.sleep()
             elif not self.battery_ok:
                 print("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ", end='\r')
                 self.emergency_stop() # Implement an emergency land.
-            elif self.fc_command_manual.cmd_estop == 1:
+            elif self.fc_command.cmd_estop == 1:
                 # Emergency stop
                 self.emergency_stop()
             else:
                 print("Waiting for arm command                                               ", end='\r')
-                while not self.fc_command_manual.cmd_arm and self.fc_command_manual.cmd_estop or not self.fc_command_manual.cmd_arm:
+                while not self.fc_command.cmd_arm and self.fc_command.cmd_estop or not self.fc_command.cmd_arm:
                     time.sleep(0.5)
                 
                 # Arm the drone again
                 if not test_mode:
                     self.drone_arm()
     
-    def flight_mode_manual(self):
+    def flight_mode(self):
         """
         Drone flight mode. Sends the latest command to the flight controller
         """
 
         with self.command_lock:
-                # Update command variables - if no new command is received, the previous command is sent
-                timestamp = self.fc_command_manual.timestamp
-                roll = self.fc_command_manual.cmd_roll
-                pitch = self.fc_command_manual.cmd_pitch
-                yaw = self.fc_command_manual.cmd_yaw
-                thrust = self.fc_command_manual.cmd_thrust
+            # Update command variables - if no new command is received, the previous command is sent
+            timestamp = self.fc_command.timestamp
+            
+            # Check if the command is new or if the timeout has expired
+            self.current_time = time.time()
+            if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.timeout:
+                roll = self.fc_command.cmd_roll
+                pitch = self.fc_command.cmd_pitch
+                yaw = self.fc_command.cmd_yaw
+                thrust = self.fc_command.cmd_thrust
 
-                # Check if the command is new or if the timeout has expired
-                self.current_time = time.time()
-                if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.timeout:
-                    # Send the command to the flight controller
-                    
-                    if not test_mode:
-                        self.the_connection.mav.manual_control_send(
-                            self.the_connection.target_system,
-                            int(roll),
-                            int(pitch),
-                            int(thrust),
-                            int(yaw),
-                            0
-                        )
-                    print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
-                    
-                    # Update last_command_time only when a new command is sent
-                    if self.previous_timestamp != timestamp:
-                        self.last_command_time = self.current_time  
-                else:
-                    # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
-                    print("No new command received", end = '\r')
-                    roll = 0
-                    pitch = 0
-                    yaw = 0
-                    thrust = 0
+                # Update last_command_time only when a new command is sent
+                if self.previous_timestamp != timestamp:
+                    self.last_command_time = self.current_time  
+            else:
+                # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
+                print("No new command received", end = '\r')
+                roll = 0
+                pitch = 0
+                yaw = 0
+                thrust = 0
+            
+            print(f"roll={roll}, pitch={pitch}, yaw={yaw}, thrust={thrust}", end='\r')
 
-        self.previous_timestamp = timestamp
-
-    def flight_mode_autonomous(self):
-        """
-        Autonomous drone flight mode. Sends the latest command to the flight controller
-        """
-        with self.command_lock:
-                # Update command variables - if no new command is received, the previous command is sent
-                timestamp = self.fc_command_manual.timestamp
-                roll = self.fc_command_manual.cmd_roll
-                pitch = self.fc_command_manual.cmd_pitch
-                yaw = self.fc_command_manual.cmd_yaw
-                thrust = self.fc_command_manual.cmd_thrust
-
-                # Check if the command is new or if the timeout has expired
-                self.current_time = time.time()
-                if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.timeout:
-                    # Send the command to the flight controller
-                    
-                    if not test_mode:
-                        self.the_connection.mav.manual_control_send(
-                            self.the_connection.target_system,
-                            int(roll),
-                            int(pitch),
-                            int(thrust),
-                            int(yaw),
-                            0
-                        )
-                    print("Sending Automatic:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
-                    
-                    # Update last_command_time only when a new command is sent
-                    if self.previous_timestamp != timestamp:
-                        self.last_command_time = self.current_time  
-                else:
-                    # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
-                    print("No new command received", end = '\r')
-                    roll = 0
-                    pitch = 0
-                    yaw = 0
-                    thrust = 0
+            # Send the command to the flight controller
+            if not test_mode:
+                self.the_connection.mav.manual_control_send(
+                    self.the_connection.target_system,
+                    int(roll),
+                    int(pitch),
+                    int(thrust),
+                    int(yaw),
+                    0
+                )
+            print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
 
         self.previous_timestamp = timestamp
-
-
 
     def emergency_stop(self):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
         """
-        while self.fc_command_manual.cmd_arm == 1 or self.fc_command_manual.cmd_estop == 1 or self.fc_command_manual.cmd_thrust != 0:
+        while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
             if not test_mode:
                     self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
                     self.the_connection.target_component,       # Target component ID
@@ -281,6 +259,13 @@ class FC_Commander(Node):
         voltage_avg = voltage_sum / 3
         
         self.battery_ok = True if voltage_avg > self.battery_min_voltage else False 
+
+    def safe_mode(self):
+        """
+        Safe mode. The drone will land and disarm if the mode is set to safe mode
+        """
+        pass
+
 
 def main(args=None):
     rclpy.init(args=args)
