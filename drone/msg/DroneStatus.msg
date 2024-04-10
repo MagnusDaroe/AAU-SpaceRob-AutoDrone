@@ -1,6 +1,7 @@
 float64 timestamp
 
-float64 info_battery
-int32 drone_mode
+int32 mode
 uint8 battery_ok
 float32 battery_percentage
+uint8 fc_connection
+uint8 armed
