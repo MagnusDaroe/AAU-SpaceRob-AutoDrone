@@ -11,7 +11,7 @@ from drone.msg import DroneCommand, DroneStatus
 # Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = False
+test_mode = True
 
 # Check battery voltage
 do_battery_check = True
@@ -37,27 +37,26 @@ class FC_Commander(Node):
         )
         #self.publish_timer = self.create_timer(5, self.status_publisher)
 
-        while not DroneCommand.cmd_arm:
-            print("Waiting for arm command", end='\r')
-            time.sleep(0.5)
 
         # Fc command variables
-        self.usb_port = '/dev/ttyTHS1'
-        self.baudrate = 57600
+        self.USB_PORT = '/dev/ttyTHS1'
+        self.BAUDRATE = 57600
 
         # Initialize the connection to the drone
+        self.fc_connection = False
         if not test_mode:
             self.drone_init()
 
         # Initialize timout related variables
+        self.TIMEOUT = 0.5
         self.previous_timestamp = 0
         self.last_command_time = time.time()
         self.current_time = 0
-        self.timeout = 0.5
+        
         
         #Reboot
         self.last_reboot = time.time()
-        self.min_reboot_interval = 10
+        self.MIN_REBOOT_INTERVAL = 10
 
         # Initialize the battery check
         self.battery_ok = True
@@ -66,14 +65,17 @@ class FC_Commander(Node):
                 print("Initial battery check")
                 self.battery_ok = False
                 self.battery_check_interval = 10
-                self.battery_min_op_voltage = 13.00
-                self.battery_min_voltage = 12.00
-                self.battery_max_voltage = 16.80
+                self.BATTERY_MIN_OP_VOLTAGE = 13.00
+                self.BATTERY_MIN_VOLTAGE = 12.00
+                self.BATTERY_MAX_VOLTAGE = 16.80
                 self.check_battery()
         
         # Initialize the latest command to be sent to the flight controller
         self.fc_command = DroneCommand()
         self.command_lock = threading.Lock()
+
+        # Set the logging level based on command-line argument or default to INFO
+        self.log_level = self.get_logger().get_effective_level()
 
     def command_callback(self, msg):
         with self.command_lock:
@@ -96,14 +98,6 @@ class FC_Commander(Node):
             self.fc_command.cmd_estop = msg.cmd_estop
             self.fc_command.cmd_arm = msg.cmd_arm
 
-            if True:
-                try:
-
-                    with open('thrust_log_received.csv', 'a') as f:
-                        f.write(f"{time.time()},{self.fc_command.cmd_thrust}\n")
-                except Exception as e:
-                    print(f"Error occurred while writing to thrust_log.csv: {e}")
-
     def status_publisher(self):
         """
         Publish the system status
@@ -116,7 +110,7 @@ class FC_Commander(Node):
         msg = DroneStatus()
         msg.timestamp = time.time()
         msg.battery_ok = self.battery_ok
-        msg.battery_percentage = (self.battery_max_voltage - self.battery_min_voltage) / (self.battery_max_voltage - self.battery_min_voltage) * 100
+        msg.battery_percentage = (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
         msg.drone_mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
 
         self.publish_status.publish(msg)
@@ -126,10 +120,10 @@ class FC_Commander(Node):
         Start the connection to the flight controller and arm the drone
         """
 
-        print("Connecting to MAVLink...")
-        self.the_connection = mavutil.mavlink_connection(self.usb_port,baud=self.baudrate)
+        self.get_logger().info("Connecting to MAVLink...")
+        self.the_connection = mavutil.mavlink_connection(self.USB_PORT,baud=self.BAUDRATE)
         self.the_connection.wait_heartbeat()
-        print("Connected to MAVLink.")
+        self.get_logger().info("Connected to MAVLink.")
         time.sleep(2)
 
     def drone_arm(self):
@@ -141,13 +135,14 @@ class FC_Commander(Node):
                                     0, 1, 0, 0, 0, 0, 0, 0)
         Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
         if Ack.result == 0:
-            print("Mode set to stabilize")
+            self.get_logger().info("Mode set to stabilize")
         else:
-            print("Failed to set mode")
-            exit()
+            self.get_logger().fatal("Failed to set mode")
+            self.destroy_node()
+
 
         # Arm the drone. It must be done two times for some reason.
-        print("Arming the drone...")
+        self.get_logger().info("Arming the drone...")
         # Arm the vehicle - run it two times
         for _ in range(2):
             self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
@@ -156,15 +151,15 @@ class FC_Commander(Node):
 
         Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
         if Ack.result == 0:
-            print("Armed the drone")
+            self.get_logger().info("Armed the drone")
         else:
-            print("Failed arm")
-            exit()
+            self.get_logger().fatal("Failed arm")
+            self.destroy_node()
 
     def drone_reboot(self):
         # Reboot the drone
-        print("Rebooting the drone...")
-        if not test_mode and time.time() - self.last_reboot > self.min_reboot_interval:
+        self.get_logger().info("Rebooting the drone...")
+        if not test_mode and time.time() - self.last_reboot > self.MIN_REBOOT_INTERVAL:
             Ack = False
 
             while not Ack:    
@@ -172,17 +167,16 @@ class FC_Commander(Node):
                                             0, 1, 0, 0, 0, 0, 0, 0)
                 Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
                 if Ack.result == 0:
-                    print("Rebooting the drone")
-                else:
-                    print("Failed to reboot. Trying again...")
-                
+                    self.get_logger().warn("Failed to reboot. Trying again...")
+                    
             time.sleep(8)
-            print("Rebooted the drone")
+            self.get_logger().info("Rebooted the drone")
 
+            # Start the drone again
             self.drone_init()
         else:
             if not test_mode: 
-                print("Rebooting too soon. Waiting for the reboot interval to expire")
+                self.get_logger().warn("Rebooting too soon. Waiting for the reboot interval to expire")
 
 
     def fc_commander(self, updaterate=50):
@@ -202,19 +196,19 @@ class FC_Commander(Node):
                 if self.fc_command.cmd_mode == 0 or self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 else:
-                    print("Reboot mode. Restarting the drone ", end='\r')
+                    self.get_logger().info("Reboot mode. Restarting the drone")
                     self.drone_reboot()
 
                 # Sleep to keep the update rate
                 rate.sleep()
             elif not self.battery_ok:
-                print("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ", end='\r')
+                self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
                 self.emergency_stop() # Implement an emergency land.
             elif self.fc_command.cmd_estop == 1:
                 # Emergency stop
                 self.emergency_stop()
             else:
-                print("Waiting for arm command                                               ", end='\r')
+                self.get_logger().info("Waiting for arm command")
                 while not self.fc_command.cmd_arm and self.fc_command.cmd_estop or not self.fc_command.cmd_arm:
                     time.sleep(0.5)
                 self.reset_cmd()
@@ -234,7 +228,7 @@ class FC_Commander(Node):
             
             # Check if the command is new or if the timeout has expired
             self.current_time = time.time()
-            if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.timeout:
+            if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.TIMEOUT:
                 # Send the command to the flight controller
                 self.flight_cmd()
 
@@ -242,16 +236,8 @@ class FC_Commander(Node):
                 if self.previous_timestamp != timestamp:
                     self.last_command_time = self.current_time  
             else:
-                if True:
-                    try:
-
-                        with open('thrust_log_timeout.csv', 'a') as f:
-                            f.write(f"{time.time()},{self.fc_command.cmd_thrust}, {timestamp}, {self.previous_timestamp}, {self.current_time}, {self.last_command_time} \n")
-                    except Exception as e:
-                        print(f"Error occurred while writing to thrust_log.csv: {e}")
-
                 # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
-                print("No new command received. Going into safe mode.", end = '\r')
+                self.get_logger().warn("No new command received. Going into safe mode.")
                 self.safe_mode()
 
         self.previous_timestamp = timestamp
@@ -260,35 +246,25 @@ class FC_Commander(Node):
         """
         Send flight command to the drone
         """
-        log = True
-        roll = self.fc_command.cmd_roll
-        pitch = self.fc_command.cmd_pitch
-        yaw = self.fc_command.cmd_yaw
-        thrust = self.fc_command.cmd_thrust
-
+   
         if not test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
-                    int(roll),
-                    int(pitch),
-                    int(thrust),
-                    int(yaw),
+                    int(self.fc_command.cmd_roll),
+                    int(self.fc_command.cmd_pitch),
+                    int(self.fc_command.cmd_thrust),
+                    int(self.fc_command.cmd_yaw),
                     0
                 )
-        print("Sending:" + f"Roll={roll}, Pitch={pitch}, Thrust={thrust}, Yaw={yaw}", end='\r')
-
-        if log:
-            try:
-
-                with open('thrust_log.csv', 'a') as f:
-                    f.write(f"{time.time()},{thrust}\n")
-            except Exception as e:
-                print(f"Error occurred while writing to thrust_log.csv: {e}")
+    
+        # Log the command values
+        self.get_logger().info(f"Sending: Roll={int(self.fc_command.cmd_roll)}, Pitch={int(self.fc_command.cmd_pitch)}, Thrust={int(self.fc_command.cmd_thrust)}, Yaw={int(self.fc_command.cmd_yaw)}")
        
     def emergency_stop(self):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
         """
+        self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control")
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
             if not test_mode:
                     self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
@@ -303,9 +279,8 @@ class FC_Commander(Node):
                     0,                                     # Empty
                     0                      # Empty
                     )
-            print("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control                                                       ", end='\r')
             time.sleep(0.5)
-        print("Emergency stop command released                                     ", end='\r')
+        self.get_logger().info("Emergency stop command released")
     
     def check_battery(self):
         """
@@ -325,15 +300,9 @@ class FC_Commander(Node):
             
         voltage_avg = voltage_sum / 3
         
-        self.battery_ok = True if voltage_avg > self.battery_min_op_voltage else False 
-        print(f"Battery voltage: {voltage_avg}")
-        if self.battery_ok:
-            print(f"Battery ok")
-        else:
-            
-            print("Battery not good")
+        self.battery_ok = True if voltage_avg > self.BATTERY_MIN_OP_VOLTAGE else False 
+        self.get_logger().info("Battery voltage: {voltage_avg}, Battery ok: {self.battery_ok}")
 
-        time.sleep(2)
 
     def safe_mode(self):
         """

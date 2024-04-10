@@ -20,14 +20,10 @@ class JoystickControlNode(Node):
         pygame.joystick.init()
         self.controller = pygame.joystick.Joystick(0)
         self.controller.init()
-        print(self.controller.get_numaxes())
         
-
     def send_control_command(self, DroneCommand):
-        rate = self.create_rate(100)
         self.publisher_.publish(DroneCommand)
-        print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
-        rate.sleep()
+        self.get_logger().info(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
 
 
 def get_mode(node):
@@ -35,6 +31,7 @@ def get_mode(node):
     return int(2) if node.controller.get_axis(5) > 0 else int(node.controller.get_axis(5))+1  # SC 3-way switch
 
 def control_loop(node):
+    rate = node.create_rate(100)
     log = True
     reboot_time = 5
     while True:
@@ -50,7 +47,7 @@ def control_loop(node):
 
         Drone_cmd = DroneCommand()
 
-        Drone_cmd.timestamp = float(time.time())
+        Drone_cmd.timestamp = float(node.get_clock().now().nanoseconds) / 1e9
         Drone_cmd.cmd_mode = get_mode(node)
         Drone_cmd.cmd_arm = True if arm == 1 else False
         Drone_cmd.cmd_estop = True if estop > 0 else False
@@ -83,12 +80,14 @@ def control_loop(node):
                 Drone_cmd.cmd_mode = get_mode(node)
                 print(Drone_cmd.cmd_mode)
                 if Drone_cmd.cmd_mode != 2:
-                    print(f"Drone in reboot mode. Exiting reboot mode in {reboot_time - (time.time() - reboot_time_start)}.")
+                    node.get_logger().info(f"Drone in reboot mode. Exiting reboot mode in {reboot_time - (time.time() - reboot_time_start)}.")
                     break
                 else:
-                    print("Drone in reboot mode. Waiting for mode change.", end='\r')
+                    node.get_logger().info("Drone in reboot mode. Waiting for mode change.", end='\r')
 
                 time.sleep(0.1)
+
+        rate.sleep()
 
 
 def main(args=None):
