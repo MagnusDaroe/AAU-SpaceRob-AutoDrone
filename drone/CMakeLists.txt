@@ -54,6 +54,8 @@
 	  scripts/manual_control_joystick.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py
+	  scripts/GUI.py
+	  scripts/GUIpubtest.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 	ament_package()
