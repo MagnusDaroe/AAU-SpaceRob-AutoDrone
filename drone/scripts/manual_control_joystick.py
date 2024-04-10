@@ -9,7 +9,7 @@ from drone.msg import DroneCommand
 import time
 
 # Mode dictionary
-mode_dict = {0: 'Manual_Control', 1: 'Autonomous', 2: 'Undefined'}
+mode_dict = {0: 'Manual_Control', 1: 'Autonomous', 2: 'Reboot'}
 
 class JoystickControlNode(Node):
     def __init__(self):
@@ -21,17 +21,22 @@ class JoystickControlNode(Node):
         self.controller = pygame.joystick.Joystick(0)
         self.controller.init()
         print(self.controller.get_numaxes())
-        print(self.controller.get_numbuttons())
         
 
     def send_control_command(self, DroneCommand):
         rate = self.create_rate(100)
         self.publisher_.publish(DroneCommand)
-        print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, reboot={DroneCommand.cmd_reboot} Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
+        print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
         rate.sleep()
+
+
+def get_mode(node):
+    pygame.event.pump()  # Process event queue
+    return int(2) if node.controller.get_axis(5) > 0 else int(node.controller.get_axis(5))+1  # SC 3-way switch
 
 def control_loop(node):
     log = True
+    reboot_time = 5
     while True:
         pygame.event.pump()  # Process event queue
         ax0 = node.controller.get_axis(0)  # Thrust
@@ -39,37 +44,52 @@ def control_loop(node):
         ax2 = node.controller.get_axis(2)  # Pitch
         ax1 = node.controller.get_axis(1)  # Roll
 
-        mode = int(2) if node.controller.get_axis(5) > 0 else int(node.controller.get_axis(5))+1  # SC 3-way switch
+        
         arm = int(node.controller.get_axis(6))+1  # SF 3-way switch 
         estop = int(node.controller.get_axis(4))+1  # SG 3-way switch 0 is normal operation, above 0 is Emergency stop
-        reboot = int(node.controller.get_button(1))  # Button 1
 
         Drone_cmd = DroneCommand()
 
         Drone_cmd.timestamp = float(time.time())
-        Drone_cmd.cmd_mode = mode
+        Drone_cmd.cmd_mode = get_mode(node)
         Drone_cmd.cmd_arm = True if arm == 1 else False
         Drone_cmd.cmd_estop = True if estop > 0 else False
-        Drone_cmd.cmd_reboot = reboot
 
         if Drone_cmd.cmd_mode == 1:
+            # Send nan values to the drone
+            Drone_cmd.cmd_roll = float('nan')
+            Drone_cmd.cmd_pitch = float('nan')
+            Drone_cmd.cmd_thrust = float('nan')
+            Drone_cmd.cmd_yaw = float('nan')
             time.sleep(0.2)
-        else:
+        elif Drone_cmd.cmd_mode == 0:
             # Map values.   
             Drone_cmd.cmd_roll = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
             Drone_cmd.cmd_pitch = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
             Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
-            Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw
+            Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
+        elif Drone_cmd.cmd_mode == 2:
+            Drone_cmd.cmd_roll = float(0)
+            Drone_cmd.cmd_pitch = float(0)
+            Drone_cmd.cmd_thrust = float(0)
+            Drone_cmd.cmd_yaw = float(0)
+            
         node.send_control_command(Drone_cmd)
 
-        if log:
-            try:
+       
+        if Drone_cmd.cmd_mode == 2:
+            reboot_time_start = time.time()
+            while Drone_cmd.cmd_mode == 2 or time.time() - reboot_time_start < reboot_time:
+                Drone_cmd.cmd_mode = get_mode(node)
+                print(Drone_cmd.cmd_mode)
+                if Drone_cmd.cmd_mode != 2:
+                    print(f"Drone in reboot mode. Exiting reboot mode in {reboot_time - (time.time() - reboot_time_start)}.")
+                    break
+                else:
+                    print("Drone in reboot mode. Waiting for mode change.", end='\r')
 
-                with open('thrust_log_pc.csv', 'a') as f:
-                    f.write(f"{time.time()},{Drone_cmd.cmd_thrust}\n")
-            except Exception as e:
-                print(f"Error occurred while writing to thrust_log.csv: {e}")
-        
+                time.sleep(0.1)
+
 
 def main(args=None):
     rclpy.init(args=args)

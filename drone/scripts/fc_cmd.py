@@ -167,7 +167,6 @@ class FC_Commander(Node):
             print("Rebooting the drone")
         else:
             print("Failed to reboot")
-            exit()
 
 
     def fc_commander(self, updaterate=50):
@@ -187,8 +186,8 @@ class FC_Commander(Node):
                 if self.fc_command.cmd_mode == 0 or self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 else:
-                    print("Undefined mode. landing the drone. ", end='\r')
-                    self.safe_mode()
+                    print("Reboot mode.Restarting the drone ", end='\r')
+                    self.drone_reboot()
 
                 # Sleep to keep the update rate
                 rate.sleep()
