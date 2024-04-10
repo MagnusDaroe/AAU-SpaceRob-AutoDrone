@@ -5,6 +5,7 @@ uint8 cmd_estop
 # manual commands
 uint8 cmd_arm
 int32 cmd_mode 
+uint8 cmd_reboot
 
 float32 cmd_roll
 float32 cmd_pitch

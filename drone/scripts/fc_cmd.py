@@ -157,6 +157,19 @@ class FC_Commander(Node):
             print("Failed arm")
             exit()
 
+    def drone_reboot(self):
+        # Reboot the drone
+        print("Rebooting the drone...")
+        self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
+                                    0, 1, 0, 0, 0, 0, 0, 0)
+        Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+        if Ack.result == 0:
+            print("Rebooting the drone")
+        else:
+            print("Failed to reboot")
+            exit()
+
+
     def fc_commander(self, updaterate=50):
         """
         Main function for the flight controller commander. \n
@@ -166,6 +179,8 @@ class FC_Commander(Node):
         
         # Main loop
         while rclpy.ok():
+            if self.fc_command.cmd_mode == 2:
+                self.drone_reboot()
             
             if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
                 # Check if the drone is in manual or autonomous mode
@@ -187,6 +202,7 @@ class FC_Commander(Node):
                 print("Waiting for arm command                                               ", end='\r')
                 while not self.fc_command.cmd_arm and self.fc_command.cmd_estop or not self.fc_command.cmd_arm:
                     time.sleep(0.5)
+                self.reset_cmd()
                 
                 # Arm the drone again
                 if not test_mode:
@@ -253,8 +269,7 @@ class FC_Commander(Node):
                     f.write(f"{time.time()},{thrust}\n")
             except Exception as e:
                 print(f"Error occurred while writing to thrust_log.csv: {e}")
-
-            
+       
     def emergency_stop(self):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
@@ -327,8 +342,16 @@ class FC_Commander(Node):
                 
             # Send command.    
             self.flight_cmd()
-            
 
+    def reset_cmd(self):
+        """
+        Reset the command variables
+        """
+        self.fc_command.cmd_thrust = 0
+        self.fc_command.cmd_roll = 0
+        self.fc_command.cmd_pitch = 0
+        self.fc_command.cmd_yaw = 0
+            
 def main(args=None):
     rclpy.init(args=args)
     listener = FC_Commander()

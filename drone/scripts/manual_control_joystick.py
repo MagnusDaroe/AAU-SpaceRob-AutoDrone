@@ -20,11 +20,14 @@ class JoystickControlNode(Node):
         pygame.joystick.init()
         self.controller = pygame.joystick.Joystick(0)
         self.controller.init()
+        print(self.controller.get_numaxes())
+        print(self.controller.get_numbuttons())
+        
 
     def send_control_command(self, DroneCommand):
         rate = self.create_rate(100)
         self.publisher_.publish(DroneCommand)
-        print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
+        print(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, reboot={DroneCommand.cmd_reboot} Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
         rate.sleep()
 
 def control_loop(node):
@@ -39,7 +42,7 @@ def control_loop(node):
         mode = int(2) if node.controller.get_axis(5) > 0 else int(node.controller.get_axis(5))+1  # SC 3-way switch
         arm = int(node.controller.get_axis(6))+1  # SF 3-way switch 
         estop = int(node.controller.get_axis(4))+1  # SG 3-way switch 0 is normal operation, above 0 is Emergency stop
-
+        reboot = int(node.controller.get_button(1))  # Button 1
 
         Drone_cmd = DroneCommand()
 
@@ -47,6 +50,7 @@ def control_loop(node):
         Drone_cmd.cmd_mode = mode
         Drone_cmd.cmd_arm = True if arm == 1 else False
         Drone_cmd.cmd_estop = True if estop > 0 else False
+        Drone_cmd.cmd_reboot = reboot
 
         if Drone_cmd.cmd_mode == 1:
             time.sleep(0.2)
