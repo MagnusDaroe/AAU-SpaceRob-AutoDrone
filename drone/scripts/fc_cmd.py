@@ -54,6 +54,10 @@ class FC_Commander(Node):
         self.last_command_time = time.time()
         self.current_time = 0
         self.timeout = 0.5
+        
+        #Reboot
+        self.last_reboot = time.time()
+        self.min_reboot_interval = 10
 
         # Initialize the battery check
         self.battery_ok = True
@@ -160,13 +164,25 @@ class FC_Commander(Node):
     def drone_reboot(self):
         # Reboot the drone
         print("Rebooting the drone...")
-        self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
-                                    0, 1, 0, 0, 0, 0, 0, 0)
-        Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
-        if Ack.result == 0:
-            print("Rebooting the drone")
+        if not test_mode and time.time() - self.last_reboot > self.min_reboot_interval:
+            Ack = False
+
+            while not Ack:    
+                self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
+                                            0, 1, 0, 0, 0, 0, 0, 0)
+                Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+                if Ack.result == 0:
+                    print("Rebooting the drone")
+                else:
+                    print("Failed to reboot. Trying again...")
+                
+            time.sleep(8)
+            print("Rebooted the drone")
+
+            self.drone_init()
         else:
-            print("Failed to reboot")
+            if not test_mode: 
+                print("Rebooting too soon. Waiting for the reboot interval to expire")
 
 
     def fc_commander(self, updaterate=50):
@@ -186,7 +202,7 @@ class FC_Commander(Node):
                 if self.fc_command.cmd_mode == 0 or self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 else:
-                    print("Reboot mode.Restarting the drone ", end='\r')
+                    print("Reboot mode. Restarting the drone ", end='\r')
                     self.drone_reboot()
 
                 # Sleep to keep the update rate
@@ -346,10 +362,10 @@ class FC_Commander(Node):
         """
         Reset the command variables
         """
-        self.fc_command.cmd_thrust = 0
-        self.fc_command.cmd_roll = 0
-        self.fc_command.cmd_pitch = 0
-        self.fc_command.cmd_yaw = 0
+        self.fc_command.cmd_thrust = float(0)
+        self.fc_command.cmd_roll = float(0)
+        self.fc_command.cmd_pitch = float(0)
+        self.fc_command.cmd_yaw = float(0)
             
 def main(args=None):
     rclpy.init(args=args)
