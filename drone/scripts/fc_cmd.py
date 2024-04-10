@@ -11,7 +11,7 @@ from drone.msg import DroneCommand, DroneStatus
 # Maybe at ntp to the drone to sync the time
 
 # Set test_mode to True to run the script without a drone
-test_mode = True
+test_mode = False
 
 # Check battery voltage
 do_battery_check = True
@@ -137,8 +137,8 @@ class FC_Commander(Node):
         if Ack.result == 0:
             self.get_logger().info("Mode set to stabilize")
         else:
-            self.get_logger().fatal("Failed to set mode")
-            self.destroy_node()
+            self.get_logger().fatal("Failed to set mode. Trying to reboot the drone...")
+            self.drone_reboot()
 
 
         # Arm the drone. It must be done two times for some reason.
@@ -153,8 +153,8 @@ class FC_Commander(Node):
         if Ack.result == 0:
             self.get_logger().info("Armed the drone")
         else:
-            self.get_logger().fatal("Failed arm")
-            self.destroy_node()
+            self.get_logger().fatal("Failed arm. Trying to reboot the drone...")
+            self.drone_reboot()
 
     def drone_reboot(self):
         # Reboot the drone
@@ -239,6 +239,8 @@ class FC_Commander(Node):
                 # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
                 self.get_logger().warn("No new command received. Going into safe mode.")
                 self.safe_mode()
+                self.fc_command.cmd_estop = 1
+
 
         self.previous_timestamp = timestamp
 
@@ -301,7 +303,7 @@ class FC_Commander(Node):
         voltage_avg = voltage_sum / 3
         
         self.battery_ok = True if voltage_avg > self.BATTERY_MIN_OP_VOLTAGE else False 
-        self.get_logger().info("Battery voltage: {voltage_avg}, Battery ok: {self.battery_ok}")
+        self.get_logger().info(f"Battery voltage: {voltage_avg}, Battery ok: {self.battery_ok}")
 
 
     def safe_mode(self):
@@ -310,7 +312,7 @@ class FC_Commander(Node):
         """
         decrement_thrust = self.fc_command.cmd_thrust
         land_thrust = 400
-        decrement = 2
+        decrement = 1
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
