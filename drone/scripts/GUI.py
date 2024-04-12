@@ -32,9 +32,11 @@ def create_gui(window):
 
     tab1 = ttk.Frame(tabcontrol)
     tabcontrol.add(tab1, text="Stats")
-    label1 = tk.Label(tab1, text="Filler text")
-    label1.pack()
-    label1.place(x=450, y=10)
+    
+    global clock
+    clock = tk.Label(tab1, text="Filler text")
+    clock.pack()
+    clock.place(x=450, y=10)
     
     tab2 = ttk.Frame(tabcontrol)
     tabcontrol.add(tab2, text="3D plot")
@@ -315,7 +317,7 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
         Traject2d.set_ylabel('Y')
         canvas2d.draw()
         
-
+    clock.config(text=f"Time: {time.strftime('%H:%M:%S', time.localtime())}")
     # Call the update function again after x ms
     window.after(1, update_pose_variables, Traject3d, Traject2d, Traject3dTab2)
 
@@ -326,7 +328,7 @@ class drone_listener(Node):
         super().__init__('drone_listener')
         self.subscription = self.create_subscription(
             DroneStatus,
-            'drone_status',
+            '/status_fc',
             self.status_messages,
             10)
         self.old_message = [0, 0, 0, 0, 0]
@@ -365,10 +367,10 @@ class drone_listener(Node):
         Armed = self.armedDict[message[1]]
         Mode = self.modeDict[message[2]]
         BatteryOK = self.batteryOKDict[message[3]]
-        Battery = f"{message[4]:.2f}"+ "%"
+        Battery = f"{int(message[4])}"+ "%"
         droneStates.config(text=f"{Connected}\n{Armed}\n{Mode}\n{BatteryOK}\n{Battery}\n")
         
-        
+        console_print(f"Time: {time.strftime('%H:%M:%S', time.localtime())}")
         if message != self.old_message: #checks if the has been an update to the messages, if so it prints the updated message
             if message[0] != self.old_message[0]:
                 console_print(f"{ConnectedConsole}")
@@ -378,8 +380,10 @@ class drone_listener(Node):
                 console_print(f"{ModeConsole}")
             if message[3] != self.old_message[3]:
                 console_print(f"{BatteryConsoleOK}")
-            if message[4] != self.old_message[4]:
-                console_print(f"Battery%: {Battery}")#old_message may always be differnt, as battery is always changing, so maybe bad in this statement.
+        
+        if message[4] != self.old_message[4]:
+            console_print(f"Battery%: {Battery}")#old_message may always be differnt, as battery is always changing, so maybe bad in this statement.
+        
 
             
         self.old_message = message.copy()
