@@ -30,12 +30,12 @@ class FC_Commander(Node):
         )
 
         # Define publisher
-        self.publisher_autonomous = self.create_publisher(
+        self.publisher_status= self.create_publisher(
             DroneStatus,
             '/status_fc',
             10
         )
-        #self.publish_timer = self.create_timer(5, self.status_publisher)
+        self.publish_timer = self.create_timer(5, self.status_publisher)
 
 
         # Fc command variables
@@ -53,6 +53,8 @@ class FC_Commander(Node):
         self.last_command_time = time.time()
         self.current_time = 0
         
+        # Connection variables
+        self.battery_check_requested = False
         
         #Reboot
         self.last_reboot = time.time()
@@ -63,11 +65,12 @@ class FC_Commander(Node):
         if not test_mode:
             if do_battery_check:
                 print("Initial battery check")
+                self.battery_voltage = 15.0
                 self.battery_ok = False
                 self.battery_check_interval = 10
                 self.BATTERY_MIN_OP_VOLTAGE = 13.00
                 self.BATTERY_MIN_VOLTAGE = 12.00
-                self.BATTERY_MAX_VOLTAGE = 16.80
+                self.BATTERY_MAX_VOLTAGE = 16.8
                 self.check_battery()
         
         # Initialize the latest command to be sent to the flight controller
@@ -102,18 +105,18 @@ class FC_Commander(Node):
         """
         Publish the system status
         """
-        # Check the battery level
-        if not test_mode and do_battery_check and time.time() - self.last_command_time > self.battery_check_interval:
-            self.check_battery()
-        
 
+
+        self.battery_check_requested = True
         msg = DroneStatus()
         msg.timestamp = time.time()
         msg.battery_ok = self.battery_ok
-        msg.battery_percentage = (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
-        msg.drone_mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
+        msg.battery_percentage = (self.battery_voltage - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
+        msg.mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
+        msg.fc_connection = True if self.fc_connection else False
+        msg.battery_check_timestamp = self.battery_check_timestamp
 
-        self.publish_status.publish(msg)
+        self.publisher_status.publish(msg)
 
     def drone_init(self):
         """
@@ -156,9 +159,13 @@ class FC_Commander(Node):
             self.get_logger().fatal("Failed arm. Trying to reboot the drone...")
             self.drone_reboot()
 
+
     def drone_reboot(self):
         # Reboot the drone
         self.get_logger().info("Rebooting the drone...")
+        while not test_mode and time.time() - self.last_reboot < self.MIN_REBOOT_INTERVAL:
+            time.sleep(1)
+
         if not test_mode and time.time() - self.last_reboot > self.MIN_REBOOT_INTERVAL:
             Ack = False
 
@@ -188,6 +195,12 @@ class FC_Commander(Node):
         
         # Main loop
         while rclpy.ok():
+            if self.battery_check_requested:
+                self.get_logger().info("Battery check requested")
+                self.check_battery()
+                self.battery_check_requested = False
+
+            
             if self.fc_command.cmd_mode == 2:
                 self.drone_reboot()
             
@@ -288,23 +301,20 @@ class FC_Commander(Node):
         """
         Check the battery level of the drone
         """
-        voltage_sum = 0
-        for _ in range(3):
-            self.the_connection.mav.request_data_stream_send(
-                self.the_connection.target_system,           # Target system ID
-                self.the_connection.target_component,       # Target component ID
-                mavutil.mavlink.MAV_DATA_STREAM_ALL,   # All streams
-                1,                                     # Enable
-                1                                      # Rate (Hz)
-            )
-            msg = self.the_connection.recv_match(type='SYS_STATUS', blocking=True)
-            voltage_sum += msg.voltage_battery / 1000.0
-            
-        voltage_avg = voltage_sum / 3
+        # Request the battery voltage
+        self.the_connection.mav.request_data_stream_send(
+            self.the_connection.target_system,
+            self.the_connection.target_component,
+            mavutil.mavlink.MAV_DATA_STREAM_EXTENDED_STATUS,
+            1,
+            1
+        )
+        msg = self.the_connection.recv_match(type='SYS_STATUS', blocking=True)
+        self.battery_voltage = msg.voltage_battery / 1000.0
         
-        self.battery_ok = True if voltage_avg > self.BATTERY_MIN_OP_VOLTAGE else False 
-        self.get_logger().info(f"Battery voltage: {voltage_avg}, Battery ok: {self.battery_ok}")
-
+        self.battery_check_timestamp = time.time()
+        self.battery_ok = True if self.battery_voltage > self.BATTERY_MIN_OP_VOLTAGE else False 
+        self.get_logger().info(f"Battery voltage: {self.battery_voltage}, Battery ok: {self.battery_ok}")
 
     def safe_mode(self):
         """

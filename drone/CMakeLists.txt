@@ -33,7 +33,6 @@
 	  "msg/DroneControlData.msg"
 	  "msg/DroneStatus.msg"
 	  "msg/DroneVideo.msg"
-	  "msg/ViconData.msg"
 	  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)
 
 	# Include Cpp "include" directory
