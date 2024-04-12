@@ -15,7 +15,7 @@ import math
 import rclpy
 from rclpy.node import Node
 from drone.msg import DroneStatus
-
+#todo add color scheme to some of the states
 
 def create_gui(window):
     """Creates the GUI for the ground control station.
@@ -59,7 +59,7 @@ def create_gui(window):
     poseVariables.place(x=x_window-110, y=50)
     poseVariables_label = tk.Label(tab1, text="Pose Values", justify="left")
     poseVariables_label.pack()
-    poseVariables_label.place(x=x_window-150, y=35)
+    poseVariables_label.place(x=x_window-150, y=28)
     #*############################ - Drone Status - ############################
     # Add a label with the drone status, and places them to the right
     droneStatus = tk.Label(tab1, text=f"Connected:\nArmed:\nMode:\nBatteryOK:\nBattery%:\n", justify="right")
