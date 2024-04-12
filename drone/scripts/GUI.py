@@ -361,7 +361,7 @@ class drone_listener(Node):
         ArmedConsole = self.armedConsoleDict[message[1]]
         ModeConsole = self.modeConsoleDict[message[2]]
         BatteryConsoleOK = self.batteryOKDict[message[3]]
-
+    
         #labels
         Connected = self.connectedDict[message[0]]
         Armed = self.armedDict[message[1]]
@@ -381,8 +381,8 @@ class drone_listener(Node):
             if message[3] != self.old_message[3]:
                 console_print(f"{BatteryConsoleOK}")
         
-        if message[4] != self.old_message[4]:
-            console_print(f"Battery%: {Battery}")#old_message may always be differnt, as battery is always changing, so maybe bad in this statement.
+
+        console_print(f"Battery%: {Battery}")#old_message may always be differnt, as battery is always changing, so maybe bad in this statement.
         
 
             
