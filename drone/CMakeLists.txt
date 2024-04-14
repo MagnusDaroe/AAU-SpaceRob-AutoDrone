@@ -58,4 +58,10 @@
 	  scripts/GUIpubtest.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
+
+	# Install launch files.
+	install(DIRECTORY
+	launch
+	DESTINATION share/${PROJECT_NAME}/
+	)
 	ament_package()
