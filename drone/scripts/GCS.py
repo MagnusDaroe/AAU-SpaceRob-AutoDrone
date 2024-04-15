@@ -16,6 +16,8 @@ import rclpy
 from rclpy.node import Node
 from drone.msg import DroneStatus
 #todo add color scheme to some of the states
+#todo add waypoint
+#todo add videofeed
 
 def create_gui(window):
     """Creates the GUI for the ground control station.
