@@ -322,7 +322,7 @@ class FC_Commander(Node):
         """
         decrement_thrust = self.fc_command.cmd_thrust
         land_thrust = 400
-        decrement = 1
+        decrement = 2
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
@@ -330,9 +330,10 @@ class FC_Commander(Node):
         while decrement_thrust > land_thrust:
             decrement_thrust = decrement_thrust - decrement
 
-            if decrement_thrust < land_thrust:
+            if decrement_thrust < land_thrust or self.fc_command.cmd_estop == 1:
                 
-                self.fc_command.cmd_thrust  = float(0)
+                self.emergency_stop()
+                break
             else:
                 self.fc_command.cmd_thrust = float(decrement_thrust)
                 
