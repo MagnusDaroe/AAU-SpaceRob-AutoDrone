@@ -51,11 +51,10 @@
 	# Install Python executables
 	install(PROGRAMS
 	  scripts/fc_cmd.py
-	  scripts/manual_control_joystick.py
+	  scripts/manual_cmd.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py
-	  scripts/GUI.py
-	  scripts/GUIpubtest.py
+	  scripts/GCS.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 

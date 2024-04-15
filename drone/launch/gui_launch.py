@@ -5,10 +5,10 @@ def generate_launch_description():
     return launch.LaunchDescription([
         launch_ros.actions.Node(
             package='drone',
-            executable='GUI.py',
-            name='test'),
+            executable='GCS.py',
+            name='GroundControlStation'),
         launch_ros.actions.Node(
             package='drone',
-            executable='manual_control_joystick.py',
-            name='test1'),
+            executable='manual_cmd.py',
+            name='ManualCommand'),
   ])
