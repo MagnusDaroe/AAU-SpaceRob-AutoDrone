@@ -8,18 +8,16 @@ import threading
 import math
 from drone.msg import DroneCommand, DroneStatus
 
-# Maybe at ntp to the drone to sync the time
-
-# Set test_mode to True to run the script without a drone
-test_mode = False
-
-# Check battery voltage
-do_battery_check = True
-
 
 class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
+
+            
+        # Node parameters
+        self.setup_test_parameters()
+
+
 
         # Define subscriber
         self.subscription_commands = self.create_subscription(
@@ -44,7 +42,7 @@ class FC_Commander(Node):
 
         # Initialize the connection to the drone
         self.fc_connection = False
-        if not test_mode:
+        if not self.test_mode:
             self.drone_init()
 
         # Initialize timout related variables
@@ -62,8 +60,8 @@ class FC_Commander(Node):
 
         # Initialize the battery check
         self.battery_ok = True
-        if not test_mode:
-            if do_battery_check:
+        if not self.test_mode:
+            if self.do_battery_check:
                 print("Initial battery check")
                 self.battery_voltage = 15.0
                 self.battery_ok = False
@@ -79,6 +77,42 @@ class FC_Commander(Node):
 
         # Set the logging level based on command-line argument or default to INFO
         self.log_level = self.get_logger().get_effective_level()
+
+    def setup_test_parameters(self):
+        # Define a dictionary mapping test types to attributes
+        test_attributes = {
+            'pitch': ('test_pitch', 'test_pitch_value'),
+            'roll': ('test_roll', 'test_roll_value'),
+            'yaw': ('test_yaw', 'test_yaw_value'),
+            'thrust': ('test_thrust', 'test_thrust_value')
+        }
+
+        # Node parameters
+        self.test_type = self.get_parameter('test_type').value if self.has_parameter('test_type') else None
+
+        # Initialize all test flags to False
+        self.test_pitch = False
+        self.test_roll = False
+        self.test_yaw = False
+        self.test_thrust = False
+
+        # Set the test values based on test type
+        if self.test_type in test_attributes:
+            test_flag, value_param = test_attributes[self.test_type]
+            setattr(self, test_flag, True)
+            setattr(self, value_param, self.get_parameter(value_param).value if self.has_parameter(value_param) else 'nan')
+
+        # Make the test attributes available to the class
+        self.test_attributes = test_attributes
+
+               
+        # Set self.test_mode to True to run the script without a drone
+        self.test_mode = True
+
+        # Check battery voltage
+        self.do_battery_check = True
+
+
 
     def command_callback(self, msg):
         with self.command_lock:
@@ -106,15 +140,18 @@ class FC_Commander(Node):
         Publish the system status
         """
 
-
         self.battery_check_requested = True
         msg = DroneStatus()
         msg.timestamp = time.time()
         msg.battery_ok = self.battery_ok
-        msg.battery_percentage = (self.battery_voltage - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
+        
+        if not self.test_mode:
+            msg.battery_percentage = (self.battery_voltage - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
+            msg.battery_check_timestamp = self.battery_check_timestamp
+
         msg.mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
         msg.fc_connection = True if self.fc_connection else False
-        msg.battery_check_timestamp = self.battery_check_timestamp
+        
 
         self.publisher_status.publish(msg)
 
@@ -162,10 +199,10 @@ class FC_Commander(Node):
     def drone_reboot(self):
         # Reboot the drone
         self.get_logger().info("Rebooting the drone...")
-        while not test_mode and time.time() - self.last_reboot < self.MIN_REBOOT_INTERVAL:
+        while not self.test_mode and time.time() - self.last_reboot < self.MIN_REBOOT_INTERVAL:
             time.sleep(1)
 
-        if not test_mode and time.time() - self.last_reboot > self.MIN_REBOOT_INTERVAL:
+        if not self.test_mode and time.time() - self.last_reboot > self.MIN_REBOOT_INTERVAL:
             Ack = False
 
             while not Ack:    
@@ -181,7 +218,7 @@ class FC_Commander(Node):
             # Start the drone again
             self.drone_init()
         else:
-            if not test_mode: 
+            if not self.test_mode: 
                 self.get_logger().warn("Rebooting too soon. Waiting for the reboot interval to expire")
 
     def fc_commander(self, updaterate=50):
@@ -238,7 +275,7 @@ class FC_Commander(Node):
                 self.reset_cmd()
                 
                 # Arm the drone again
-                if not test_mode:
+                if not self.test_mode:
                     self.drone_arm()
     
     def flight_mode(self):
@@ -273,7 +310,7 @@ class FC_Commander(Node):
         Send flight command to the drone
         """
    
-        if not test_mode:
+        if not self.test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
                     int(self.fc_command.cmd_roll),
@@ -292,7 +329,7 @@ class FC_Commander(Node):
         """
         self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control")
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
-            if not test_mode:
+            if not self.test_mode:
                     self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
                     self.the_connection.target_component,       # Target component ID
                     mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,  # Command ID

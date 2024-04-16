@@ -201,17 +201,14 @@ source /opt/ros/foxy/setup.bash<br>
 Source install<br>
 source install/local_setup.bash<br>
 
-###create a bash script
+### create a bash script
 
 	nano ~/.bashrc
  
 insert at the button of the file:
 
 	fc() {
-	    cd &&INSERT PATH&& || {
-	        echo "Failed to navigate to &&INSERT PATH&&"
-	        return 1
-	    }
+	    cd &&INSERT PATH&&
 	    source /opt/ros/foxy/setup.bash
 	    source install/local_setup.bash
 	    echo "Commands executed successfully."
