@@ -96,7 +96,7 @@ def create_gui(window):
     #*############################ - Waypoints - ##########################
     waypoint_labels_title = tk.Label(tab1, text="Waypoints:", justify="left")
     waypoint_labels_title.pack()
-    waypoint_labels_title.place(x=415, y=y_window-220)
+    waypoint_labels_title.place(x=415, y=y_window-230)
 
     waypoint_labels_next = tk.Label(tab1, text="Heading towards", justify="left")
     waypoint_labels_next.pack()
@@ -107,7 +107,7 @@ def create_gui(window):
     waypoint_labels.pack()
     waypoint_labels.place(x=x_window-150, y=y_window-200)
     button_waypoint = ttk.Button(tab1, text="Update Waypoint")
-    button_waypoint.place(x=x_window-150, y=y_window-250)
+    button_waypoint.place(x=x_window-150, y=y_window-280)
 
     waypoint_list_textbox = tk.Text(tab1, height=11, width=20)
     waypoint_list_textbox.pack(side=tk.BOTTOM, fill=tk.X)
