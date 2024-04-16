@@ -23,7 +23,7 @@ class FC_Commander(Node):
         logging.getLogger().addHandler(file_handler)
 
         # Set the logging level for the root logger
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.debug)
 
         # Node parameters
         self.setup_test_parameters()
