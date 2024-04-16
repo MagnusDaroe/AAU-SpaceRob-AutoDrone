@@ -201,3 +201,18 @@ source /opt/ros/foxy/setup.bash<br>
 Source install<br>
 source install/local_setup.bash<br>
 
+###create a bash script
+\`\`\`bash
+nano ~/.bashrc
+\`\`\`
+\`\`\`bash
+fc() {
+    cd /home/nejmann/Documents/GitHub/P4_DroneProject || {
+        echo "Failed to navigate to /home/nejmann/Documents/GitHub/P4_DroneProj>
+        return 1
+    }
+    source /opt/ros/foxy/setup.bash
+    source install/local_setup.bash
+    echo "Commands executed successfully."
+}
+\`\`\`
