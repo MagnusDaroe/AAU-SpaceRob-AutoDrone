@@ -129,6 +129,11 @@ class FC_Commander(Node):
                     self.fc_command.cmd_roll = msg.cmd_auto_roll
                     self.fc_command.cmd_pitch = msg.cmd_auto_pitch
                     self.fc_command.cmd_yaw = msg.cmd_auto_yaw
+                elif msg.cmd_mode == 2:
+                    self.fc_command.cmd_thrust = msg.cmd_thrust
+                    self.fc_command.cmd_roll = msg.cmd_roll
+                    self.fc_command.cmd_pitch = msg.cmd_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_yaw
             
              # Decide which command to send to the flight controller
             self.fc_command.timestamp = msg.timestamp
@@ -243,6 +248,7 @@ class FC_Commander(Node):
                 elif self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
+                    self.get_logger().info("Drone in test mode")
                     self.flight_mode()
                 else:
                     self.get_logger().fatal("Drone mode not recognized")
