@@ -14,6 +14,17 @@ class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
 
+        # Configure logging to save log messages to a file
+        file_handler = logging.FileHandler('Drone.log')
+        formatter = logging.Formatter('{asctime} - {name} - {levelname} - {message}', style='{')
+        file_handler.setFormatter(formatter)
+
+        # Add the file handler to the root logger
+        logging.getLogger().addHandler(file_handler)
+
+        # Set the logging level for the root logger
+        logging.getLogger().setLevel(logging.debug)
+
         # Node parameters
         self.setup_test_parameters()
 
@@ -251,7 +262,7 @@ class FC_Commander(Node):
                     self.fc_command.cmd_thrust = self.fc_command.cmd_thrust
                     self.fc_command.cmd_roll = self.fc_command.cmd_roll
                     self.fc_command.cmd_pitch = self.fc_command.cmd_pitch
-                    self.fc_command.cmd_yaw = 50 if self.fc_command.cmd_yaw > 0 else 0
+                    self.fc_command.cmd_yaw = self.fc_command.cmd_yaw
 
 
                     self.flight_mode()
