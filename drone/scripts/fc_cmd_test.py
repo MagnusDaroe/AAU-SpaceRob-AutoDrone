@@ -6,6 +6,7 @@ from pymavlink import mavutil
 import time
 import threading
 import math
+import logging
 from drone.msg import DroneCommand, DroneStatus
 
 
@@ -13,7 +14,9 @@ class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
 
-            
+        # Configure logging to save log messages to a file
+        logging.basicConfig(filename='drone.log', level=logging.INFO)
+
         # Node parameters
         self.setup_test_parameters()
 
