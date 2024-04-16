@@ -208,10 +208,7 @@ source install/local_setup.bash<br>
 insert at the button of the file:
 
 	fc() {
-	    cd &&INSERT PATH&& || {
-	        echo "Failed to navigate to &&INSERT PATH&&"
-	        return 1
-	    }
+	    cd &&INSERT PATH&&
 	    source /opt/ros/foxy/setup.bash
 	    source install/local_setup.bash
 	    echo "Commands executed successfully."
