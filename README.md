@@ -201,7 +201,7 @@ source /opt/ros/foxy/setup.bash<br>
 Source install<br>
 source install/local_setup.bash<br>
 
-###create a bash script
+### create a bash script
 
 	nano ~/.bashrc
  
