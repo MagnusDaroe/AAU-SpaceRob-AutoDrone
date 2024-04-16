@@ -107,7 +107,7 @@ class FC_Commander(Node):
 
                
         # Set self.test_mode to True to run the script without a drone
-        self.test_mode = True
+        self.test_mode = False
 
         # Check battery voltage
         self.do_battery_check = True
