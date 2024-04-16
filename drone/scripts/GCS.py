@@ -14,7 +14,8 @@ import threading
 import math
 import rclpy
 from rclpy.node import Node
-from drone.msg import DroneStatus
+from drone.msg import DroneStatus, DroneControlData
+
 #todo add color scheme to some of the states
 #todo add waypoint
 #todo add videofeed
@@ -99,7 +100,7 @@ def create_gui(window):
 
     waypoint_labels_next = tk.Label(tab1, text="Heading towards", justify="left")
     waypoint_labels_next.pack()
-    waypoint_labels_next.place(x=x_window-150, y=y_window-220)
+    waypoint_labels_next.place(x=x_window-150, y=y_window-230)
 
     global waypoint_labels
     waypoint_labels = tk.Label(tab1, text="1:\n2:\n3:\n", justify="right")
@@ -163,7 +164,7 @@ def create_gui(window):
     # Add graph update button
     button_3dGraph = ttk.Button(tab1, text="Activate 3D Graph")
     # Place button to the right
-    button_3dGraph.place(x=5, y=10)
+    button_3dGraph.place(x=10, y=10)
     def button_3dGraph_function():
         global tabUpdate
         if button_3dGraph.cget("text") == "Activate 3D Graph":
@@ -253,6 +254,7 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
     """
     global first
     pose_data = data_update()   # Get the updated pose data
+    global x, y, z, roll, pitch, yaw
     x, y, z, roll, pitch, yaw = pose_data[:]    # Unpack the pose data
     poseVariables.config(text=f"{x:.2f}\n{y:.2f}\n{z:.2f}\n{roll:.2f}\n{pitch:.2f}\n{yaw:.2f}") # Update the pose variables in the GUI
     
@@ -327,6 +329,18 @@ class drone_listener(Node):
             '/status_fc',
             self.status_messages,
             10)
+        
+
+        # Define publisher
+        self.publisher_status= self.create_publisher(
+            DroneControlData,
+            '/xyz_test',
+            10
+        )
+        self.publish_timer = self.create_timer(0.2, self.status_publisher)
+
+
+
         self.old_message = [0, 0, 0, 0, 0]
         #prints
         self.connectedConsoleDict = {0: "Flight Controller Disconnected", 1: "Flight Controller Connected"}
@@ -340,7 +354,20 @@ class drone_listener(Node):
         self.batteryOKDict = {0: "Low", 1: "OK"}
         
 
-        
+    def status_publisher(self):
+        """
+        Publish the system status
+        """
+
+
+
+        msg = DroneControlData()
+
+        msg.vicon_x = float(x)
+        msg.vicon_y = float(y)
+        msg.vicon_z = float(z)
+
+        self.publisher_status.publish(msg)
 
     def status_messages(self, msg):
         # message type:
