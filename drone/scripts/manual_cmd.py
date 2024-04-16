@@ -66,27 +66,14 @@ def control_loop(node):
             Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
             Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
         elif Drone_cmd.cmd_mode == 2:
-            Drone_cmd.cmd_roll = float(0)
-            Drone_cmd.cmd_pitch = float(0)
-            Drone_cmd.cmd_thrust = float(0)
-            Drone_cmd.cmd_yaw = float(0)
+            Drone_cmd.cmd_roll = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
+            Drone_cmd.cmd_pitch = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
+            Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
+            Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
             
         node.send_control_command(Drone_cmd)
 
-       
-        if Drone_cmd.cmd_mode == 2:
-            reboot_time_start = time.time()
-            while Drone_cmd.cmd_mode == 2 or time.time() - reboot_time_start < reboot_time:
-                Drone_cmd.cmd_mode = get_mode(node)
-                print(Drone_cmd.cmd_mode)
-                if Drone_cmd.cmd_mode != 2:
-                    node.get_logger().info(f"Drone in reboot mode. Exiting reboot mode in {reboot_time - (time.time() - reboot_time_start)}.")
-                    break
-                else:
-                    node.get_logger().info("Drone in reboot mode. Waiting for mode change.", end='\r')
-
-                time.sleep(0.1)
-
+    
         rate.sleep()
 
 

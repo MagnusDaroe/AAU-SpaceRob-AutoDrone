@@ -236,9 +236,6 @@ class FC_Commander(Node):
                 self.battery_check_requested = False
 
             
-            if self.fc_command.cmd_mode == 2:
-                self.drone_reboot()
-            
             if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
                 # Check if the drone is in manual, autonomous mode and test mode
                 if self.fc_command.cmd_mode == 0:
