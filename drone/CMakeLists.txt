@@ -56,6 +56,7 @@
 	  scripts/image_publish.py
 	  scripts/image_listen.py
 	  scripts/GCS.py
+	  scripts/viconData.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 
