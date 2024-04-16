@@ -1,4 +1,4 @@
-# Scripts README
+# Scripts
 The following scripts are used in the drone project: fc_cmd, image_listen, image_publish, manual_cmd and GCS
 
 ### fc_cmd
