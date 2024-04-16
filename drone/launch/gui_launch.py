@@ -6,9 +6,12 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='drone',
             executable='GCS.py',
-            name='GroundControlStation'),
+            name='GroundControlStation'
+        ),
         launch_ros.actions.Node(
             package='drone',
             executable='manual_cmd.py',
-            name='ManualCommand'),
-  ])
+            name='ManualCommand',
+        )
+    ])
+
