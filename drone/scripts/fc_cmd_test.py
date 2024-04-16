@@ -248,7 +248,7 @@ class FC_Commander(Node):
                 elif self.fc_command.cmd_mode == 1:
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
-                    self.get_logger().info("Drone in test mode")
+                    self.fc_command.cmd_yaw = float(50) if self.fc_command.cmd_yaw > 0 else float(0)  
                     self.flight_mode()
                 else:
                     self.get_logger().fatal("Drone mode not recognized")
