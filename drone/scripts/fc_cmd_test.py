@@ -251,7 +251,7 @@ class FC_Commander(Node):
                     self.fc_command.cmd_thrust = self.fc_command.cmd_thrust
                     self.fc_command.cmd_roll = self.fc_command.cmd_roll
                     self.fc_command.cmd_pitch = self.fc_command.cmd_pitch
-                    self.fc_command.cmd_yaw = 50 if self.fc_command.cmd_yaw > 0 else 0
+                    self.fc_command.cmd_yaw = int(50 if self.fc_command.cmd_yaw > 0 else 0)
 
 
                     self.flight_mode()
