@@ -101,6 +101,7 @@ def create_gui(window):
     waypoint_labels_next.pack()
     waypoint_labels_next.place(x=x_window-150, y=y_window-220)
 
+    global waypoint_labels
     waypoint_labels = tk.Label(tab1, text="1:\n2:\n3:\n", justify="right")
     waypoint_labels.pack()
     waypoint_labels.place(x=x_window-150, y=y_window-200)
@@ -337,6 +338,7 @@ class drone_listener(Node):
         self.armedDict = {0: "Disarmed", 1: "Armed"}
         self.modeDict = {0: "Manual", 1: "Autonomous", 2: "Reboot"}
         self.batteryOKDict = {0: "Low", 1: "OK"}
+        
 
         
 
@@ -350,7 +352,7 @@ class drone_listener(Node):
         # uint8 armed
 
         global Connected, Armed, Mode, BatteryOK, Battery
-        message = [msg.fc_connection, msg.armed, msg.mode, msg.battery_ok, msg.battery_percentage]
+        message = [msg.fc_connection, msg.armed, msg.mode, msg.battery_ok, msg.battery_percentage]#,msg.waypoint]
         #console prints
         ConnectedConsole = self.connectedConsoleDict[message[0]]
         ArmedConsole = self.armedConsoleDict[message[1]]
@@ -364,7 +366,9 @@ class drone_listener(Node):
         BatteryOK = self.batteryOKDict[message[3]]
         Battery = f"{int(message[4])}"+ "%"
         droneStates.config(text=f"{Connected}\n{Armed}\n{Mode}\n{BatteryOK}\n{Battery}\n")
-        
+        #waypoint = f"(message[5])"
+        #waypoint_labels.config(text=f"Heading towards:\n{waypoint}")
+
         console_print(f"Time: {time.strftime('%H:%M:%S', time.localtime())}")
         if message != self.old_message: #checks if the has been an update to the messages, if so it prints the updated message
             if message[0] != self.old_message[0]:
