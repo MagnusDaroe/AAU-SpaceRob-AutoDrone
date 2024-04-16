@@ -248,7 +248,7 @@ class FC_Commander(Node):
                     #self.fc_command.cmd_thrust = self.fc_command.cmd_thrust
                     #self.fc_command.cmd_roll = self.fc_command.cmd_roll
                     #self.fc_command.cmd_pitch = self.fc_command.cmd_pitch
-                    self.fc_command.cmd_yaw = float(50) if self.fc_command.cmd_yaw > 0 else float(0)
+                    
                     self.flight_mode()
                 else:
                     self.get_logger().fatal("Drone mode not recognized")
