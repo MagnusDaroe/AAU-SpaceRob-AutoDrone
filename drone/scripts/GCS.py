@@ -72,29 +72,11 @@ def create_gui(window):
     global droneStates
     # Assign some arbitrary values to the drone status variables
     global Connected, Armed, Mode, BatteryOK, Battery
-    Connected, Armed, Mode, BatteryOK, Battery = "", "", "", "", "0%"
+    Connected, Armed, Mode, BatteryOK, Battery = "TBD", "TBD", "TBD", "TBD", "TBD"
     droneStates = tk.Label(tab1, text=f"{Connected}\n{Armed}\n{Mode}\n{BatteryOK}\n{Battery}\n", justify="left")
     droneStates.pack()
     droneStates.place(x=x_window-110, y=175)
-     
-    #*############################ - Arm & Mode Button - ############################
-    #adds buttons to the GUI, which control the arm and mode of the drone
-    # Add arm button and places it to the right
-    buttom_arm = ttk.Button(tab1, text="Arm")
-    buttom_arm.place(x=x_window-150, y=y_window-150)
-    buttom_arm_label = tk.Label(tab1, text="Drone State", justify="left")
-    buttom_arm_label.pack()
-    buttom_arm_label.place(x=x_window-150, y=y_window-170)
-    
-    
-    # Add control mode button to tab 1
-    buttom_mode = ttk.Button(tab1, text="Manual")
-    buttom_mode.place(x=x_window-150, y=y_window-200)
-    buttom_mode_label = tk.Label(tab1, text="Drone Mode", justify="left")
-    buttom_mode_label.pack()
-    buttom_mode_label.place(x=x_window-150, y=y_window-220)
-    
-    
+
     #*############################ - Console_window - ############################
     #ands a console window to the GUI, which displays some console output
     global console_text
@@ -109,29 +91,40 @@ def create_gui(window):
     console_text.place(x=10, y=y_window-200)
     console_text.insert(tk.END, "Welcome to Drone Control Panel x3000:")
     console_text.configure(state='disabled') #makes the console text box read-only
-    
-    #*############################ - Buttons - ############################
-    # Print message when button is clicked
-    def buttom_arm_function():
-        if buttom_arm.cget("text") == "Arm": #checks the text inside the button, if it is "Arm" it changes to "Armed"
-            buttom_arm.configure(text="Armed") #changes the text inside the button to "Armed"
-            console_print("Drone is Armed") #prints a message in the console
-        else:
-            buttom_arm.configure(text="Arm")
-            console_print("Drone is Disarmed")
 
-            
-    def buttom_mode_function():
-        if buttom_mode.cget("text") == "Manual":
-            buttom_mode.configure(text="Autonomous")
-            console_print("Drone is in autonomous mode")
-        else:
-            buttom_mode.configure(text="Manual")
-            console_print("Drone is in manual mode")
-    
-    buttom_mode.config(command=buttom_mode_function)  # Call the function when the button is clicked
-    buttom_arm.config(command=buttom_arm_function)    # Call the function when the button is clicked
-    
+    #*############################ - Waypoints - ##########################
+    waypoint_labels_title = tk.Label(tab1, text="Waypoints:", justify="left")
+    waypoint_labels_title.pack()
+    waypoint_labels_title.place(x=415, y=y_window-220)
+
+    waypoint_labels_next = tk.Label(tab1, text="Heading towards", justify="left")
+    waypoint_labels_next.pack()
+    waypoint_labels_next.place(x=x_window-150, y=y_window-220)
+
+    waypoint_labels = tk.Label(tab1, text="1:\n2:\n3:\n", justify="right")
+    waypoint_labels.pack()
+    waypoint_labels.place(x=x_window-150, y=y_window-200)
+    button_waypoint = ttk.Button(tab1, text="Update Waypoint")
+    button_waypoint.place(x=x_window-150, y=y_window-250)
+
+    waypoint_list_textbox = tk.Text(tab1, height=11, width=20)
+    waypoint_list_textbox.pack(side=tk.BOTTOM, fill=tk.X)
+    waypoint_list_textbox.place(x=410, y=y_window-200)
+
+    def refresh_waypoints():
+        console_print("Waypoints Updated")
+        #import waypoints from .csv
+        #update waypoint_labels
+        waypoint_list = np.loadtxt("Control/waypoints copy.csv", delimiter=",")
+        #make a waypoint text
+        waypoint_list_textbox.configure(state='normal')
+        waypoint_list_textbox.delete('1.0', tk.END)
+        for i in range(len(waypoint_list)):
+            waypoint_list_textbox.insert(tk.END, f"{waypoint_list[i]}\n")
+        waypoint_list_textbox.configure(state='disabled')
+    refresh_waypoints()
+    button_waypoint.config(command=refresh_waypoints)
+
     #*############################ - MatplotLib - ############################
     #This section creates the three different plots, which are displayed in the GUI
     #embed a plot into tkinter window
@@ -167,20 +160,20 @@ def create_gui(window):
     global tabUpdate
     tabUpdate = 0
     # Add graph update button
-    buttom_3dGraph = ttk.Button(tab1, text="Activate 3D Graph")
+    button_3dGraph = ttk.Button(tab1, text="Activate 3D Graph")
     # Place button to the right
-    buttom_3dGraph.place(x=5, y=10)
-    def buttom_3dGraph_function():
+    button_3dGraph.place(x=5, y=10)
+    def button_3dGraph_function():
         global tabUpdate
-        if buttom_3dGraph.cget("text") == "Activate 3D Graph":
-            buttom_3dGraph.configure(text="Deactivate 3D Graph")
+        if button_3dGraph.cget("text") == "Activate 3D Graph":
+            button_3dGraph.configure(text="Deactivate 3D Graph")
             console_print("Graph activated")
             tabUpdate = 1
         else:
-            buttom_3dGraph.configure(text="Activate 3D Graph")
+            button_3dGraph.configure(text="Activate 3D Graph")
             console_print("Graph deactivated")
             tabUpdate = 0
-    buttom_3dGraph.config(command=buttom_3dGraph_function)
+    button_3dGraph.config(command=button_3dGraph_function)
     
 
     def on_tab_change(event):
@@ -384,8 +377,7 @@ class drone_listener(Node):
                 console_print(f"{BatteryConsoleOK}")
         
 
-        console_print(f"Battery%: {Battery}")#old_message may always be differnt, as battery is always changing, so maybe bad in this statement.
-        
+        console_print(f"Battery%: {Battery}")
 
             
         self.old_message = message.copy()
