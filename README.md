@@ -202,17 +202,19 @@ Source install<br>
 source install/local_setup.bash<br>
 
 ###create a bash script
-\`\`\`bash
-nano ~/.bashrc
-\`\`\`
-\`\`\`bash
-fc() {
-    cd /home/nejmann/Documents/GitHub/P4_DroneProject || {
-        echo "Failed to navigate to /home/nejmann/Documents/GitHub/P4_DroneProj>
-        return 1
-    }
-    source /opt/ros/foxy/setup.bash
-    source install/local_setup.bash
-    echo "Commands executed successfully."
-}
-\`\`\`
+
+	nano ~/.bashrc
+ 
+insert at the button of the file:
+
+	fc() {
+	    cd &&INSERT PATH&& || {
+	        echo "Failed to navigate to &&INSERT PATH&&"
+	        return 1
+	    }
+	    source /opt/ros/foxy/setup.bash
+	    source install/local_setup.bash
+	    echo "Commands executed successfully."
+	}
+ Now when "fc" is typed in the terminal, the terminal is ready to perform ros2 operations.
+
