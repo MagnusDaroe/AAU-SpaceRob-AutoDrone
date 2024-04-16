@@ -13,18 +13,7 @@ from drone.msg import DroneCommand, DroneStatus
 class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
-
-        # Configure logging to save log messages to a file
-        file_handler = logging.FileHandler('Drone.log')
-        formatter = logging.Formatter('{asctime} - {name} - {levelname} - {message}', style='{')
-        file_handler.setFormatter(formatter)
-
-        # Add the file handler to the root logger
-        logging.getLogger().addHandler(file_handler)
-
-        # Set the logging level for the root logger
-        logging.getLogger().setLevel(logging.debug)
-
+        
         # Node parameters
         self.setup_test_parameters()
 
