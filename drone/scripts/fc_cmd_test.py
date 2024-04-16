@@ -13,7 +13,7 @@ from drone.msg import DroneCommand, DroneStatus
 class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
-        
+
         # Node parameters
         self.setup_test_parameters()
 
@@ -251,7 +251,7 @@ class FC_Commander(Node):
                     self.fc_command.cmd_thrust = self.fc_command.cmd_thrust
                     self.fc_command.cmd_roll = self.fc_command.cmd_roll
                     self.fc_command.cmd_pitch = self.fc_command.cmd_pitch
-                    self.fc_command.cmd_yaw = self.fc_command.cmd_yaw
+                    self.fc_command.cmd_yaw = 50 if self.fc_command.cmd_yaw > 0 else 0
 
 
                     self.flight_mode()
