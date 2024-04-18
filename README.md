@@ -13,7 +13,7 @@ This repository contains the code for Robotics Group 465 at AAU. The project was
 - Operating System: Jetson Nano Ubuntu 20.04 image
 - ROS2 Distribution: FOXY - Developed our own package.
 
-To get started, download the image from the link provided onto a microSD card (64 GB recommended for flight data logging). Use a tool like BalenaEtcher to flash the image onto the microSD card. Here’s the link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
+To get started, download the image from the link provided onto a microSD card (64 GB used by us). Use a tool like BalenaEtcher to flash the image onto the microSD card. Here’s the link: https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image
 
 
 # Guide
@@ -132,7 +132,7 @@ Install Python dependencies:
  You should now have working ROS2 Distrubution on the onboard computer. 
  
 ## 4. Build a ROS2 workspace on the Onboard computer.
-Clone the repository to the onboard computer. We used github-desktop, and placed it in the home path contrary to the normal location in the documents folder. This was done to make it more accessible trough the terminal.
+Clone the repository to the onboard computer. We used github-desktop, and placed it in the home path contrary to the normal location in the documents folder.
 
 Open a terminal on the onboard computer, and navigate the location of the workspace. Use the following command to build it. This must be done every time a modification is made to it.
 
@@ -142,8 +142,7 @@ For simplicity you should also make your terminal echo these commands at startup
 
 	echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
 	echo "sudo chmod 666 /dev/ttyTHS1" >> ~/.bashrc 
- 	
-In the drone package, there are five things to look out for when you want to modify it yourself: the scripts, msg, and src folders, as well as the CMakeLists.txt and package.xml files.
+The second command is to allow communication over the serialport. In the drone package, there are five things to look out for when you want to modify it yourself: the scripts, msg, and src folders, as well as the CMakeLists.txt and package.xml files.
 
 The setup is as follows:
 
