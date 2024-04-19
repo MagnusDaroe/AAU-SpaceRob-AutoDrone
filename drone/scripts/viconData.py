@@ -25,17 +25,21 @@ class ViconPublisher(Node):
 
             self.conn, self.addr = server_socket.accept()
             print(f"Connection from {self.addr}")
-            self.data = self.conn.recv(1024)
+            
+            
 
 
     def publish_message(self):
             msg = DroneControlData()
+            self.data = self.conn.recv(1024)
             if not self.data:
                 return
+            
             received_data = self.data.decode().split(',')
+
             if len(received_data) == 6:
                 x, y, z, roll, pitch, yaw = map(float, received_data)
-                print(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
+                #(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
                 #msg.timestamp = time.time()  # Current timestamp
                 msg.vicon_x = x  
                 msg.vicon_y = y  
@@ -46,7 +50,9 @@ class ViconPublisher(Node):
                 self.publisher_.publish(msg)
                 self.get_logger().info('Publishing: %s' % msg)
             else:
-                print(f"Received data has unexpected format: {received_data}")
+                self.get_logger().warning('Publishing: %s' % "Unexpected format")
+                self.get_logger().warning('Publishing: %s' % received_data)
+                #print(f"Received data has unexpected format: {received_data}")
 
 
         
