@@ -316,8 +316,8 @@ class FC_Commander(Node):
         if not self.test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
-                    int(self.fc_command.cmd_roll),
                     int(self.fc_command.cmd_pitch),
+                    int(self.fc_command.cmd_roll),
                     int(self.fc_command.cmd_thrust),
                     int(self.fc_command.cmd_yaw),
                     0
