@@ -249,14 +249,14 @@ class FC_Commander(Node):
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 300
-                    if self.fc_command.cmd_yaw:
-                        if self.fc_command.cmd_yaw > 0:
-                            self.fc_command.cmd_yaw = float(x)
-                        elif self.fc_command.cmd_yaw < 0:
-                            self.fc_command.cmd_yaw = float(-x)
+                    x = 400
+                    if self.fc_command.cmd_roll:
+                        if self.fc_command.cmd_roll > 0:
+                            self.fc_command.cmd_roll = float(x)
+                        elif self.fc_command.cmd_roll < 0:
+                            self.fc_command.cmd_roll = float(-x)
                         else:
-                            self.fc_command.cmd_yaw = float(0)
+                            self.fc_command.cmd_roll = float(0)
                     self.flight_mode()
                 else:
                     self.get_logger().fatal("Drone mode not recognized")
@@ -316,8 +316,8 @@ class FC_Commander(Node):
         if not self.test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
-                    int(self.fc_command.cmd_roll),
                     int(self.fc_command.cmd_pitch),
+                    int(self.fc_command.cmd_roll),
                     int(self.fc_command.cmd_thrust),
                     int(self.fc_command.cmd_yaw),
                     0
