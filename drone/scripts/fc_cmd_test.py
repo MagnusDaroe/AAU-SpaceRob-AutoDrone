@@ -249,7 +249,7 @@ class FC_Commander(Node):
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 300
+                    x = 400
                     if self.fc_command.cmd_pitch:
                         if self.fc_command.cmd_pitch > 0:
                             self.fc_command.cmd_pitch = float(x)
