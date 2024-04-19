@@ -249,14 +249,14 @@ class FC_Commander(Node):
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 500
-                    if self.fc_command.cmd_pitch:
-                        if self.fc_command.cmd_pitch > 0:
-                            self.fc_command.cmd_pitch = float(x)
-                        elif self.fc_command.cmd_pitch < 0:
-                            self.fc_command.cmd_pitch = float(-x)
+                    x = 200
+                    if self.fc_command.cmd_roll:
+                        if self.fc_command.cmd_roll > 0:
+                            self.fc_command.cmd_roll = float(x)
+                        elif self.fc_command.cmd_roll < 0:
+                            self.fc_command.cmd_roll = float(-x)
                         else:
-                            self.fc_command.cmd_pitch = float(0)
+                            self.fc_command.cmd_roll = float(0)
                     self.flight_mode()
                 else:
                     self.get_logger().fatal("Drone mode not recognized")
