@@ -14,7 +14,7 @@ class ViconPublisher(Node):
     def __init__(self):
         super().__init__('vicon_publisher')
         self.publisher_ = self.create_publisher(DroneControlData, 'DroneControlData', 10)
-        self.timer = self.create_timer(1, self.publish_message)
+        self.timer = self.create_timer(0.1, self.publish_message)
         self.mode = 1
         self.HOST = '192.168.1.34'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
@@ -25,29 +25,28 @@ class ViconPublisher(Node):
 
             self.conn, self.addr = server_socket.accept()
             print(f"Connection from {self.addr}")
+            self.data = self.conn.recv(1024)
 
 
     def publish_message(self):
             msg = DroneControlData()
-            with self.conn:
-                data = self.conn.recv(1024)
-                if not data:
-                    return
-                received_data = data.decode().split(',')
-                if len(received_data) == 6:
-                    x, y, z, roll, pitch, yaw = map(float, received_data)
-                    print(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
-                    #msg.timestamp = time.time()  # Current timestamp
-                    msg.vicon_x = x  
-                    msg.vicon_y = y  
-                    msg.vicon_z = z  
-                    msg.vicon_roll = roll  
-                    msg.vicon_pitch = pitch  
-                    msg.vicon_yaw = yaw
-                    self.publisher_.publish(msg)
-                    self.get_logger().info('Publishing: %s' % msg)
-                else:
-                    print(f"Received data has unexpected format: {received_data}")
+            if not self.data:
+                return
+            received_data = self.data.decode().split(',')
+            if len(received_data) == 6:
+                x, y, z, roll, pitch, yaw = map(float, received_data)
+                print(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
+                #msg.timestamp = time.time()  # Current timestamp
+                msg.vicon_x = x  
+                msg.vicon_y = y  
+                msg.vicon_z = z  
+                msg.vicon_roll = roll  
+                msg.vicon_pitch = pitch  
+                msg.vicon_yaw = yaw
+                self.publisher_.publish(msg)
+                self.get_logger().info('Publishing: %s' % msg)
+            else:
+                print(f"Received data has unexpected format: {received_data}")
 
 
         
