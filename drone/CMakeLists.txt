@@ -33,8 +33,8 @@
 	  "msg/DroneControlData.msg"
 	  "msg/DroneStatus.msg"
 	  "msg/DroneVideo.msg"
+	  "srv/Clock.srv"
 	  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)
-
 	# Include Cpp "include" directory
 	include_directories(include)
 
@@ -51,7 +51,6 @@
 	# Install Python executables
 	install(PROGRAMS
 	  scripts/fc_cmd.py
-	  scripts/fc_cmd_test.py
 	  scripts/manual_cmd.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py
