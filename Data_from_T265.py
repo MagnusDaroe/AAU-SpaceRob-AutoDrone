@@ -14,6 +14,7 @@ cfg.enable_stream(rs.stream.pose)
 # Start streaming with requested configuration
 pipe.start(cfg)
 
+
 def get_T265_data(frames,print_data=False,confidence=True,print_time_stamp=True):
     """Get all data from the T265 camera and print it to the terminal if print_data is True
     
@@ -36,6 +37,7 @@ def get_T265_data(frames,print_data=False,confidence=True,print_time_stamp=True)
         angular_acceleration_xyz  = [data.angular_acceleration.x, data.angular_acceleration.y, data.angular_acceleration.z]
         tracker_confidence = data.tracker_confidence
         mapper_confidence = data.mapper_confidence
+
 
         # Print the data to the terminal if print_data is True
         if print_data:
@@ -120,17 +122,71 @@ def q_to_eul(qrot_xyzw):#print_RPY=False
 
     return list_RPY
 
+def get_R_matrix_q(qrot_xyzw):
+    """Convert a quaternion to a rotation matrix
+    """
+    # Define quaternion (w, x, y, z)
+    w = qrot_xyzw[3]
+    x = qrot_xyzw[0]
+    y = qrot_xyzw[1]
+    z = qrot_xyzw[2]#-qrot_xyzw[2]
+    R_1 = np.array([[-(1-2*y*y-2*z*z), 2*x*y-2*z*w, -(2*x*z+2*y*w)],
+                    [-(2*x*y+2*z*w), 1-2*x*x-2*z*z, -(2*y*z-2*x*w)],
+                    [-(2*x*z-2*y*w), 2*y*z+2*x*w, -(1-2*x*x-2*y*y)]])
+    #R_2=R.from_quat([qrot_xyzw[3],-qrot_xyzw[2],qrot_xyzw[0],-qrot_xyzw[1]])
+    return R_1
+
+def get_R_matrix_eul(eul):
+    """Convert Euler angles to a rotation matrix
+    """
+    # Define Euler angles (roll, pitch, yaw)
+    roll = eul[0]
+    pitch = eul[1]
+    yaw = eul[2]
+
+    # Convert Euler angles to a rotation matrix
+    R_x = np.array([[1, 0, 0],
+                    [0, math.cos(roll), -math.sin(roll)],
+                    [0, math.sin(roll), math.cos(roll)]])
+
+    R_y = np.array([[math.cos(pitch), 0, math.sin(pitch)],
+                    [0, 1, 0],
+                    [-math.sin(pitch), 0, math.cos(pitch)]])
+
+    R_z = np.array([[math.cos(yaw), -math.sin(yaw), 0],
+                    [math.sin(yaw), math.cos(yaw), 0],
+                    [0, 0, 1]])
+
+    R = np.dot(R_z, np.dot(R_y, R_x))
+    return R
+
 try:
     for _ in range(5000):
         # Wait for the next set of frames from the camera
         frames = pipe.wait_for_frames()
 
-        get_T265_data(frames,1,1)
+        #get_T265_data(frames,1,1)
 
         translation_xyz, rotation_xyzw,pose_confidence, frame_number, time_stamp=get_T265_pose(frames,0)
         #rot=quat_to_euler(rotation_xyzw)
         #rot=q_to_eul(rotation_xyzw)
         #print("Rot: roll: {}, pitch: {}, raw: {}".format(rot[0],rot[1],rot[2]))
+        R_1=get_R_matrix_q(rotation_xyzw)
+        #print("R1_matrix_q: \n{}".format(R_1))
+        #print("R_matrix_eul: \n{}".format(get_R_matrix_eul(q_to_eul(rotation_xyzw))))
+        pos_cm=np.array(translation_xyz)*100
+        #reshap to vector
+        #print("Pose in cm: x: {}, y: {}, z: {}".format(translation_xyz[0]*100,translation_xyz[1]*100,translation_xyz[2]*100))
+        #print("Pose in cm: x: {}, y: {}, z: {}".format(pos_cm[0],pos_cm[1],pos_cm[2]))
+        pos_cm=pos_cm.astype(int).reshape(3,-1)
+        #print(pos_cm)
+        R_g_to_l=get_R_matrix_q(rotation_xyzw)
+
+        R_left_to_l=np.array([[1,0,0],
+                              [0,1,0],
+                              [0,0,1]])
+        
+
 
 
 

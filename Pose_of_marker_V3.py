@@ -1,9 +1,7 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
-import time
-from math import tan, pi
-
+#from Data_from_T265 import get_T265_pose, get_R_matrix_q
 
 ARUCO_DICT = {
 	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
@@ -38,6 +36,8 @@ def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
     mtx - is the camera matrix
     distortion - is the camera distortion matrix
     RETURN list of rvecs, tvecs, and trash (so that it corresponds to the old estimatePoseSingleMarkers())
+
+    Source: https://github.com/Menginventor/aruco_example_cv_4.8.0/blob/main/pose_estimate.py
     '''
     marker_points = np.array([[-marker_size / 2, marker_size / 2, 0],
                               [marker_size / 2, marker_size / 2, 0],
@@ -58,12 +58,11 @@ def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
 
 aruco_type = "DICT_5X5_100"
 
-arucoDict = cv2.aruco.getPredefinedDictionary(ARUCO_DICT[aruco_type])
+aruco_dictionary = cv2.aruco.getPredefinedDictionary(ARUCO_DICT[aruco_type])
 
-arucoParams = cv2.aruco.DetectorParameters()
+aruco_parameters = cv2.aruco.DetectorParameters()
 
-#new:
-detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
+detector = cv2.aruco.ArucoDetector(aruco_dictionary, aruco_parameters)
 
 
 # Functions to get the camera matrix and distortion coefficients from the intrinsics
@@ -95,8 +94,8 @@ try:
     # Get the intrinsics of the left camera from the T265 camera and calculate the undistort_rectify map and the max disparity
     intrinsics = pipe.get_active_profile().get_stream(rs.stream.fisheye, 1).as_video_stream_profile().get_intrinsics()
 
-    K_left  = camera_matrix(intrinsics)
-    D_left  = fisheye_distortion(intrinsics)
+    K_mtx_left  = camera_matrix(intrinsics)
+    Distortion_left  = fisheye_distortion(intrinsics)
 
     # The while loop will run until the variable stop is set to False by pressing the 'q' or 'ESC' key
     while stop==True:
@@ -110,16 +109,21 @@ try:
             # make rgb image from grayscale
             image_rgb = cv2.cvtColor(image_left, cv2.COLOR_GRAY2RGB)
             
-            corners, ids, rejected =detector.detectMarkers(image_left, K_left, D_left)
+            corners, ids, rejected =detector.detectMarkers(image_left, K_mtx_left, Distortion_left)
 
-            rvec, tvec, trash = my_estimatePoseSingleMarkers(corners, 10.0, K_left, D_left)
+            r_vec, t_vec, trash = my_estimatePoseSingleMarkers(corners, 10.0, K_mtx_left, Distortion_left)
             
-            if len(rvec) > 0:
-                print("rvec: {}, tvec: {}, trash: {}".format(rvec, tvec,trash))
-                print("distance: {}".format(np.linalg.norm(tvec[0])))
-                for i in range(len(rvec)):
+            if len(r_vec) > 0:
+                print("r_vec: {}, t_vec: {}, trash: {}".format(r_vec, t_vec,trash))
+                print("distance: {}".format(np.linalg.norm(t_vec[0])))
+                for i in range(len(r_vec)):
+                    # draw the ID of the detected marker over the top left corner
+                    top_left_coner=corners[i][0][0].astype(int)
+                    print("t_vec____: ",t_vec[i].flatten())
+                    t_vec_flat=t_vec[i].flatten().astype(int)
+                    cv2.putText(image_rgb, str("x: {}, y: {}, z: {}".format(t_vec_flat[0],t_vec_flat[1],t_vec_flat[2])),(top_left_coner[0], top_left_coner[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
                     cv2.aruco.drawDetectedMarkers(image_rgb, corners, ids, (0,255,0))
-                    cv2.drawFrameAxes(image_rgb, K_left, D_left, rvec[i], tvec[i], 5.0)
+                    cv2.drawFrameAxes(image_rgb, K_mtx_left, Distortion_left, r_vec[i], t_vec[i], 5.0)
             cv2.imshow('Image_with_with_detections',image_rgb)
             
             key = cv2.waitKey(1)
