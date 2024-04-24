@@ -51,6 +51,7 @@
 	# Install Python executables
 	install(PROGRAMS
 	  scripts/fc_cmd.py
+	  scripts/clock.py
 	  scripts/manual_cmd.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py

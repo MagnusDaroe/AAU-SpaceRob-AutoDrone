@@ -37,7 +37,6 @@ class FC_Commander(Node):
         )
         self.publish_timer = self.create_timer(5, self.status_publisher)
 
-
         # Fc command variables
         self.USB_PORT = '/dev/ttyTHS1'
         self.BAUDRATE = 57600
@@ -52,7 +51,7 @@ class FC_Commander(Node):
         self.TIME_CALIBRATION_ITERATIONS = 5
 
         #Calibrate the clock
-        self.calibrate_clock()
+        self.calibrate_clock(persistence=False)
 
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
@@ -116,7 +115,7 @@ class FC_Commander(Node):
 
                
         # Set self.test_mode to True to run the script without a drone
-        self.test_mode = False
+        self.test_mode = True
 
         # Check battery voltage
         self.do_battery_check = True
@@ -126,12 +125,14 @@ class FC_Commander(Node):
         Calibrate the clock to synchronize the time between the GCS and the computer
         """
         # save current time
-        self.logger.info("Calibrating the clock...")
-        client = self.create_client(Clock, '/clock')
-        client.wait_for_service()
+        self.get_logger().info("Calibrating the clock...")
+        self.client = self.create_client(Clock, '/sync_clock')
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting again...')
 
-        # Create a request object. with the .ClockRequest variabel from the clock service being true
         request = Clock.Request()
+        request.request_value = 42  # Example value, you can set it to any uint8 value you need
+
 
         # Server time list and client time list
         server_time = []
@@ -140,25 +141,36 @@ class FC_Commander(Node):
 
         # Send a service to the GCS to get the current time
         i = 0
+        self.time_offset = 0  # Initialize time offset to 0
         while i < self.TIME_CALIBRATION_ITERATIONS:
             try:
-                client_time_send.append(time.time())  # Change this to get current time
-                response = client.call(request)
-                client_time_received.append(time.time())  # Change this to get current time
-                server_time.append(response.ServerTime)
-                i += 1
+                client_time_send.append(time.time())
+                future = self.client.call_async(request)
+                rclpy.spin_until_future_complete(self, future)
+                if future.result() is not None:
+                    response = future.result()
+                    client_time_received.append(time.time())
+                    server_time.append(response.server_time)
+                else:
+                    self.get_logger().error(f"Failed to get response for request {i + 1}")
             except Exception as e:
-                self.logger.error(f"Failed to get the current time from the GCS: {e}")
+                self.get_logger().error(f"Failed to send request {i + 1}: {e}")
                 if not persistence:
                     break
-
+            i += 1
         # Calculate the time offset
         client_time_send = np.array(client_time_send)
         client_time_received = np.array(client_time_received)
         server_time = np.array(server_time)
         
         self.time_offset = np.mean(server_time - (client_time_send + client_time_received) / 2)
-        self.logger.info(f"Time offset: {self.time_offset}")
+
+        if np.isnan(self.time_offset):
+            self.get_logger().error("Failed to calibrate the clock")
+            self.time_offset = 0
+        self.get_logger().info(f"Time offset: {self.time_offset}")
+
+        self.get_logger().info("Clock calibration completed: Time offset is {self.time_offset} seconds.")
 
     def get_time(self):
         """
