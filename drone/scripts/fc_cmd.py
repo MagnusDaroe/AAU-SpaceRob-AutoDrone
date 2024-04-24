@@ -56,6 +56,7 @@ class FC_Commander(Node):
         # Keep printing the time
         while True:
             self.get_logger().info(f"Current time: {self.get_time()}")
+            self.get_logger().info(f"Offset: {self.time_offset}")
 
 
 
