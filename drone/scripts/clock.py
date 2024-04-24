@@ -15,7 +15,6 @@ class Clock_server(Node):
         self.get_logger().info(f'Request received: {request.request_value}')
         response.server_time = time.time()
         self.get_logger().info('Sending response')
-        
         # Return the response
         return response
 

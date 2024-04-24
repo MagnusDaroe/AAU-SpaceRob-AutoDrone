@@ -53,6 +53,12 @@ class FC_Commander(Node):
         #Calibrate the clock
         self.calibrate_clock(persistence=False)
 
+        # Keep printing the time
+        while True:
+            self.get_logger().info(f"Current time: {self.get_time()}")
+
+
+
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
         self.last_command_time = self.get_time()
