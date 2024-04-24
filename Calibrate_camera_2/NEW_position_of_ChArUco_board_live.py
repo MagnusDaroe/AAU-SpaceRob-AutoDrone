@@ -82,7 +82,7 @@ def get_pose_data(frames):
 
 
 
-def get_marker_pose(image,board,mtx,dist):
+def get_board_pos(image,board,mtx,dist):
     tvec=[]
     all_charuco_ids = []
     all_charuco_corners = []
@@ -142,7 +142,7 @@ try:
             T_q=get_T_matrix_q(rotation_xyzw,translation_xyz)
 
             cv2.putText(image_rgb, str("x: {}, y: {}, z: {}".format(pos_cm[0],pos_cm[1],pos_cm[2])),(20, 20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
-            t_vec_,coner=get_board_pose(image_rgb,board,mtx,dist)
+            t_vec_,coner=get_board_pos(image_rgb,board,mtx,dist)
             #print("coner:\n",coner)
             if len(t_vec_)>2:
                 print("coner (x,y): ({},{})".format(coner[0].flatten()[0].astype(int),coner[0].flatten()[1].astype(int)))
@@ -166,7 +166,7 @@ try:
             #print("image_rgb.shape",image_rgb_sz.shape)
             cv2.imshow('Image_with_with_detections',image_rgb_sz)
             cv2.imshow('Image_rgb',image_rgb)
-            #cv2.imshow('Image',img_undist)
+            cv2.imshow('Image',img_undist)
             #cv2.imshow('Image 2',img_undis_2[200:-200,200:-200])
             
             key = cv2.waitKey(1)

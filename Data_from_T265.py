@@ -2,6 +2,7 @@ import pyrealsense2 as rs
 import math
 from scipy.spatial.transform import Rotation as R
 import numpy as np
+import time
 
 # Declare RealSense pipeline, encapsulating the actual device and sensors
 pipe = rs.pipeline()
@@ -168,9 +169,15 @@ try:
         #get_T265_data(frames,1,1)
 
         translation_xyz, rotation_xyzw,pose_confidence, frame_number, time_stamp=get_T265_pose(frames,0)
-        #rot=quat_to_euler(rotation_xyzw)
+        rot=quat_to_euler(rotation_xyzw)
         #rot=q_to_eul(rotation_xyzw)
-        #print("Rot: roll: {}, pitch: {}, raw: {}".format(rot[0],rot[1],rot[2]))
+        print("Rot: roll: {}, pitch: {}, raw: {}".format(rot[0].round(2),rot[1].round(2),rot[2].round(2)))
+        # Print the data
+        print("Rot: roll: {}, pitch: {}, raw: {}".format(rot[0].round(2), rot[1].round(2), rot[2].round(2)))
+
+        # Save data to CSV file
+        with open("pose_data.csv", mode='a') as file:
+            np.savetxt(file, [rot], delimiter=",", fmt='%.2f')
         R_1=get_R_matrix_q(rotation_xyzw)
         #print("R1_matrix_q: \n{}".format(R_1))
         #print("R_matrix_eul: \n{}".format(get_R_matrix_eul(q_to_eul(rotation_xyzw))))
@@ -186,6 +193,8 @@ try:
                               [0,1,0],
                               [0,0,1]])
         
+        #delay of 0.1 seconds
+        time.sleep(0.1)
 
 
 

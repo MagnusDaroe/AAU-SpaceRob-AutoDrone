@@ -1,3 +1,10 @@
+"""
+NOTE:
+    - The code is written in Python 3.9.12.
+    - opencv-contrib-python         4.7.0.72
+    - opencv-python                 4.8.1.78
+"""
+
 import numpy as np
 import cv2
 import os
