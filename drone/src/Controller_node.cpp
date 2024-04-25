@@ -4,24 +4,29 @@
 #include <iostream>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
-#include "msg/DroneControlData.hpp"
-
+#include "drone/msg/drone_control_data.hpp"
+#include "drone/msg/drone_command.hpp"
 
 using namespace std::chrono_literals;
 
-class AltitudeControllerNode : public rclcpp::Node
+class ControllerNode : public rclcpp::Node
 {
 public:
-    AltitudeControllerNode() : Node("altitude_controller_node")
+    ControllerNode() : Node("altitude_controller_node")
     {
         // Subscribe to altitude reference and measurement topics
-        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/drone_control_data", 10, std::bind(&AltitudeControllerNode::zRefCallback, this, _1));
+        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/drone_control_data", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
 
         // Publish regulated altitude control value
-        Data_publisher_ = this->create_publisher<drone::msg::DroneControlData>("regulated_altitude_control", 10);
+        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);
     }
 
 private:
+    //reference values
+    float x_ref = 120;
+    float y_ref = 100;
+    float z_ref = 150;
+
     float altitude_control_value;
     float regulator_z_value;
     float integral;
@@ -37,18 +42,23 @@ private:
     float regulator_roll_value;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
-    rclcpp::Publisher<drone::msg::DroneControlData>::SharedPtr Thrust_publisher_;
+    rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
-    //Altitude_controller functions
-    void zRefCallback(const drone::msg::DroneControlData::SharedPtr msg)
+    //Controller functions
+    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        z_error_to_controller_value(msg->data);
-        control_value_regulated();
-    }
-    
-    void zMesCallback(const drone::msg::DroneControlData::SharedPtr msg)
-    {
-        // Assuming we update z_mes here if needed
+        z_error_to_controller_value(z_ref);
+        control_value_regulated(ControllerNode::altitude_control_value);
+        globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
+        localErrorToAngle(local_error_x, local_error_y);
+        anglePD(pitch_angle, roll_angle);
+
+        // Publish regulated pitch, roll, and thrust values
+        auto control_msg = drone::msg::DroneCommand();
+        control_msg.cmd_auto_roll = regulator_pitch_value;
+        control_msg.cmd_auto_pitch = regulator_roll_value;
+        control_msg.cmd_auto_thrust = regulator_z_value;
+        Control_publisher_->publish(control_msg);
     }
 
     void z_error_to_controller_value(float z_ref)
@@ -79,39 +89,9 @@ private:
         integral += altitude_control_value;
         regulator_z_value = Kp_altitude * altitude_control_value + Ki_altitude * integral + Kd_altitude * (altitude_control_value - prev_z_error);
         prev_z_error = altitude_control_value;
-
-        // Publish regulated altitude control value
-        auto msg = drone::msg::DroneControlData;
-        msg.data = regulator_z_value;
-        regulator_z_value_publisher_->publish(msg);
     }
 
-    //XY_controller functions
-    void globalPositionCallback(const drone::msg::DroneControlData::SharedPtr msg)
-    {
-        if (msg->data.size() == 5)
-        {
-            float x_ref = msg->data[0];
-            float y_ref = msg->data[1];
-            float x_global_mes = msg->data[2];
-            float y_global_mes = msg->data[3];
-            float yaw_mes = msg->data[4];
-
-            globalErrorToLocalError(x_ref, y_ref, x_global_mes, y_global_mes, yaw_mes);
-            localErrorToAngle(local_error_x, local_error_y);
-            anglePD(pitch_angle, roll_angle);
-        }
-        else
-        {
-            RCLCPP_WARN(this->get_logger(), "Received invalid global position message size");
-        }
-    }
-
-    void yawCallback(const drone::msg::DroneControlData::SharedPtr msg)
-    {
-        // Assuming we update yaw here if needed
-    }
-    
+    //XY_controller functions    
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
     {
         float x_global_error = x_ref - x_global_mes;
@@ -125,8 +105,8 @@ private:
                              {sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch), cos(roll) * sin(pitch) * sin(yaw) - cos(yaw) * sin(roll), cos(pitch) * cos(roll)}};
 
         float global_error_vec[3][1] = {{x_global_error},
-                                         {y_global_error},
-                                         {0}};
+                                        {y_global_error},
+                                        {0}};
 
         float result[3][1];
         for (int i = 0; i < 3; i++)
@@ -186,21 +166,12 @@ private:
 
         prev_pitch_angle = pitch_angle;
         prev_roll_angle = roll_angle;
-
-        // Publish regulated pitch and roll values
-        auto pitch_msg = drone::msg::DroneControlData();
-        pitch_msg.data = regulator_pitch_value;
-        regulator_pitch_value_publisher_->publish(pitch_msg);
-
-        auto roll_msg = drone::msg::DroneControlData();
-        roll_msg.data = regulator_roll_value;
-        regulator_roll_value_publisher_->publish(roll_msg);
     } 
 };
 
 int main(int argc, char *argv[])
 {
-    //RCLCPP_DEBUG(AltitudeControllerNode->get_logger(), "My log message is: Hi");
+    //RCLCPP_DEBUG(ControllerNode->get_logger(), "My log message is: Hi");
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ControllerNode>();
     rclcpp::spin(node);

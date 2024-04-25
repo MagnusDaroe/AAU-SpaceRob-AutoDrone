@@ -17,7 +17,7 @@ class FC_Commander(Node):
             '/drone_control_data',
             10
         )
-        self.publish_timer = self.create_timer(5, self.status_publisher)
+        self.publish_timer = self.create_timer(5, self.test_pub)
 
     def test_pub(self):
         msg = DroneControlData()
@@ -31,7 +31,6 @@ class FC_Commander(Node):
 def main(args=None):
     rclpy.init(args=args)
     listener = FC_Commander()
-    threading.Thread(target=listener.fc_commander, daemon=True).start()
     rclpy.spin(listener)
     listener.destroy_node()
     rclpy.shutdown()
