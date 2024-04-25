@@ -43,7 +43,8 @@
 	ament_target_dependencies(cpp_executable rclcpp)
 	# Install Cpp executables
 	install(TARGETS
-	  cpp_executable
+	  Altitude_controller
+	  XY_controller
 	  DESTINATION lib/${PROJECT_NAME}
 	)
 	# Install Python modules
