@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 class ControllerNode : public rclcpp::Node
 {
 public:
-    ControllerNode() : Node("altitude_controller_node")
+    ControllerNode() : Node("controller_node")
     {
         // Subscribe to altitude reference and measurement topics
         Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/drone_control_data", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
@@ -23,9 +23,9 @@ public:
 
 private:
     //reference values
-    float x_ref = 120;
-    float y_ref = 100;
-    float z_ref = 150;
+    float x_ref = 1200;
+    float y_ref = 1000;
+    float z_ref = 500;
 
     float altitude_control_value;
     float regulator_z_value;
@@ -52,6 +52,9 @@ private:
         globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
         localErrorToAngle(local_error_x, local_error_y);
         anglePD(pitch_angle, roll_angle);
+        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
+        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
+        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
