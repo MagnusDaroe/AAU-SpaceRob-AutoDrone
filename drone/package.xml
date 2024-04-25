@@ -12,6 +12,7 @@
   
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
+  <depend>drone</depend>
 
   
   <depend>geometry_msgs</depend>
