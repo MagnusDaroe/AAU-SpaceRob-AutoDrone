@@ -65,6 +65,7 @@
 	  scripts/GCS.py
 	  scripts/viconData.py
 	  scripts/time.py
+          scripts/tes.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 
