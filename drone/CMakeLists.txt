@@ -38,9 +38,15 @@
 	# Include Cpp "include" directory
 	include_directories(include)
 
-	# Create Cpp executable
-	add_executable(cpp_executable src/drone_control_node.cpp) # change name of node
-	ament_target_dependencies(cpp_executable rclcpp)
+	# Create Cpp executables - Altitude
+	add_executable(Altitude_controller src/drone_control_node.cpp) # change name of node
+	ament_target_dependencies(Altitude_controller rclcpp)
+	
+	# Create Cpp executables - XY
+	add_executable(XY_controller src/drone_control_node.cpp) # change name of node
+	ament_target_dependencies(XY_controller rclcpp)
+
+
 	# Install Cpp executables
 	install(TARGETS
 	  Altitude_controller
