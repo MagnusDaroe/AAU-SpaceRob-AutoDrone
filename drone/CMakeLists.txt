@@ -39,18 +39,28 @@
 	include_directories(include)
 
 	# Create Cpp executables - Altitude
-	add_executable(Altitude_controller src/drone_control_node.cpp) # change name of node
-	ament_target_dependencies(Altitude_controller rclcpp)
+	#add_executable(Altitude_controller src/Altitude_controller.cpp) # change name of node
+	#ament_target_dependencies(Altitude_controller rclcpp)
 	
 	# Create Cpp executables - XY
-	add_executable(XY_controller src/drone_control_node.cpp) # change name of node
-	ament_target_dependencies(XY_controller rclcpp)
+	#add_executable(XY_controller src/XY_controller.cpp) # change name of node
+	#ament_target_dependencies(XY_controller rclcpp)
+
+	# Create Cpp executables - test
+	#add_executable(test_new src/test_new.cpp) # change name of node
+	#ament_target_dependencies(test_new rclcpp)
+
+	# Create Cpp executables - Controller_node
+	add_executable(Controller_node src/Controller_node.cpp) # change name of node
+	ament_target_dependencies(Controller_node rclcpp)
 
 
 	# Install Cpp executables
 	install(TARGETS
-	  Altitude_controller
-	  XY_controller
+	  #Altitude_controller
+	  #XY_controller
+	  #test_new
+	  Controller_node
 	  DESTINATION lib/${PROJECT_NAME}
 	)
 	# Install Python modules
