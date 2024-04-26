@@ -6,20 +6,18 @@ from pymavlink import mavutil
 import time
 import threading
 import math
-import logging
 from drone.msg import DroneCommand, DroneStatus
 from drone.srv import Clock
 import numpy as np
 
 
 class FC_Commander(Node):
+    # Class constructor
     def __init__(self):
         super().__init__('fc_command_listener')
 
         # Node parameters
         self.setup_test_parameters()
-
-
 
         # Define subscriber
         self.subscription_commands = self.create_subscription(
@@ -58,7 +56,6 @@ class FC_Commander(Node):
         self.last_command_time = self.get_time()
         self.current_time = 0
         
-        
         # Connection variables
         self.battery_check_requested = False
         
@@ -86,7 +83,84 @@ class FC_Commander(Node):
         # Set the logging level based on command-line argument or default to INFO
         self.log_level = self.get_logger().get_effective_level()
 
+
+    # ROS2 specific functions
+    def command_callback(self, msg):
+        """
+        Callback function for the command subscriber\n
+        msg: DroneCommand message\n
+        This function assigns the received commands to the fc_command variable\n
+        """
+
+
+        # Use self.command_lock to make sure only one thread is accessing the command variables at a time
+        with self.command_lock:
+            # Assign commands only if they are not NaN
+            if not math.isnan(msg.cmd_mode):
+                self.fc_command.cmd_mode = msg.cmd_mode
+                if msg.cmd_mode == 0:
+                    # Manual mode
+                    self.fc_command.cmd_thrust = msg.cmd_thrust
+                    self.fc_command.cmd_roll = msg.cmd_roll
+                    self.fc_command.cmd_pitch = msg.cmd_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_yaw
+                elif msg.cmd_mode == 1:
+                    # Autonomous mode
+                    self.fc_command.cmd_thrust = msg.cmd_auto_thrust
+                    self.fc_command.cmd_roll = msg.cmd_auto_roll
+                    self.fc_command.cmd_pitch = msg.cmd_auto_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_auto_yaw
+                elif msg.cmd_mode == 2:
+                    # Test mode
+                    self.fc_command.cmd_thrust = msg.cmd_thrust
+                    self.fc_command.cmd_roll = msg.cmd_roll
+                    self.fc_command.cmd_pitch = msg.cmd_pitch
+                    self.fc_command.cmd_yaw = msg.cmd_yaw
+            
+            # Assign the rest of the commands
+            self.fc_command.timestamp = msg.timestamp
+            self.fc_command.cmd_estop = msg.cmd_estop
+            self.fc_command.cmd_arm = msg.cmd_arm
+
+    def status_publisher(self):
+        """
+        Publish the system status\n
+        msg: DroneStatus message - {timestamp, battery_ok, battery_percentage, mode, fc_connection}
+        """
+
+        # Check the battery voltage - request a battery check
+        self.battery_check_requested = True
+
+        # Publish the status. create a DroneStatus msg object
+        msg = DroneStatus()
+        # Set the message values
+        msg.timestamp = self.get_time()
+        msg.battery_ok = self.battery_ok
+        
+        # Calculate the battery percentage
+        if not self.test_mode:
+            try:
+                msg.battery_percentage = (self.battery_voltage - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
+                msg.battery_check_timestamp = self.battery_check_timestamp
+            except ZeroDivisionError:
+                msg.battery_percentage = 0
+
+        # Set the mode and connection status
+        msg.mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
+        msg.fc_connection = True if self.fc_connection else False
+        
+        # Publish the message
+        self.publisher_status.publish(msg)
+
     def setup_test_parameters(self):
+        # Define the test mode
+        self.test_mode = False
+
+        # Check battery voltage
+        self.do_battery_check = True
+        
+        "Test parameters - Currently the rest of the code is not used"
+        
         # Define a dictionary mapping test types to attributes
         test_attributes = {
             'pitch': ('test_pitch', 'test_pitch_value'),
@@ -112,14 +186,7 @@ class FC_Commander(Node):
 
         # Make the test attributes available to the class
         self.test_attributes = test_attributes
-
-               
-        # Set self.test_mode to True to run the script without a drone
-        self.test_mode = False
-
-        # Check battery voltage
-        self.do_battery_check = True
-
+     
     def calibrate_clock(self, persistence=False):
         """
         Calibrate the clock to synchronize the time between the GCS and the computer
@@ -130,27 +197,32 @@ class FC_Commander(Node):
         while not self.client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting again...')
 
+        # Create a request object
         request = Clock.Request()
-        request.request_value = 42  # Example value, you can set it to any uint8 value you need
-
 
         # Server time list and client time list
-        server_time = []
-        client_time_send = []
-        client_time_received = []
+        server_time = np.array([])
+        client_time_send = np.array([])
+        client_time_received = np.array([])
 
         # Send a service to the GCS to get the current time
         i = 0
         self.time_offset = 0  # Initialize time offset to 0
         while i < self.TIME_CALIBRATION_ITERATIONS:
             try:
-                client_time_send.append(time.time())
+                # Save the current time
+                client_time_send = np.append(client_time_send, time.time())
+
+                # Send the request
                 future = self.client.call_async(request)
                 rclpy.spin_until_future_complete(self, future)
                 if future.result() is not None:
+                    # Save the response time
                     response = future.result()
-                    client_time_received.append(time.time())
-                    server_time.append(response.server_time)
+                    server_time = np.append(server_time, response.server_time)
+                    # Save the time received
+                    client_time_received = np.append(client_time_received, time.time())
+
                 else:
                     self.get_logger().error(f"Failed to get response for request {i + 1}")
             except Exception as e:
@@ -159,10 +231,6 @@ class FC_Commander(Node):
                     break
             i += 1
         # Calculate the time offset
-        client_time_send = np.array(client_time_send)
-        client_time_received = np.array(client_time_received)
-        server_time = np.array(server_time)
-        
         self.time_offset = np.mean(server_time - (client_time_send + client_time_received) / 2)
 
         if np.isnan(self.time_offset):
@@ -170,65 +238,21 @@ class FC_Commander(Node):
             self.time_offset = 0
         self.get_logger().info(f"Time offset: {self.time_offset}")
 
-        self.get_logger().info("Clock calibration completed: Time offset is {self.time_offset} seconds.")
+        self.get_logger().info(f"Clock calibration completed: Time offset is {self.time_offset} seconds.")
 
     def get_time(self):
         """
-        Get the current time
+        Get the current time\n
+        return: current time in seconds - Calibrated from the GCS\n
         """
         return time.time() + self.time_offset if self.time_offset else time.time()
 
-    def command_callback(self, msg):
-        with self.command_lock:
-            # Assign commands only if they are not NaN
-            if not math.isnan(msg.cmd_mode):
-                self.fc_command.cmd_mode = msg.cmd_mode
-                if msg.cmd_mode == 0:
-                    self.fc_command.cmd_thrust = msg.cmd_thrust
-                    self.fc_command.cmd_roll = msg.cmd_roll
-                    self.fc_command.cmd_pitch = msg.cmd_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_yaw
-                elif msg.cmd_mode == 1:
-                    self.fc_command.cmd_thrust = msg.cmd_auto_thrust
-                    self.fc_command.cmd_roll = msg.cmd_auto_roll
-                    self.fc_command.cmd_pitch = msg.cmd_auto_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_auto_yaw
-                elif msg.cmd_mode == 2:
-                    self.fc_command.cmd_thrust = msg.cmd_thrust
-                    self.fc_command.cmd_roll = msg.cmd_roll
-                    self.fc_command.cmd_pitch = msg.cmd_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_yaw
-            
-             # Decide which command to send to the flight controller
-            self.fc_command.timestamp = msg.timestamp
-            self.fc_command.cmd_estop = msg.cmd_estop
-            self.fc_command.cmd_arm = msg.cmd_arm
 
-    def status_publisher(self):
-        """
-        Publish the system status
-        """
-
-        self.battery_check_requested = True
-        msg = DroneStatus()
-        msg.timestamp = self.get_time()
-        msg.battery_ok = self.battery_ok
-        
-        if not self.test_mode:
-            msg.battery_percentage = (self.battery_voltage - self.BATTERY_MIN_VOLTAGE) / (self.BATTERY_MAX_VOLTAGE - self.BATTERY_MIN_VOLTAGE) * 100
-            msg.battery_check_timestamp = self.battery_check_timestamp
-
-        msg.mode = self.fc_command.cmd_mode if not self.fc_command.cmd_estop else 2
-        msg.fc_connection = True if self.fc_connection else False
-        
-
-        self.publisher_status.publish(msg)
-
+    # Drone functions
     def drone_init(self):
         """
-        Start the connection to the flight controller and arm the drone
+        Start the connection to the flight controller
         """
-
         self.get_logger().info("Connecting to MAVLink...")
         self.the_connection = mavutil.mavlink_connection(self.USB_PORT,baud=self.BAUDRATE)
         self.the_connection.wait_heartbeat()
@@ -243,6 +267,8 @@ class FC_Commander(Node):
         self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
                                     0, 1, 0, 0, 0, 0, 0, 0)
         Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+        
+        # Check if the mode is set
         if Ack.result == 0:
             self.get_logger().info("Mode set to stabilize")
         else:
@@ -266,52 +292,72 @@ class FC_Commander(Node):
             self.drone_reboot()
 
     def drone_reboot(self):
+        """
+        Reboot the drone.\n
+        Keep sending the reboot command until the drone reboots
+        """
+
         # Reboot the drone
         self.get_logger().info("Rebooting the drone...")
         while not self.test_mode and self.get_time() - self.last_reboot < self.MIN_REBOOT_INTERVAL:
             time.sleep(1)
 
+        # Reboot the drone
         if not self.test_mode and self.get_time() - self.last_reboot > self.MIN_REBOOT_INTERVAL:
             Ack = False
 
+            # Send the reboot command - Keep sending the command until the drone reboots
             while not Ack:    
                 self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
                                             0, 1, 0, 0, 0, 0, 0, 0)
                 Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
                 if Ack.result == 0:
                     self.get_logger().warn("Failed to reboot. Trying again...")
-                    
+
+            # Wait for the drone to reboot        
             time.sleep(8)
             self.get_logger().info("Rebooted the drone")
 
             # Start the drone again
             self.drone_init()
         else:
+            # If the drone is rebooted too soon, wait for the reboot interval to expire
             if not self.test_mode: 
                 self.get_logger().warn("Rebooting too soon. Waiting for the reboot interval to expire")
 
     def fc_commander(self, updaterate=50):
         """
-        Main function for the flight controller commander. \n
+        Main function for the flight controller commander \n\n
+        Param:\n
+        * updaterate: Update rate in Hz\n
+
+        This function sends the latest command to the flight controller\n
+        Controls the mode of the drone
+
         """
         # Set the rate of the commander
         rate = self.create_rate(updaterate)
         
-        # Main loop
+        # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
+            # Check the battery voltage if requested
             if self.battery_check_requested:
                 self.get_logger().info("Battery check requested")
                 self.check_battery()
                 self.battery_check_requested = False
 
-            
+            # Check if the drone is armed and the estop is not activated
             if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
                 # Check if the drone is in manual, autonomous mode and test mode
                 if self.fc_command.cmd_mode == 0:
+                    # Manual mode
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 1:
+                    # Autonomous mode
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
+                    # Test mode
+
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
                     x = 400
                     if self.fc_command.cmd_roll:
@@ -330,6 +376,7 @@ class FC_Commander(Node):
                 # Sleep to keep the update rate
                 rate.sleep()
             elif not self.battery_ok:
+                # Battery voltage too low. Emergency stop activated
                 self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
                 self.emergency_stop() # Implement an emergency land.
             elif self.fc_command.cmd_estop == 1:
@@ -349,7 +396,7 @@ class FC_Commander(Node):
         """
         Drone flight mode. Sends the latest command to the flight controller
         """
-
+        # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
             # Update command variables - if no new command is received, the previous command is sent
             timestamp = self.fc_command.timestamp
@@ -376,7 +423,7 @@ class FC_Commander(Node):
         """
         Send flight command to the drone
         """
-   
+        # Makes sure the correct command type is sent
         if not self.test_mode:
                 self.the_connection.mav.manual_control_send(
                     self.the_connection.target_system,
@@ -395,6 +442,8 @@ class FC_Commander(Node):
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
         """
         self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control")
+        
+        # Disarm the drone
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
             if not self.test_mode:
                     self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
@@ -424,9 +473,13 @@ class FC_Commander(Node):
             1,
             1
         )
+        # Wait for the battery voltage
         msg = self.the_connection.recv_match(type='SYS_STATUS', blocking=True)
+        
+        # Get the battery voltage in volts
         self.battery_voltage = msg.voltage_battery / 1000.0
         
+        # Check if the battery voltage is within the operating range
         self.battery_check_timestamp = self.get_time()
         self.battery_ok = True if self.battery_voltage > self.BATTERY_MIN_OP_VOLTAGE else False 
         self.get_logger().info(f"Battery voltage: {self.battery_voltage}, Battery ok: {self.battery_ok}")
@@ -441,7 +494,8 @@ class FC_Commander(Node):
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
-        # decrement start_thrust a set amount, until a lower bound is reached
+        
+        # Decrement start_thrust a set amount, until a lower bound is reached
         while decrement_thrust > land_thrust:
             decrement_thrust = decrement_thrust - decrement
 
@@ -458,19 +512,27 @@ class FC_Commander(Node):
         """
         Reset the command variables
         """
+
+        # Reset the command variables to 0
         self.fc_command.cmd_thrust = float(0)
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
             
 def main(args=None):
+    # Initialize the node
     rclpy.init(args=args)
-    listener = FC_Commander()
-    threading.Thread(target=listener.fc_commander, daemon=True).start()
-    rclpy.spin(listener)
-    listener.destroy_node()
+    
+    # Create the node - daemon=True to stop the thread when the main thread stops
+    FC_node = FC_Commander()
+    threading.Thread(target=FC_node.fc_commander, daemon=True).start()
+
+    # Spin the node
+    rclpy.spin(FC_node)
+
+    # Destroy the node when code is stopped
+    FC_node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
-False
