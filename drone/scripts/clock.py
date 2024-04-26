@@ -6,8 +6,9 @@ import time
 from drone.srv import Clock
 
 class Clock_server(Node):
-
+    """Clock server node"""
     def __init__(self):
+        # Initialize the node
         super().__init__('clock_sync_server')
         self.srv = self.create_service(Clock, '/sync_clock', self.get_server_time)
 
