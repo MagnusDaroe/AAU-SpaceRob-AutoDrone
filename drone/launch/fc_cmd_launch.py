@@ -5,7 +5,7 @@ def generate_launch_description():
     return launch.LaunchDescription([
         Node(
             package='drone',
-            executable='fc_cmd_test.py',
+            executable='fc_cmd.py',
             name='FCCommander',
             parameters=[
                 {'test_type': 'pitch'},

@@ -15,7 +15,7 @@ public:
     ControllerNode() : Node("controller_node")
     {
         // Subscribe to altitude reference and measurement topics
-        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/drone_control_data", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
+        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);

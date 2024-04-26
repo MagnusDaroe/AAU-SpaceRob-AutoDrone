@@ -53,13 +53,6 @@ class FC_Commander(Node):
         #Calibrate the clock
         self.calibrate_clock(persistence=False)
 
-        # Keep printing the time
-        while True:
-            self.get_logger().info(f"Current time: {self.get_time()}")
-            self.get_logger().info(f"Offset: {self.time_offset}")
-
-
-
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
         self.last_command_time = self.get_time()
@@ -122,7 +115,7 @@ class FC_Commander(Node):
 
                
         # Set self.test_mode to True to run the script without a drone
-        self.test_mode = True
+        self.test_mode = False
 
         # Check battery voltage
         self.do_battery_check = True
