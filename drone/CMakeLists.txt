@@ -26,24 +26,41 @@
     		message(FATAL_ERROR "Could not find builtin_interfaces package")
 	endif()
 
-	#find_package(drone REQUIRED)  
+	find_package(drone REQUIRED)
 
 	rosidl_generate_interfaces(${PROJECT_NAME}
 	  "msg/DroneCommand.msg"
 	  "msg/DroneControlData.msg"
 	  "msg/DroneStatus.msg"
 	  "msg/DroneVideo.msg"
+	  "srv/Clock.srv"
 	  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)
-
 	# Include Cpp "include" directory
 	include_directories(include)
 
-	# Create Cpp executable
-	add_executable(cpp_executable src/drone_control_node.cpp) # change name of node
-	ament_target_dependencies(cpp_executable rclcpp)
+	# Create Cpp executables - Altitude
+	#add_executable(Altitude_controller src/Altitude_controller.cpp) # change name of node
+	#ament_target_dependencies(Altitude_controller rclcpp)
+	
+	# Create Cpp executables - XY
+	#add_executable(XY_controller src/XY_controller.cpp) # change name of node
+	#ament_target_dependencies(XY_controller rclcpp)
+
+	# Create Cpp executables - test
+	#add_executable(test_new src/test_new.cpp) # change name of node
+	#ament_target_dependencies(test_new rclcpp)
+
+	# Create Cpp executables - Controller_node
+	add_executable(Controller_node src/Controller_node.cpp) # change name of node
+	ament_target_dependencies(Controller_node rclcpp drone)
+
+
 	# Install Cpp executables
 	install(TARGETS
-	  cpp_executable
+	  #Altitude_controller
+	  #XY_controller
+	  #test_new
+	  Controller_node
 	  DESTINATION lib/${PROJECT_NAME}
 	)
 	# Install Python modules
@@ -51,12 +68,14 @@
 	# Install Python executables
 	install(PROGRAMS
 	  scripts/fc_cmd.py
-	  scripts/fc_cmd_test.py
+	  scripts/clock.py
 	  scripts/manual_cmd.py
 	  scripts/image_publish.py
 	  scripts/image_listen.py
 	  scripts/GCS.py
 	  scripts/viconData.py
+	  scripts/time.py
+      scripts/tes.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 

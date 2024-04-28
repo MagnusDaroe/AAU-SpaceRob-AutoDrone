@@ -218,17 +218,7 @@ def create_gui(window):
 
     return Traject3d, Traject2d,Traject3dTab2  # Return the trajectory plots for updating plot later
 
-def data_update():
-    global x, y, z, roll, pitch, yaw
-    # Increment the pose data by some arbitrary values for demonstration
-    x += 0.001
-    y += 0.002
-    z += 0.003
-    roll += 0.01
-    pitch += 0.02
-    yaw += 0.03
-    pose_data = np.array([x, y, z, roll, pitch, yaw])
-    return pose_data
+
 
 def console_print(text):
     """Simple function to print text to the console text box.
@@ -253,9 +243,9 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
         Traject3dTab2 (MatPlotLib Subplot): The 3d plot of the 3d tab   
     """
     global first
-    pose_data = data_update()   # Get the updated pose data
+    #pose_data = data_update()   # Get the updated pose data
     global x, y, z, roll, pitch, yaw
-    x, y, z, roll, pitch, yaw = pose_data[:]    # Unpack the pose data
+    #x, y, z, roll, pitch, yaw = pose_data[:]    # Unpack the pose data
     poseVariables.config(text=f"{x:.2f}\n{y:.2f}\n{z:.2f}\n{roll:.2f}\n{pitch:.2f}\n{yaw:.2f}") # Update the pose variables in the GUI
     
     
@@ -270,6 +260,9 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
     trajectory_x.append(x)
     trajectory_y.append(y)
     trajectory_z.append(z)
+    #axis limits
+    lower_limit = -4000
+    upper_limit = 4000
     if tabUpdate == 1: #determine which plot should be active
         # Update the 3D plot
         Traject3d.clear()
@@ -279,9 +272,9 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
         # Annotate the plotted point with its coordinates
         Traject3d.text(x, y, z, f'({x:.2f}, {y:.2f}, {z:.2f})', color='black', fontsize=10)
         # Set axis limits
-        Traject3d.set_xlim(0, 10)
-        Traject3d.set_ylim(0, 10)
-        Traject3d.set_zlim(0, 10)
+        Traject3d.set_xlim(-3000, 3000)
+        Traject3d.set_ylim(-1500, 3500)
+        Traject3d.set_zlim(0, 3000)
         Traject3d.set_xlabel('X')
         Traject3d.set_ylabel('Y')
         Traject3d.set_zlabel('Z')
@@ -294,9 +287,9 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
         # Annotate the plotted point with its coordinates
         Traject3dTab2.text(x, y, z, f'({x:.2f}, {y:.2f}, {z:.2f})', color='black', fontsize=10)
         # Set axis limits
-        Traject3dTab2.set_xlim(0, 10)
-        Traject3dTab2.set_ylim(0, 10)
-        Traject3dTab2.set_zlim(0, 10)
+        Traject3dTab2.set_xlim(-3000, 3000)
+        Traject3dTab2.set_ylim(-1500, 3500)
+        Traject3dTab2.set_zlim(0, 3000)
         Traject3dTab2.set_xlabel('X')
         Traject3dTab2.set_ylabel('Y')
         Traject3dTab2.set_zlabel('Z')
@@ -309,8 +302,8 @@ def update_pose_variables(Traject3d, Traject2d, Traject3dTab2):
         Traject2d.plot(trajectory_x, trajectory_y, c='blue', linewidth=2)
         # Annotate the plotted point with its coordinates
         Traject2d.text(x, y, f'({x:.2f}, {y:.2f})', color='black', fontsize=10)
-        Traject2d.set_xlim(0, 10)
-        Traject2d.set_ylim(0, 10)
+        Traject2d.set_xlim(-3000, 3000)
+        Traject2d.set_ylim(-1500, 3500)
         Traject2d.set_xlabel('X')
         Traject2d.set_ylabel('Y')
         canvas2d.draw()
@@ -330,15 +323,12 @@ class drone_listener(Node):
             self.status_messages,
             10)
         
-
-        # Define publisher
-        self.publisher_status= self.create_publisher(
+        self.subscription = self.create_subscription(
             DroneControlData,
-            '/xyz_test',
-            10
-        )
-        self.publish_timer = self.create_timer(0.2, self.status_publisher)
-
+            '/DroneControlData',
+            self.pose_vicon,
+            10)
+        
 
 
         self.old_message = [0, 0, 0, 0, 0]
@@ -353,21 +343,24 @@ class drone_listener(Node):
         self.modeDict = {0: "Manual", 1: "Autonomous", 2: "Reboot"}
         self.batteryOKDict = {0: "Low", 1: "OK"}
         
+    def pose_vicon(self, msg):
+        # message type:
+        # float64 timestamp
+        # float32 vicon_x
+        # float32 vicon_y
+        # float32 vicon_z
+        # float32 vicon_roll
+        # float32 vicon_pitch
+        # float32 vicon_yaw
 
-    def status_publisher(self):
-        """
-        Publish the system status
-        """
+        global x, y, z, roll, pitch, yaw
+        x = msg.vicon_x
+        y = msg.vicon_y
+        z = msg.vicon_z
+        roll = msg.vicon_roll
+        pitch = msg.vicon_pitch
+        yaw = msg.vicon_yaw
 
-
-
-        msg = DroneControlData()
-
-        msg.vicon_x = float(x)
-        msg.vicon_y = float(y)
-        msg.vicon_z = float(z)
-
-        self.publisher_status.publish(msg)
 
     def status_messages(self, msg):
         # message type:

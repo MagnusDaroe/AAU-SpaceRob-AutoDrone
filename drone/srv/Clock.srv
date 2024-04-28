@@ -1,0 +1,6 @@
+# Request
+uint8 request_value
+
+---
+# Response
+float64 server_time
