@@ -49,13 +49,13 @@ private:
     {
         float pos_x = msg->vicon_x;
         float pos_y = msg->vicon_y;
-        float yaw = msg->vicon_z;
+        float pos_z = msg->vicon_z;
 
         //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
 
 
-        z_error_to_controller_value(z_ref);
+        z_error_to_controller_value(z_ref, pos_z);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, pos_x, pos_y, yaw);
         localErrorToAngle(local_error_x, local_error_y);
@@ -77,11 +77,11 @@ private:
         Control_publisher_->publish(control_msg);
     }
 
-    void z_error_to_controller_value(float z_ref)
+    void z_error_to_controller_value(float z_ref, float pos_z)
     {
         int thrust_to_hover = 480;
         int max_value = 200;
-        float z_error = z_ref - altitude_control_value;
+        float z_error = z_ref - pos_z;
 
         std::cout << "z_error: " << z_error << std::endl;
         if (z_error > max_value)
