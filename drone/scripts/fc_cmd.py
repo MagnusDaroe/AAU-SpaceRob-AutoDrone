@@ -16,6 +16,10 @@ class FC_Commander(Node):
     def __init__(self):
         super().__init__('fc_command_listener')
 
+        # Initialize the latest command to be sent to the flight controller
+        self.fc_command = DroneCommand()
+        self.command_lock = threading.Lock()
+
         # Node parameters
         self.setup_test_parameters()
 
@@ -75,11 +79,6 @@ class FC_Commander(Node):
 
         #Calibrate the clock
         self.calibrate_clock(persistence=False)
-
-
-        # Initialize the latest command to be sent to the flight controller
-        self.fc_command = DroneCommand()
-        self.command_lock = threading.Lock()
 
         # Set the logging level based on command-line argument or default to INFO
         self.log_level = self.get_logger().get_effective_level()
