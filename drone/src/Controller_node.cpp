@@ -149,6 +149,7 @@ private:
 
     void localErrorToAngle(float regulated_x_error, float regulated_y_error)
     {
+        //int convert_to_control_value = 
         int max_error = 200;
         int max_angle = 20;
 
@@ -176,6 +177,8 @@ private:
         {
             roll_angle = regulated_y_error / 10;
         }
+        //roll_angle = roll_angle * convert_to_control_value;
+        //pitch_angle = pitch_angle * convert_to_control_value;
     }
 
     void anglePD(float local_error_x, float local_error_y)
