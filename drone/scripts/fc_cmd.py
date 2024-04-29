@@ -19,9 +19,6 @@ class FC_Commander(Node):
         # Node parameters
         self.setup_test_parameters()
 
-        
-        self.publish_timer = self.create_timer(5, self.status_publisher)
-
         # Fc command variables
         self.USB_PORT = '/dev/ttyTHS1'
         self.BAUDRATE = 57600
@@ -77,7 +74,7 @@ class FC_Commander(Node):
             '/status_fc',
             10
         )
-
+        self.publish_timer = self.create_timer(5, self.status_publisher)
 
         # Initialize the latest command to be sent to the flight controller
         self.fc_command = DroneCommand()
