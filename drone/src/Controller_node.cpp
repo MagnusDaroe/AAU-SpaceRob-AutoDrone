@@ -47,7 +47,7 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        std::cout << "vicon_y %d", msg->vicon_y << std::endl;
+        std::cout << "vicon_y: %d", msg->vicon_y << std::endl;
         z_error_to_controller_value(z_ref);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
@@ -176,7 +176,7 @@ private:
 
 int main(int argc, char *argv[])
 {
-    //RCLCPP_DEBUG(ControllerNode->get_logger(), "My log message is: Hi");
+    std::cout << "Controller_node starting up..." << std::endl;
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ControllerNode>();
     rclcpp::spin(node);
