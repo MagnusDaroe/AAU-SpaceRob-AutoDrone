@@ -108,7 +108,7 @@ private:
         integral += z_error;
         regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
         //print regulator z value with std::cout
-        //std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
+        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         prev_z_error = z_error;
     }
 
