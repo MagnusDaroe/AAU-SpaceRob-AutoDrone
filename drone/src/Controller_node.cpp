@@ -86,14 +86,17 @@ private:
         if (regulator_z_value > max_value)
         {
             altitude_control_value = thrust_to_hover + max_thrust;
+            std::cout << "1" << std::endl;
         }
         else if (regulator_z_value < -max_value)
         {
             altitude_control_value = thrust_to_hover - max_thrust;
+            std::cout << "2" << std::endl;
         }
         else
         {
             altitude_control_value = thrust_to_hover + regulator_z_value*(max_thrust/max_value);
+            std::cout << "3" << std::endl;
         }
         //std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
