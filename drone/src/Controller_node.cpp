@@ -51,7 +51,6 @@ private:
         float pos_y = msg->vicon_y;
         float yaw = msg->vicon_yaw;
 
-        std::cout << h << std::endl;
         z_error_to_controller_value(z_ref);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, pos_x, pos_y, yaw);
