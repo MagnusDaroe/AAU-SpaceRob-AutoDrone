@@ -27,7 +27,7 @@ private:
     float y_ref = 1000;
     float z_ref = 500;
 
-    float altitude_control_value;
+    float altitude_control_value = 0;
     float regulator_z_value;
     float integral;
     float prev_z_error;
@@ -79,22 +79,24 @@ private:
 
     void z_error_to_controller_value(float z_ref)
     {
+        int thrust_to_hover = 480;
         int max_value = 200;
         float z_error = z_ref - altitude_control_value;
 
         std::cout << "z_error: " << z_error << std::endl;
         if (z_error > max_value)
         {
-            altitude_control_value = max_value;
+            altitude_control_value = thrust_to_hover + max_value;
         }
         else if (z_error < -max_value)
         {
-            altitude_control_value = -max_value;
+            altitude_control_value = thrust_to_hover - max_value;
         }
         else
         {
-            altitude_control_value = z_error;
+            altitude_control_value = thrust_to_hover + z_error;
         }
+        std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
 
     void control_value_regulated(float altitude_control_value)
