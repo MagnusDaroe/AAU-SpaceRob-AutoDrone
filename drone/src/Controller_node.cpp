@@ -72,8 +72,8 @@ private:
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
-        control_msg.cmd_auto_roll = regulator_pitch_value;
-        control_msg.cmd_auto_pitch = regulator_roll_value;
+        control_msg.cmd_auto_roll = roll_angle;
+        control_msg.cmd_auto_pitch = pitch_angle;
         control_msg.cmd_auto_thrust = regulator_z_value;
         Control_publisher_->publish(control_msg);
     }
