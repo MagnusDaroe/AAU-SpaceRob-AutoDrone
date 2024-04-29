@@ -34,8 +34,8 @@ private:
 
     float local_error_x;
     float local_error_y;
-    float pitch_angle;
-    float roll_angle;
+    float pitch_controller_value;
+    float roll_controller_value;
     float prev_local_error_x;
     float prev_local_error_y;
     float regulated_x_value;
@@ -151,33 +151,33 @@ private:
     void localErrorToAngle(float regulated_x_error, float regulated_y_error)
     {
         //float convert_to_control_value = 12.5;
-        float max_error = 200;
-        float max_angle = 20;
+        float max_error = 1000;
+        float max_controller_value = 200;
         std::cout << "regulated_x_error: " << regulated_x_error << std::endl;
         std::cout << "regulated_y_error: " << regulated_y_error << std::endl;
         if (regulated_x_error > max_error)
         {
-            pitch_angle = max_angle;
+            pitch_controller_value = max_controller_value;
         }
         else if (regulated_x_error < -max_error)
         {
-            pitch_angle = -max_angle;
+            pitch_controller_value = -max_controller_value;
         }
         else
         {
-            pitch_angle = regulated_x_error / 10;
+            pitch_controller_value = regulated_x_error*(max_controller_value/max_error);
         }
         if (regulated_y_error > max_error)
         {
-            roll_angle = max_angle;
+            roll_controller_value = max_controller_value;
         }
         else if (regulated_y_error < -max_error)
         {
-            roll_angle = -max_angle;
+            roll_controller_value = -max_controller_value;
         }
         else
         {
-            roll_angle = regulated_y_error / 10;
+            roll_controller_value = regulated_y_error*(max_controller_value/max_error);
         }
         //roll_angle = roll_angle * convert_to_control_value;
         //pitch_angle = pitch_angle * convert_to_control_value;
