@@ -56,7 +56,7 @@ private:
 
 
         control_value_regulated(z_ref, z_pos);
-        z_error_to_controller_value(ControllerNode::altitude_control_value);
+        z_error_to_controller_value(ControllerNode::regulator_z_value);
         
         globalErrorToLocalError(x_ref, y_ref, x_pos, y_pos, yaw);
         localErrorToAngle(local_error_x, local_error_y);
