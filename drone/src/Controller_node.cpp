@@ -66,9 +66,9 @@ private:
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
-        //std::cout << "Regulator pitch value: " << regulator_pitch_value << std::endl;
-        //std::cout << "Regulator roll value: " << regulator_roll_value << std::endl;
-        //std::cout << "Regulator altitude value: " << altitude_control_value << std::endl;
+        std::cout << "pitch value: " << regulator_pitch_value << std::endl;
+        std::cout << "roll value: " << regulator_roll_value << std::endl;
+        std::cout << "altitude value: " << altitude_control_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
@@ -94,12 +94,12 @@ private:
         {
             altitude_control_value = thrust_to_hover + regulator_z_value;
         }
-        std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
+        //std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
 
     void control_value_regulated(float z_ref, float z_pos)
     {
-        std::cout << "z_mes: " << z_pos << std::endl;
+        //std::cout << "z_mes: " << z_pos << std::endl;
         float z_error = z_ref - z_pos;
         float Kp_altitude = 100;
         float Ki_altitude = 0;
@@ -108,7 +108,7 @@ private:
         integral += z_error;
         regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
         //print regulator z value with std::cout
-        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
+        //std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         prev_z_error = z_error;
     }
 
