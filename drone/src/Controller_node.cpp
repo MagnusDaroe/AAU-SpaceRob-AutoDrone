@@ -180,9 +180,9 @@ private:
 
     void anglePD(float local_error_x, float local_error_y)
     {
-        float Kp_pitch = 0;
+        float Kp_pitch = 1;
         float Kd_pitch = 1;
-        float Kp_roll = 0;
+        float Kp_roll = 1;
         float Kd_roll = 1;
 
         regulated_x_value = Kp_pitch * local_error_x + Kd_pitch * (local_error_x - prev_local_error_x);
