@@ -47,11 +47,13 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
+        RCLCPP_DEBUG(ControllerNode->get_logger(), "vicon_x: %d", msg->vicon_x);
         z_error_to_controller_value(z_ref);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
         localErrorToAngle(local_error_x, local_error_y);
         anglePD(pitch_angle, roll_angle);
+        
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
