@@ -86,17 +86,14 @@ private:
         if (regulator_z_value > max_value)
         {
             altitude_control_value = thrust_to_hover + max_thrust;
-            std::cout << "1" << std::endl;
         }
         else if (regulator_z_value < -max_value)
         {
             altitude_control_value = thrust_to_hover - max_thrust;
-            std::cout << "2" << std::endl;
         }
         else
         {
             altitude_control_value = thrust_to_hover + regulator_z_value*(max_thrust/max_value);
-            std::cout << "3" << std::endl;
         }
         //std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
@@ -154,9 +151,10 @@ private:
     void localErrorToAngle(float regulated_x_error, float regulated_y_error)
     {
         //float convert_to_control_value = 12.5;
-        int max_error = 200;
-        int max_angle = 20;
-
+        float max_error = 200;
+        float max_angle = 20;
+        std::cout << "regulated_x_error: " << regulated_x_error << std::endl;
+        std::cout << "regulated_y_error: " << regulated_y_error << std::endl;
         if (regulated_x_error > max_error)
         {
             pitch_angle = max_angle;
