@@ -466,6 +466,8 @@ class FC_Commander(Node):
         """
         Check the battery level of the drone
         """
+        self.get_logger().info("Checking battery voltage")
+
         # Request the battery voltage
         self.the_connection.mav.request_data_stream_send(
             self.the_connection.target_system,
