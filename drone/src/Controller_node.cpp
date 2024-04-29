@@ -45,7 +45,7 @@ private:
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg, x_ref, y_ref, z_ref)
+    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg, float x_ref, float y_ref, float z_ref)
     {
         float pos_x = msg->vicon_x;
         float pos_y = msg->vicon_y;
