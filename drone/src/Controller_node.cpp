@@ -66,8 +66,8 @@ private:
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
-        std::cout << "pitch value: " << regulator_pitch_value << std::endl;
-        std::cout << "roll value: " << regulator_roll_value << std::endl;
+        std::cout << "pitch value: " << pitch_angle << std::endl;
+        std::cout << "roll value: " << roll_angle << std::endl;
         std::cout << "altitude value: " << altitude_control_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
