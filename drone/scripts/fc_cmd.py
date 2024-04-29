@@ -359,7 +359,7 @@ class FC_Commander(Node):
                     # Test mode
 
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 400
+                    x = 200
                     if self.fc_command.cmd_roll:
                         if self.fc_command.cmd_roll > 0:
                             self.fc_command.cmd_roll = float(x)
