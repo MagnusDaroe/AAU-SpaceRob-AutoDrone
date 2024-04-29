@@ -41,7 +41,7 @@ class ViconPublisher(Node):
             if len(received_data) == 6:
                 x, y, z, roll, pitch, yaw = map(float, received_data)
                 #(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
-                #msg.timestamp = time.time()  # Current timestamp
+                msg.timestamp = time.time()  # Current timestamp
                 msg.vicon_x = x  
                 msg.vicon_y = y  
                 msg.vicon_z = z  
@@ -50,6 +50,7 @@ class ViconPublisher(Node):
                 msg.vicon_yaw = yaw
                 self.publisher_.publish(msg)
                 self.get_logger().info('Publishing: %s' % msg)
+
             else:
                 self.get_logger().warning('Publishing: %s' % "Unexpected format")
                 self.get_logger().warning('Publishing: %s' % received_data)

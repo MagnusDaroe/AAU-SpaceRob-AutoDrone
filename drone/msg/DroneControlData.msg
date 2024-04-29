@@ -1,3 +1,5 @@
+float64 timestamp
+
 # Vicon data
 float64 vicon_x
 float64 vicon_y
