@@ -65,9 +65,9 @@ private:
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
-        std::cout << "Regulator pitch value: " << regulator_pitch_value << std::endl;
-        std::cout << "Regulator roll value: " << regulator_roll_value << std::endl;
-        std::cout << "Regulator altitude value: " << regulator_z_value << std::endl;
+        //std::cout << "Regulator pitch value: " << regulator_pitch_value << std::endl;
+        //std::cout << "Regulator roll value: " << regulator_roll_value << std::endl;
+        //std::cout << "Regulator altitude value: " << regulator_z_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
@@ -79,6 +79,7 @@ private:
 
     void z_error_to_controller_value(float z_ref)
     {
+        std::cout << "z_ref: " << z_ref << std::endl;
         int max_value = 200;
         float z_error = z_ref - altitude_control_value;
 
