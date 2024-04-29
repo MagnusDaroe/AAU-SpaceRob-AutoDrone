@@ -47,18 +47,18 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        float pos_x = msg->vicon_x;
-        float pos_y = msg->vicon_y;
-        float pos_z = msg->vicon_z;
+        float x_pos = msg->vicon_x;
+        float y_pos = msg->vicon_y;
+        float z_pos = msg->vicon_z;
         float yaw = msg->vicon_yaw;
 
         //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
 
-        control_value_regulated(z_ref, pos_z);
+        control_value_regulated(z_ref, z_pos);
         z_error_to_controller_value(ControllerNode::altitude_control_value);
         
-        globalErrorToLocalError(x_ref, y_ref, pos_x, pos_y, yaw);
+        globalErrorToLocalError(x_ref, y_ref, x_pos, y_pos, yaw);
         localErrorToAngle(local_error_x, local_error_y);
         anglePD(pitch_angle, roll_angle);
         
@@ -99,7 +99,7 @@ private:
         std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
 
-    void control_value_regulated(float z_ref, float pos_z)
+    void control_value_regulated(float z_ref, float z_pos)
     {
         float z_error = z_ref - z_pos;
         float Kp_altitude = 100;
