@@ -45,15 +45,14 @@ private:
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
+    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg, x_ref, y_ref, z_ref)
     {
         float pos_x = msg->vicon_x;
         float pos_y = msg->vicon_y;
-        float yaw = msg->vicon_yaw;
+        float yaw = msg->vicon_z;
 
-        // print with cout
-        std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << std::endl;
-        
+        std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
+
 
 
         z_error_to_controller_value(z_ref);
@@ -113,7 +112,7 @@ private:
         float pitch = 0;
         float yaw = yaw_mes;
 
-        float inv_R[3][3] = {{cos(pitch) * cos(yaw), cos(pitch) * sin(yaw), -sin(pitch)},
+        float inv_R[3][3] = {{cos(pitch) * cos(yaw), cos(pitch) * sin(yaw), -sin(pitch)},                                                                                       //Inverse rotation matrix, which takes radians
                              {cos(yaw) * sin(pitch) * sin(roll) - cos(roll) * sin(yaw), cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw), cos(pitch) * sin(roll)},
                              {sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch), cos(roll) * sin(pitch) * sin(yaw) - cos(yaw) * sin(roll), cos(pitch) * cos(roll)}};
 
