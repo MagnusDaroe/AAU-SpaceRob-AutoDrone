@@ -32,9 +32,6 @@ class FC_Commander(Node):
         self.time_offset = 0
         self.TIME_CALIBRATION_ITERATIONS = 5
 
-        #Calibrate the clock
-        self.calibrate_clock(persistence=False)
-
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
         self.last_command_time = self.get_time()
@@ -75,6 +72,10 @@ class FC_Commander(Node):
             10
         )
         self.publish_timer = self.create_timer(5, self.status_publisher)
+
+        #Calibrate the clock
+        self.calibrate_clock(persistence=False)
+
 
         # Initialize the latest command to be sent to the flight controller
         self.fc_command = DroneCommand()
