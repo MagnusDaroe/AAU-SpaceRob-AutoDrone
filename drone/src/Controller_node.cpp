@@ -82,8 +82,7 @@ private:
     {
         int thrust_to_hover = 480;
         int max_value = 200;
-        
-        std::cout << "regulartor_z_value: " << regulator_z_value << std::endl;
+        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         if (regulator_z_value > max_value)
         {
             altitude_control_value = thrust_to_hover + max_value;
@@ -101,6 +100,7 @@ private:
 
     void control_value_regulated(float z_ref, float z_pos)
     {
+        std::cout << "z_mes: " << z_pos << std::endl;
         float z_error = z_ref - z_pos;
         float Kp_altitude = 100;
         float Ki_altitude = 0;
@@ -108,6 +108,8 @@ private:
 
         integral += z_error;
         regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
+        //print regulator z value with std::cout
+        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         prev_z_error = z_error;
     }
 
