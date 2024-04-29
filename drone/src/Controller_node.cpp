@@ -51,7 +51,7 @@ private:
         float pos_y = msg->vicon_y;
         float yaw = msg->vicon_z;
 
-        std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
+        //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
 
 
@@ -64,6 +64,10 @@ private:
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
+
+        std::cout << "Regulator pitch value: " << regulator_pitch_value << std::endl;
+        std::cout << "Regulator roll value: " << regulator_roll_value << std::endl;
+        std::cout << "Regulator altitude value: " << regulator_z_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
