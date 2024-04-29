@@ -15,25 +15,11 @@ class FC_Commander(Node):
     # Class constructor
     def __init__(self):
         super().__init__('fc_command_listener')
-        self.battery_ok = True
 
         # Node parameters
         self.setup_test_parameters()
 
-        # Define subscriber
-        self.subscription_commands = self.create_subscription(
-            DroneCommand,
-            '/cmd_fc',
-            self.command_callback,
-            10
-        )
-
-        # Define publisher
-        self.publisher_status= self.create_publisher(
-            DroneStatus,
-            '/status_fc',
-            10
-        )
+        
         self.publish_timer = self.create_timer(5, self.status_publisher)
 
         # Fc command variables
@@ -77,6 +63,22 @@ class FC_Commander(Node):
                 self.BATTERY_MAX_VOLTAGE = 16.8
                 self.check_battery()
         
+        # Define subscriber
+        self.subscription_commands = self.create_subscription(
+            DroneCommand,
+            '/cmd_fc',
+            self.command_callback,
+            10
+        )
+
+        # Define publisher
+        self.publisher_status= self.create_publisher(
+            DroneStatus,
+            '/status_fc',
+            10
+        )
+
+
         # Initialize the latest command to be sent to the flight controller
         self.fc_command = DroneCommand()
         self.command_lock = threading.Lock()
