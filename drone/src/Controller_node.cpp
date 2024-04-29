@@ -79,10 +79,10 @@ private:
 
     void z_error_to_controller_value(float z_ref)
     {
-        std::cout << "z_ref: " << z_ref << std::endl;
         int max_value = 200;
         float z_error = z_ref - altitude_control_value;
 
+        std::cout << "z_error: " << z_error << std::endl;
         if (z_error > max_value)
         {
             altitude_control_value = max_value;
