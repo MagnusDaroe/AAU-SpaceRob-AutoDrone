@@ -51,9 +51,9 @@ private:
         float pos_y = msg->vicon_y;
         float yaw = msg->vicon_yaw;
 
-        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received x: %f", pos_x);
-        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received y: %f", pos_y);
-        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received yaw: %f", yaw);
+        // print with cout
+        std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << std::endl;
+        
 
 
         z_error_to_controller_value(z_ref);
