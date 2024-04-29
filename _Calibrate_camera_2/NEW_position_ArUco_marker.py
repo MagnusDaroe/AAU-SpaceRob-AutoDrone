@@ -21,6 +21,11 @@ CALIBRATION_FILE = "_Calibrate_camera_2\calib_new_1.npz"
 with np.load(CALIBRATION_FILE) as X:
     ret,mtx, dist = [X[i] for i in ("ret","mtx", "dist")]
 
+print("mtx:\n",mtx)
+print("dist:\n",dist)
+print("ret:\n",ret)
+
+
 left_to_center_mm=-32.00
 lense_to_center_mm=6.55
 

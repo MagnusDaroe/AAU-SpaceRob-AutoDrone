@@ -161,6 +161,7 @@ def get_R_matrix_eul(eul):
     R = np.dot(R_z, np.dot(R_y, R_x))
     return R
 
+t_old=0
 try:
     for _ in range(5000):
         # Wait for the next set of frames from the camera
@@ -197,7 +198,12 @@ try:
                               [0,0,1]])
         
         #delay of 0.1 seconds
-        time.sleep(0.1)
+        #time.sleep(0.1)
+        #print time difference
+        t_new=time.time()
+        print("Time difference: {}".format((t_new-t_old)*1000))
+        t_old=t_new
+
 
 
 
