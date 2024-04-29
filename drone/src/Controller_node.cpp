@@ -23,8 +23,8 @@ public:
 
 private:
     //reference values
-    float x_ref = 1200;
-    float y_ref = 1000;
+    float x_ref = 100;
+    float y_ref = 100;
     float z_ref = 500;
 
     float altitude_control_value = 0;
