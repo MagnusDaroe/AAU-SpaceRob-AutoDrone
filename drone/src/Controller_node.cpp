@@ -55,9 +55,9 @@ private:
         //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
 
-
-        z_error_to_controller_value(z_ref, pos_z);
-        control_value_regulated(ControllerNode::altitude_control_value);
+        control_value_regulated(z_ref, pos_z);
+        z_error_to_controller_value(ControllerNode::altitude_control_value);
+        
         globalErrorToLocalError(x_ref, y_ref, pos_x, pos_y, yaw);
         localErrorToAngle(local_error_x, local_error_y);
         anglePD(pitch_angle, roll_angle);
@@ -78,37 +78,37 @@ private:
         Control_publisher_->publish(control_msg);
     }
 
-    void z_error_to_controller_value(float z_ref, float pos_z)
+    void z_error_to_controller_value(float regulator_z_value)
     {
         int thrust_to_hover = 480;
         int max_value = 200;
-        float z_error = z_ref - pos_z;
-
-        std::cout << "z_error: " << z_error << std::endl;
-        if (z_error > max_value)
+        
+        std::cout << "regulartor_z_value: " << regulator_z_value << std::endl;
+        if (regulator_z_value > max_value)
         {
             altitude_control_value = thrust_to_hover + max_value;
         }
-        else if (z_error < -max_value)
+        else if (regulator_z_value < -max_value)
         {
             altitude_control_value = thrust_to_hover - max_value;
         }
         else
         {
-            altitude_control_value = thrust_to_hover + z_error;
+            altitude_control_value = thrust_to_hover + regulator_z_value;
         }
         std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
 
-    void control_value_regulated(float altitude_control_value)
+    void control_value_regulated(float z_ref, float pos_z)
     {
-        float Kp_altitude = 5;
-        float Ki_altitude = 1;
-        float Kd_altitude = 10;
+        float z_error = z_ref - z_pos;
+        float Kp_altitude = 100;
+        float Ki_altitude = 0;
+        float Kd_altitude = 80;
 
-        integral += altitude_control_value;
-        regulator_z_value = Kp_altitude * altitude_control_value + Ki_altitude * integral + Kd_altitude * (altitude_control_value - prev_z_error);
-        prev_z_error = altitude_control_value;
+        integral += z_error;
+        regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
+        prev_z_error = z_error;
     }
 
     //XY_controller functions    
