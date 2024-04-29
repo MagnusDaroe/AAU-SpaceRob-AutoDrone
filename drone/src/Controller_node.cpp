@@ -50,6 +50,7 @@ private:
         float pos_x = msg->vicon_x;
         float pos_y = msg->vicon_y;
         float pos_z = msg->vicon_z;
+        float yaw = msg->vicon_yaw;
 
         //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
