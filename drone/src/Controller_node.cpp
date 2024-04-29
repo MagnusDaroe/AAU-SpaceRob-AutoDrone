@@ -51,6 +51,11 @@ private:
         float pos_y = msg->vicon_y;
         float yaw = msg->vicon_yaw;
 
+        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received x: %f", pos_x);
+        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received y: %f", pos_y);
+        RCLCPP_DEBUG(ControllerNode->get_logger(), "Received yaw: %f", yaw);
+
+
         z_error_to_controller_value(z_ref);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, pos_x, pos_y, yaw);
