@@ -15,6 +15,7 @@ class FC_Commander(Node):
     # Class constructor
     def __init__(self):
         super().__init__('fc_command_listener')
+        self.battery_ok = True
 
         # Node parameters
         self.setup_test_parameters()
