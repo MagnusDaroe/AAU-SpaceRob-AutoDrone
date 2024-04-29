@@ -36,10 +36,10 @@ private:
     float local_error_y;
     float pitch_angle;
     float roll_angle;
-    float prev_pitch_angle;
-    float prev_roll_angle;
-    float regulator_pitch_value;
-    float regulator_roll_value;
+    float prev_local_error_x;
+    float prev_local_error_y;
+    float regulated_x_value;
+    float regulated_y_value;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -59,8 +59,8 @@ private:
         z_error_to_controller_value(ControllerNode::regulator_z_value);
         
         globalErrorToLocalError(x_ref, y_ref, x_pos, y_pos, yaw);
-        localErrorToAngle(local_error_x, local_error_y);
-        anglePD(pitch_angle, roll_angle);
+        anglePD(local_error_x, local_error_y);
+        localErrorToAngle(regulated_x_value, regulated_y_value);
         
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
@@ -68,7 +68,7 @@ private:
 
         //std::cout << "Regulator pitch value: " << regulator_pitch_value << std::endl;
         //std::cout << "Regulator roll value: " << regulator_roll_value << std::endl;
-        //std::cout << "Regulator altitude value: " << regulator_z_value << std::endl;
+        //std::cout << "Regulator altitude value: " << altitude_control_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
@@ -82,15 +82,12 @@ private:
     {
         int thrust_to_hover = 480;
         int max_value = 200;
-        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         if (regulator_z_value > max_value)
         {
-            std::cout << "1" << std::endl;
             altitude_control_value = thrust_to_hover + max_value;
         }
         else if (regulator_z_value < -max_value)
         {
-            std::cout << "2" << std::endl;
             altitude_control_value = thrust_to_hover - max_value;
         }
         else
@@ -150,46 +147,49 @@ private:
         local_error_y = result[1][0];
     }
 
-    void localErrorToAngle(float local_error_x, float local_error_y)
+    void localErrorToAngle(float regulated_x_error, float regulated_y_error)
     {
         int max_error = 200;
         int max_angle = 20;
 
-        if (local_error_x > max_error)
+        if (regulated_x_error > max_error)
         {
             pitch_angle = max_angle;
         }
-        else if (local_error_x < -max_error)
+        else if (regulated_x_error < -max_error)
         {
             pitch_angle = -max_angle;
         }
-        else if (local_error_y > max_error)
+        else
+        {
+            pitch_angle = regulated_x_error / 10;
+        }
+        if (regulated_y_error > max_error)
         {
             roll_angle = max_angle;
         }
-        else if (local_error_y < -max_error)
+        else if (regulated_y_error < -max_error)
         {
             roll_angle = -max_angle;
         }
         else
         {
-            pitch_angle = local_error_x / 10;
-            roll_angle = local_error_y / 10;
+            roll_angle = regulated_y_error / 10;
         }
     }
 
-    void anglePD(float pitch_angle, float roll_angle)
+    void anglePD(float local_error_x, float local_error_y)
     {
         float Kp_pitch = 0;
         float Kd_pitch = 1;
         float Kp_roll = 0;
         float Kd_roll = 1;
 
-        regulator_pitch_value = Kp_pitch * pitch_angle + Kd_pitch * (pitch_angle - prev_pitch_angle);
-        regulator_roll_value = Kp_roll * roll_angle + Kd_roll * (roll_angle - prev_roll_angle);
+        regulated_x_value = Kp_pitch * local_error_x + Kd_pitch * (local_error_x - prev_local_error_x);
+        regulated_y_value = Kp_roll * local_error_y + Kd_roll * (local_error_y - prev_local_error_y);
 
-        prev_pitch_angle = pitch_angle;
-        prev_roll_angle = roll_angle;
+        prev_local_error_x = local_error_x;
+        prev_local_error_y = local_error_y;
     } 
 };
 
