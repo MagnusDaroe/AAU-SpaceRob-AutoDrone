@@ -13,10 +13,11 @@ import socket
 class ViconPublisher(Node):
     def __init__(self):
         super().__init__('vicon_publisher')
+        
         self.publisher_ = self.create_publisher(DroneControlData, 'DroneControlData', 10)
         self.timer = self.create_timer(0.1, self.publish_message)
         self.mode = 1
-        self.HOST = '192.168.1.34'  # Listen on all network interfaces
+        self.HOST = '192.168.1.144'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.HOST, self.PORT))
