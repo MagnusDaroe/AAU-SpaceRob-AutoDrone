@@ -47,7 +47,7 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        RCLCPP_DEBUG(ControllerNode->get_logger(), "vicon_x: %d", msg->vicon_x);
+        std::cout << "vicon_y %d", msg->vicon_y << std::endl;
         z_error_to_controller_value(z_ref);
         control_value_regulated(ControllerNode::altitude_control_value);
         globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
