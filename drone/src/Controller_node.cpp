@@ -18,7 +18,7 @@ public:
         Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
 
         // Publish regulated altitude control value
-        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/ControlOutput", 10);
+        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
     }
 
 private:
