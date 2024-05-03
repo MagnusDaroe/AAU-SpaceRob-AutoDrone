@@ -97,7 +97,10 @@ class FC_Commander(Node):
         with self.command_lock:
             # Assign commands only if they are not NaN
             if not math.isnan(msg.cmd_mode):
-                self.fc_command.cmd_mode = msg.cmd_mode
+                if self.fc_command.identifier == 0:
+                    self.fc_command.cmd_estop = msg.cmd_estop
+                    self.fc_command.cmd_arm = msg.cmd_arm
+                    self.fc_command.cmd_mode = msg.cmd_mode
                 if msg.cmd_mode == 0:
                     # Manual mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
@@ -120,10 +123,7 @@ class FC_Commander(Node):
             # Assign the rest of the commands
             self.fc_command.timestamp = msg.timestamp
             
-            if self.fc_command.identifier == 0:
-                self.fc_command.cmd_estop = msg.cmd_estop
-                self.fc_command.cmd_arm = msg.cmd_arm
-
+            
     def status_publisher(self):
         """
         Publish the system status\n
