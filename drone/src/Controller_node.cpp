@@ -82,9 +82,9 @@ private:
 
     void z_error_to_controller_value(float regulator_z_value)
     {
-        float thrust_to_hover = 480;
+        float thrust_to_hover = 510;
         float max_value = 30000;
-        float max_thrust = 200;
+        float max_thrust = 50;
         if (regulator_z_value > max_value)
         {
             altitude_control_value = thrust_to_hover + max_thrust;
