@@ -103,9 +103,12 @@ class T265():
         # If at least one marker is detected get the pose data of the markers and draw the axis on the image
         if marker_ids is not None and len(marker_ids) > 0:
             r_vec,t_vec,_objPoints = cv2.aruco.estimatePoseSingleMarkers(marker_corners, marker_size , self.mtx, self.dist)
+            
+            ##############################
             for i in range(len(r_vec)):
                 cv2.aruco.drawDetectedMarkers(output_image, marker_corners, marker_ids)
                 cv2.drawFrameAxes(output_image, self.mtx, self.dist, r_vec[i], t_vec[i], length=10, thickness=2) 
+            ##############################
         return r_vec,t_vec,np.array(marker_corners),marker_ids
 
 
@@ -116,10 +119,12 @@ class T265():
         #get the pose data from the T265 camera
         translation_xyz, rotation_xyzw,time_stamp = self.get_pose_data(frames)
 
+        ##############################
         #print the pose data on the image top left corner
         pos_cm=np.array(translation_xyz)*100
         pos_cm=pos_cm.round(0).astype(int)
         cv2.putText(image_rgb, str("x: {}, y: {}, z: {}".format(pos_cm[0],pos_cm[1],pos_cm[2])),(20, 20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+        ##############################
 
         T_q=self.get_T_matrix_q(rotation_xyzw,translation_xyz)
         

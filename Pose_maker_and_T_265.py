@@ -137,13 +137,18 @@ def get_undist_image_and_marker_pose(image_left,mtx,dist,MARKER_SIZE,frames,mark
             P_marker_pos=T_q@(P_center_1x3)
             
             P_marker_pos=P_marker_pos.round(0)
+
+            #Get the center xy coordinat of the marker
+            center_x=int((coner[i][0][0][0]+coner[i][0][2][0])/2)
+            center_y=int((coner[i][0][0][1]+coner[i][0][2][1])/2)
+
             
             # if Marker_ID is in the marker_data dictionary update the dictionary with the new data
                 # else add the new data to the dictionary
             if f"ID_{Marker_ID[i][0]}" in marker_data:
-                marker_data.update({f"ID_{Marker_ID[i][0]}":P_marker_pos.flatten()[:-1]})
+                marker_data.update({f"ID_{Marker_ID[i][0]}":[P_marker_pos.flatten()[:-1],[center_x,center_y]]})
             else:
-                marker_data[f"ID_{Marker_ID[i][0]}"]=P_marker_pos.flatten()[:-1]
+                marker_data[f"ID_{Marker_ID[i][0]}"]=[P_marker_pos.flatten()[:-1],[center_x,center_y]]
             
             #print the pos data on the image top left corner of the marker
             top_left_coner=coner[i][0][0].astype(int)
