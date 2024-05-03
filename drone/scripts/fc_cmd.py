@@ -119,8 +119,10 @@ class FC_Commander(Node):
             
             # Assign the rest of the commands
             self.fc_command.timestamp = msg.timestamp
-            self.fc_command.cmd_estop = msg.cmd_estop
-            self.fc_command.cmd_arm = msg.cmd_arm
+            
+            if self.fc_command.identifier == 0:
+                self.fc_command.cmd_estop = msg.cmd_estop
+                self.fc_command.cmd_arm = msg.cmd_arm
 
     def status_publisher(self):
         """

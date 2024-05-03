@@ -47,6 +47,7 @@ def control_loop(node):
 
         Drone_cmd = DroneCommand()
 
+        Drone_cmd.identifier = int(0)
         Drone_cmd.timestamp = float(node.get_clock().now().nanoseconds) / 1e9
         Drone_cmd.cmd_mode = get_mode(node)
         Drone_cmd.cmd_arm = True if arm == 1 else False
@@ -70,7 +71,7 @@ def control_loop(node):
             Drone_cmd.cmd_roll = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
             Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
             Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
-            
+        
         node.send_control_command(Drone_cmd)
 
     
