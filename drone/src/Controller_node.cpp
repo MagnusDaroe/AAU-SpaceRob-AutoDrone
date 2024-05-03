@@ -66,14 +66,14 @@ private:
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
-        std::cout << "pitch_controller_value: " << pitch_controller_value << std::endl;
-        std::cout << "roll_controller_value: " << roll_controller_value << std::endl;
-        std::cout << "altitude_controller_value: " << altitude_control_value << std::endl;
+        //std::cout << "pitch_controller_value: " << pitch_controller_value << std::endl;
+        //std::cout << "roll_controller_value: " << roll_controller_value << std::endl;
+        //std::cout << "altitude_controller_value: " << altitude_control_value << std::endl;
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
         control_msg.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        //control_msg.identifier = 1;
+        control_msg.identifier = 1;
         control_msg.cmd_auto_roll = pitch_controller_value;
         control_msg.cmd_auto_pitch = roll_controller_value;
         control_msg.cmd_auto_thrust = altitude_control_value;
@@ -111,7 +111,7 @@ private:
         integral += z_error;
         regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
         //print regulator z value with std::cout
-        std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
+        //std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
         prev_z_error = z_error;
     }
 
@@ -155,8 +155,8 @@ private:
         //float convert_to_control_value = 12.5;
         float max_error = 1000;
         float max_controller_value = 200;
-        std::cout << "regulated_x_error: " << regulated_x_error << std::endl;
-        std::cout << "regulated_y_error: " << regulated_y_error << std::endl;
+        //std::cout << "regulated_x_error: " << regulated_x_error << std::endl;
+        //std::cout << "regulated_y_error: " << regulated_y_error << std::endl;
         if (regulated_x_error > max_error)
         {
             pitch_controller_value = max_controller_value;
