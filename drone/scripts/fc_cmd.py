@@ -17,7 +17,7 @@ class FC_Commander(Node):
         super().__init__('fc_command_listener')
 
         # Initialize the latest command to be sent to the flight controller
-        self.fc_command = DroneCommand()
+        #self.fc_command = DroneCommand()
         self.command_lock = threading.Lock()
 
         # Node parameters
