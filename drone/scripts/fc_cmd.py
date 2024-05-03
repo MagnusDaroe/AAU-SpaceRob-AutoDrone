@@ -392,7 +392,7 @@ class FC_Commander(Node):
                 
                 # Arm the drone again
                 if not self.test_mode:
-                    self.get_logger().info(self.fc_command.cmd_arm)
+                    #self.get_logger().info(self.fc_command.cmd_arm)
                     self.drone_arm()
     
     def flight_mode(self):
