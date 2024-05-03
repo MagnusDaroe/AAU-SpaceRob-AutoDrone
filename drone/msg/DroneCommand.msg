@@ -1,6 +1,7 @@
 # commands which both modes can use
 float64 timestamp
 uint8 cmd_estop
+uint8 identifier
 
 # manual commands
 uint8 cmd_arm

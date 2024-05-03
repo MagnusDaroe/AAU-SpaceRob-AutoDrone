@@ -72,6 +72,8 @@ private:
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
+        control_msg.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        control_msg.identifier = 1;
         control_msg.cmd_auto_roll = pitch_controller_value;
         control_msg.cmd_auto_pitch = roll_controller_value;
         control_msg.cmd_auto_thrust = altitude_control_value;
