@@ -17,7 +17,7 @@ class FC_Commander(Node):
         super().__init__('fc_command_listener')
 
         # Initialize the latest command to be sent to the flight controller
-        #self.fc_command = DroneCommand()
+        self.fc_command = DroneCommand()
         self.command_lock = threading.Lock()
 
         # Node parameters
@@ -96,24 +96,26 @@ class FC_Commander(Node):
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
             # Assign commands only if they are not NaN
+
+            #self.get_logger().info(f"{msg}")
             if not math.isnan(msg.cmd_mode):
-                if self.fc_command.identifier == 0:
+                if msg.identifier == 0:
                     self.fc_command.cmd_estop = msg.cmd_estop
                     self.fc_command.cmd_arm = msg.cmd_arm
                     self.fc_command.cmd_mode = msg.cmd_mode
-                if msg.cmd_mode == 0:
+                if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
                     # Manual mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
                     self.fc_command.cmd_roll = msg.cmd_roll
                     self.fc_command.cmd_pitch = msg.cmd_pitch
                     self.fc_command.cmd_yaw = msg.cmd_yaw
-                elif msg.cmd_mode == 1:
+                elif self.fc_command.cmd_mode == 1 and msg.identifier == 1:
                     # Autonomous mode
                     self.fc_command.cmd_thrust = msg.cmd_auto_thrust
                     self.fc_command.cmd_roll = msg.cmd_auto_roll
                     self.fc_command.cmd_pitch = msg.cmd_auto_pitch
                     self.fc_command.cmd_yaw = msg.cmd_auto_yaw
-                elif msg.cmd_mode == 2:
+                elif self.fc_command.cmd_mode == 2 and msg.identifier == 0:
                     # Test mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
                     self.fc_command.cmd_roll = msg.cmd_roll
