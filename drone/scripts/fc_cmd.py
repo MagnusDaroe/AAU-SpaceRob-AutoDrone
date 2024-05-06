@@ -10,6 +10,16 @@ from drone.msg import DroneCommand, DroneStatus
 from drone.srv import Clock
 import numpy as np
 
+class RateController:
+    def __init__(self, rate):
+        self.rate = rate
+        self.start_time = time.time()
+
+    def sleep(self):
+        elapsed_time = time.time() - self.start_time
+        sleep_time = max(0, 1 / self.rate - elapsed_time)
+        time.sleep(sleep_time)
+        self.start_time = time.time()
 
 class FC_Commander(Node):
     # Class constructor
@@ -337,21 +347,28 @@ class FC_Commander(Node):
 
         This function sends the latest command to the flight controller\n
         Controls the mode of the drone
-
         """
-        # Set the rate of the commander
-        rate = self.create_rate(updaterate)
-        
+        # Initialize your rate controller
+        rate_controller = RateController(updaterate)
+
         # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
+            # Check for estop condition
+            if self.fc_command.cmd_estop == 1:
+                # Emergency stop
+                self.emergency_stop()
+                # Sleep to keep the update rate
+                rate_controller.sleep()
+                continue
+            
             # Check the battery voltage if requested
             if self.battery_check_requested:
                 self.get_logger().info("Battery check requested")
                 self.check_battery()
                 self.battery_check_requested = False
-
+    
             # Check if the drone is armed and the estop is not activated
-            if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
+            if self.fc_command.cmd_arm == 1 and self.battery_ok:
                 # Check if the drone is in manual, autonomous mode and test mode
                 if self.fc_command.cmd_mode == 0:
                     # Manual mode
@@ -361,9 +378,9 @@ class FC_Commander(Node):
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
                     # Test mode
-
+    
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 200
+                    x = 400
                     if self.fc_command.cmd_roll:
                         if self.fc_command.cmd_roll > 0:
                             self.fc_command.cmd_roll = float(x)
@@ -376,25 +393,25 @@ class FC_Commander(Node):
                     self.get_logger().fatal("Drone mode not recognized")
                     # Shut down
                     rclpy.shutdown()
-
+    
                 # Sleep to keep the update rate
-                rate.sleep()
+                rate_controller.sleep()
             elif not self.battery_ok:
                 # Battery voltage too low. Emergency stop activated
                 self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
                 self.emergency_stop() # Implement an emergency land.
-            elif self.fc_command.cmd_estop == 1:
-                # Emergency stop
-                self.emergency_stop()
             else:
                 self.get_logger().info("Waiting for arm command")
-                while not self.fc_command.cmd_arm and self.fc_command.cmd_estop or not self.fc_command.cmd_arm:
+                while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
                     time.sleep(0.5)
+                    # Check if estop is activated
+                    if self.fc_command.cmd_estop:
+                        self.emergency_stop()
+                        break  
                 self.reset_cmd()
                 
                 # Arm the drone again
                 if not self.test_mode:
-                    #self.get_logger().info(self.fc_command.cmd_arm)
                     self.drone_arm()
     
     def flight_mode(self):
