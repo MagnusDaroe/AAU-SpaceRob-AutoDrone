@@ -15,7 +15,7 @@ class ViconPublisher(Node):
         super().__init__('vicon_publisher')
         
         self.publisher_ = self.create_publisher(DroneControlData, 'DroneControlData', 10)
-        self.timer = self.create_timer(0.1, self.publish_message)
+        self.timer = self.create_timer(1/100, self.publish_message)
         self.mode = 1
         self.HOST = '192.168.1.149'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
