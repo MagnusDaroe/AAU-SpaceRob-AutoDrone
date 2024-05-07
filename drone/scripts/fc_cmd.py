@@ -339,7 +339,7 @@ class FC_Commander(Node):
             if not self.test_mode: 
                 self.get_logger().warn("Rebooting too soon. Waiting for the reboot interval to expire")
 
-    def fc_commander(self, updaterate=50):
+    def fc_commander(self, updaterate=100):
         """
         Main function for the flight controller commander \n\n
         Param:\n
