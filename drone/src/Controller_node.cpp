@@ -18,28 +18,28 @@ public:
         Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
 
         // Publish regulated altitude control value
-        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);
+        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
     }
 
 private:
     //reference values
-    float x_ref = 1200;
-    float y_ref = 1000;
+    float x_ref = 100;
+    float y_ref = 100;
     float z_ref = 500;
 
-    float altitude_control_value;
+    float altitude_control_value = 0;
     float regulator_z_value;
     float integral;
     float prev_z_error;
 
     float local_error_x;
     float local_error_y;
-    float pitch_angle;
-    float roll_angle;
-    float prev_pitch_angle;
-    float prev_roll_angle;
-    float regulator_pitch_value;
-    float regulator_roll_value;
+    float pitch_controller_value;
+    float roll_controller_value;
+    float prev_local_error_x;
+    float prev_local_error_y;
+    float regulated_x_value;
+    float regulated_y_value;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -47,51 +47,72 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        z_error_to_controller_value(z_ref);
-        control_value_regulated(ControllerNode::altitude_control_value);
-        globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
-        localErrorToAngle(local_error_x, local_error_y);
-        anglePD(pitch_angle, roll_angle);
+        float x_pos = msg->vicon_x;
+        float y_pos = msg->vicon_y;
+        float z_pos = msg->vicon_z;
+        float yaw = msg->vicon_yaw;
+
+        //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
+
+
+        control_value_regulated(z_ref, z_pos);
+        z_error_to_controller_value(ControllerNode::regulator_z_value);
+        
+        globalErrorToLocalError(x_ref, y_ref, x_pos, y_pos, yaw);
+        anglePD(local_error_x, local_error_y);
+        localErrorToAngle(regulated_x_value, regulated_y_value);
+        
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
 
+        //std::cout << "pitch_controller_value: " << pitch_controller_value << std::endl;
+        //std::cout << "roll_controller_value: " << roll_controller_value << std::endl;
+        //std::cout << "altitude_controller_value: " << altitude_control_value << std::endl;
+
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
-        control_msg.cmd_auto_roll = regulator_pitch_value;
-        control_msg.cmd_auto_pitch = regulator_roll_value;
-        control_msg.cmd_auto_thrust = regulator_z_value;
+        control_msg.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        control_msg.identifier = 1;
+        control_msg.cmd_auto_roll = pitch_controller_value;
+        control_msg.cmd_auto_pitch = roll_controller_value;
+        control_msg.cmd_auto_thrust = altitude_control_value;
         Control_publisher_->publish(control_msg);
     }
 
-    void z_error_to_controller_value(float z_ref)
+    void z_error_to_controller_value(float regulator_z_value)
     {
-        int max_value = 200;
-        float z_error = z_ref - altitude_control_value;
-
-        if (z_error > max_value)
+        float thrust_to_hover = 510;
+        float max_value = 30000;
+        float max_thrust = 50;
+        if (regulator_z_value > max_value)
         {
-            altitude_control_value = max_value;
+            altitude_control_value = thrust_to_hover + max_thrust;
         }
-        else if (z_error < -max_value)
+        else if (regulator_z_value < -max_value)
         {
-            altitude_control_value = -max_value;
+            altitude_control_value = thrust_to_hover - max_thrust;
         }
         else
         {
-            altitude_control_value = z_error;
+            altitude_control_value = thrust_to_hover + regulator_z_value*(max_thrust/max_value);
         }
+        //std::cout << "altitude_control_value: " << altitude_control_value << std::endl;
     }
 
-    void control_value_regulated(float altitude_control_value)
+    void control_value_regulated(float z_ref, float z_pos)
     {
-        float Kp_altitude = 5;
-        float Ki_altitude = 1;
-        float Kd_altitude = 10;
+        //std::cout << "z_mes: " << z_pos << std::endl;
+        float z_error = z_ref - z_pos;
+        float Kp_altitude = 100;
+        float Ki_altitude = 0;
+        float Kd_altitude = 80;
 
-        integral += altitude_control_value;
-        regulator_z_value = Kp_altitude * altitude_control_value + Ki_altitude * integral + Kd_altitude * (altitude_control_value - prev_z_error);
-        prev_z_error = altitude_control_value;
+        integral += z_error;
+        regulator_z_value = Kp_altitude * z_error + Ki_altitude * integral + Kd_altitude * (z_error - prev_z_error);
+        //print regulator z value with std::cout
+        //std::cout << "regulator_z_value: " << regulator_z_value << std::endl;
+        prev_z_error = z_error;
     }
 
     //XY_controller functions    
@@ -103,7 +124,7 @@ private:
         float pitch = 0;
         float yaw = yaw_mes;
 
-        float inv_R[3][3] = {{cos(pitch) * cos(yaw), cos(pitch) * sin(yaw), -sin(pitch)},
+        float inv_R[3][3] = {{cos(pitch) * cos(yaw), cos(pitch) * sin(yaw), -sin(pitch)},                                                                                       //Inverse rotation matrix, which takes radians
                              {cos(yaw) * sin(pitch) * sin(roll) - cos(roll) * sin(yaw), cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw), cos(pitch) * sin(roll)},
                              {sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch), cos(roll) * sin(pitch) * sin(yaw) - cos(yaw) * sin(roll), cos(pitch) * cos(roll)}};
 
@@ -129,52 +150,59 @@ private:
         local_error_y = result[1][0];
     }
 
-    void localErrorToAngle(float local_error_x, float local_error_y)
+    void localErrorToAngle(float regulated_x_error, float regulated_y_error)
     {
-        int max_error = 200;
-        int max_angle = 20;
-
-        if (local_error_x > max_error)
+        //float convert_to_control_value = 12.5;
+        float max_error = 1000;
+        float max_controller_value = 200;
+        //std::cout << "regulated_x_error: " << regulated_x_error << std::endl;
+        //std::cout << "regulated_y_error: " << regulated_y_error << std::endl;
+        if (regulated_x_error > max_error)
         {
-            pitch_angle = max_angle;
+            pitch_controller_value = max_controller_value;
         }
-        else if (local_error_x < -max_error)
+        else if (regulated_x_error < -max_error)
         {
-            pitch_angle = -max_angle;
-        }
-        else if (local_error_y > max_error)
-        {
-            roll_angle = max_angle;
-        }
-        else if (local_error_y < -max_error)
-        {
-            roll_angle = -max_angle;
+            pitch_controller_value = -max_controller_value;
         }
         else
         {
-            pitch_angle = local_error_x / 10;
-            roll_angle = local_error_y / 10;
+            pitch_controller_value = regulated_x_error*(max_controller_value/max_error);
         }
+        if (regulated_y_error > max_error)
+        {
+            roll_controller_value = max_controller_value;
+        }
+        else if (regulated_y_error < -max_error)
+        {
+            roll_controller_value = -max_controller_value;
+        }
+        else
+        {
+            roll_controller_value = regulated_y_error*(max_controller_value/max_error);
+        }
+        //roll_angle = roll_angle * convert_to_control_value;
+        //pitch_angle = pitch_angle * convert_to_control_value;
     }
 
-    void anglePD(float pitch_angle, float roll_angle)
+    void anglePD(float local_error_x, float local_error_y)
     {
-        float Kp_pitch = 0;
+        float Kp_pitch = 1;
         float Kd_pitch = 1;
-        float Kp_roll = 0;
+        float Kp_roll = 1;
         float Kd_roll = 1;
 
-        regulator_pitch_value = Kp_pitch * pitch_angle + Kd_pitch * (pitch_angle - prev_pitch_angle);
-        regulator_roll_value = Kp_roll * roll_angle + Kd_roll * (roll_angle - prev_roll_angle);
+        regulated_x_value = Kp_pitch * local_error_x + Kd_pitch * (local_error_x - prev_local_error_x);
+        regulated_y_value = Kp_roll * local_error_y + Kd_roll * (local_error_y - prev_local_error_y);
 
-        prev_pitch_angle = pitch_angle;
-        prev_roll_angle = roll_angle;
+        prev_local_error_x = local_error_x;
+        prev_local_error_y = local_error_y;
     } 
 };
 
 int main(int argc, char *argv[])
 {
-    //RCLCPP_DEBUG(ControllerNode->get_logger(), "My log message is: Hi");
+    std::cout << "Controller_node starting up..." << std::endl;
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ControllerNode>();
     rclcpp::spin(node);

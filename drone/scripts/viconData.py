@@ -13,10 +13,11 @@ import socket
 class ViconPublisher(Node):
     def __init__(self):
         super().__init__('vicon_publisher')
+        
         self.publisher_ = self.create_publisher(DroneControlData, 'DroneControlData', 10)
-        self.timer = self.create_timer(0.1, self.publish_message)
+        self.timer = self.create_timer(1/100, self.publish_message)
         self.mode = 1
-        self.HOST = '192.168.1.34'  # Listen on all network interfaces
+        self.HOST = '192.168.1.149'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.HOST, self.PORT))
@@ -40,7 +41,7 @@ class ViconPublisher(Node):
             if len(received_data) == 6:
                 x, y, z, roll, pitch, yaw = map(float, received_data)
                 #(f"Received: {x}, {y}, {z}, {roll}, {pitch}, {yaw}")
-                #msg.timestamp = time.time()  # Current timestamp
+                msg.timestamp = time.time()  # Current timestamp
                 msg.vicon_x = x  
                 msg.vicon_y = y  
                 msg.vicon_z = z  
@@ -49,6 +50,7 @@ class ViconPublisher(Node):
                 msg.vicon_yaw = yaw
                 self.publisher_.publish(msg)
                 self.get_logger().info('Publishing: %s' % msg)
+
             else:
                 self.get_logger().warning('Publishing: %s' % "Unexpected format")
                 self.get_logger().warning('Publishing: %s' % received_data)

@@ -26,8 +26,6 @@
     		message(FATAL_ERROR "Could not find builtin_interfaces package")
 	endif()
 
-	find_package(drone REQUIRED)
-
 	rosidl_generate_interfaces(${PROJECT_NAME}
 	  "msg/DroneCommand.msg"
 	  "msg/DroneControlData.msg"
@@ -37,6 +35,8 @@
 	  DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)
 	# Include Cpp "include" directory
 	include_directories(include)
+	
+	find_package(drone REQUIRED)
 
 	# Create Cpp executables - Altitude
 	#add_executable(Altitude_controller src/Altitude_controller.cpp) # change name of node
@@ -74,8 +74,7 @@
 	  scripts/image_listen.py
 	  scripts/GCS.py
 	  scripts/viconData.py
-	  scripts/time.py
-      scripts/tes.py
+	  scripts/camera.py
 	  DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 

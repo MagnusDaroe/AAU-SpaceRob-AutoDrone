@@ -10,30 +10,28 @@ from drone.msg import DroneCommand, DroneStatus
 from drone.srv import Clock
 import numpy as np
 
+class RateController:
+    def __init__(self, rate):
+        self.rate = rate
+        self.start_time = time.time()
+
+    def sleep(self):
+        elapsed_time = time.time() - self.start_time
+        sleep_time = max(0, 1 / self.rate - elapsed_time)
+        time.sleep(sleep_time)
+        self.start_time = time.time()
 
 class FC_Commander(Node):
     # Class constructor
     def __init__(self):
         super().__init__('fc_command_listener')
 
+        # Initialize the latest command to be sent to the flight controller
+        self.fc_command = DroneCommand()
+        self.command_lock = threading.Lock()
+
         # Node parameters
         self.setup_test_parameters()
-
-        # Define subscriber
-        self.subscription_commands = self.create_subscription(
-            DroneCommand,
-            '/cmd_fc',
-            self.command_callback,
-            10
-        )
-
-        # Define publisher
-        self.publisher_status= self.create_publisher(
-            DroneStatus,
-            '/status_fc',
-            10
-        )
-        self.publish_timer = self.create_timer(5, self.status_publisher)
 
         # Fc command variables
         self.USB_PORT = '/dev/ttyTHS1'
@@ -47,9 +45,6 @@ class FC_Commander(Node):
         # Initialize timout related variables
         self.time_offset = 0
         self.TIME_CALIBRATION_ITERATIONS = 5
-
-        #Calibrate the clock
-        self.calibrate_clock(persistence=False)
 
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
@@ -76,9 +71,24 @@ class FC_Commander(Node):
                 self.BATTERY_MAX_VOLTAGE = 16.8
                 self.check_battery()
         
-        # Initialize the latest command to be sent to the flight controller
-        self.fc_command = DroneCommand()
-        self.command_lock = threading.Lock()
+        # Define subscriber
+        self.subscription_commands = self.create_subscription(
+            DroneCommand,
+            '/cmd_fc',
+            self.command_callback,
+            10
+        )
+
+        # Define publisher
+        self.publisher_status= self.create_publisher(
+            DroneStatus,
+            '/status_fc',
+            10
+        )
+        self.publish_timer = self.create_timer(5, self.status_publisher)
+
+        #Calibrate the clock
+        self.calibrate_clock(persistence=False)
 
         # Set the logging level based on command-line argument or default to INFO
         self.log_level = self.get_logger().get_effective_level()
@@ -96,21 +106,26 @@ class FC_Commander(Node):
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
             # Assign commands only if they are not NaN
+
+            #self.get_logger().info(f"{msg}")
             if not math.isnan(msg.cmd_mode):
-                self.fc_command.cmd_mode = msg.cmd_mode
-                if msg.cmd_mode == 0:
+                if msg.identifier == 0:
+                    self.fc_command.cmd_estop = msg.cmd_estop
+                    self.fc_command.cmd_arm = msg.cmd_arm
+                    self.fc_command.cmd_mode = msg.cmd_mode
+                if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
                     # Manual mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
                     self.fc_command.cmd_roll = msg.cmd_roll
                     self.fc_command.cmd_pitch = msg.cmd_pitch
                     self.fc_command.cmd_yaw = msg.cmd_yaw
-                elif msg.cmd_mode == 1:
+                elif self.fc_command.cmd_mode == 1 and msg.identifier == 1:
                     # Autonomous mode
                     self.fc_command.cmd_thrust = msg.cmd_auto_thrust
                     self.fc_command.cmd_roll = msg.cmd_auto_roll
                     self.fc_command.cmd_pitch = msg.cmd_auto_pitch
                     self.fc_command.cmd_yaw = msg.cmd_auto_yaw
-                elif msg.cmd_mode == 2:
+                elif self.fc_command.cmd_mode == 2 and msg.identifier == 0:
                     # Test mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
                     self.fc_command.cmd_roll = msg.cmd_roll
@@ -119,9 +134,8 @@ class FC_Commander(Node):
             
             # Assign the rest of the commands
             self.fc_command.timestamp = msg.timestamp
-            self.fc_command.cmd_estop = msg.cmd_estop
-            self.fc_command.cmd_arm = msg.cmd_arm
-
+            
+            
     def status_publisher(self):
         """
         Publish the system status\n
@@ -325,7 +339,7 @@ class FC_Commander(Node):
             if not self.test_mode: 
                 self.get_logger().warn("Rebooting too soon. Waiting for the reboot interval to expire")
 
-    def fc_commander(self, updaterate=50):
+    def fc_commander(self, updaterate=100):
         """
         Main function for the flight controller commander \n\n
         Param:\n
@@ -333,21 +347,28 @@ class FC_Commander(Node):
 
         This function sends the latest command to the flight controller\n
         Controls the mode of the drone
-
         """
-        # Set the rate of the commander
-        rate = self.create_rate(updaterate)
-        
+        # Initialize your rate controller
+        rate_controller = RateController(updaterate)
+
         # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
+            # Check for estop condition
+            if self.fc_command.cmd_estop == 1:
+                # Emergency stop
+                self.emergency_stop()
+                # Sleep to keep the update rate
+                rate_controller.sleep()
+                continue
+            
             # Check the battery voltage if requested
             if self.battery_check_requested:
                 self.get_logger().info("Battery check requested")
                 self.check_battery()
                 self.battery_check_requested = False
-
+    
             # Check if the drone is armed and the estop is not activated
-            if self.fc_command.cmd_arm == 1 and not self.fc_command.cmd_estop == 1 and self.battery_ok:
+            if self.fc_command.cmd_arm == 1 and self.battery_ok:
                 # Check if the drone is in manual, autonomous mode and test mode
                 if self.fc_command.cmd_mode == 0:
                     # Manual mode
@@ -357,7 +378,7 @@ class FC_Commander(Node):
                     self.flight_mode()
                 elif self.fc_command.cmd_mode == 2:
                     # Test mode
-
+    
                     # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
                     x = 400
                     if self.fc_command.cmd_roll:
@@ -372,20 +393,21 @@ class FC_Commander(Node):
                     self.get_logger().fatal("Drone mode not recognized")
                     # Shut down
                     rclpy.shutdown()
-
+    
                 # Sleep to keep the update rate
-                rate.sleep()
+                rate_controller.sleep()
             elif not self.battery_ok:
                 # Battery voltage too low. Emergency stop activated
                 self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
                 self.emergency_stop() # Implement an emergency land.
-            elif self.fc_command.cmd_estop == 1:
-                # Emergency stop
-                self.emergency_stop()
             else:
                 self.get_logger().info("Waiting for arm command")
-                while not self.fc_command.cmd_arm and self.fc_command.cmd_estop or not self.fc_command.cmd_arm:
+                while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
                     time.sleep(0.5)
+                    # Check if estop is activated
+                    if self.fc_command.cmd_estop:
+                        self.emergency_stop()
+                        break  
                 self.reset_cmd()
                 
                 # Arm the drone again
@@ -465,6 +487,8 @@ class FC_Commander(Node):
         """
         Check the battery level of the drone
         """
+        self.get_logger().info("Checking battery voltage")
+
         # Request the battery voltage
         self.the_connection.mav.request_data_stream_send(
             self.the_connection.target_system,
