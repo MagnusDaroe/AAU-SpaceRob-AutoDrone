@@ -366,9 +366,14 @@ class FC_Commander(Node):
                 self.get_logger().info("Battery check requested")
                 self.check_battery()
                 self.battery_check_requested = False
-    
-            # Check if the drone is armed and the estop is not activated
-            if self.fc_command.cmd_arm == 1 and self.battery_ok:
+            
+            # Verify if the drone can keep operating
+            if not self.battery_ok:
+                # Battery voltage too low. Emergency stop activated
+                self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
+                self.emergency_stop() # Implement an emergency land.
+            # Check if the drone is armed
+            elif self.fc_command.cmd_arm == 1:
                 # Check if the drone is in manual, autonomous mode and test mode
                 if self.fc_command.cmd_mode == 0:
                     # Manual mode
@@ -396,10 +401,6 @@ class FC_Commander(Node):
     
                 # Sleep to keep the update rate
                 rate_controller.sleep()
-            elif not self.battery_ok:
-                # Battery voltage too low. Emergency stop activated
-                self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
-                self.emergency_stop() # Implement an emergency land.
             else:
                 self.get_logger().info("Waiting for arm command")
                 while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
