@@ -33,6 +33,7 @@ class T265():
         
         self.R_local_cam=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
         self.T_local_cam=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
+        
         self.R_global_cam=self.R_local_cam
         self.T_global_cam=self.T_local_cam
 

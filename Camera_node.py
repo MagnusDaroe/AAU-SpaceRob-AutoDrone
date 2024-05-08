@@ -42,12 +42,18 @@ class T265(Node):
         self.R_local_cam=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
         self.T_local_cam=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
         
-        # Transformation from FC to local frame center in T265:
-        self.R_FC_local=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
-        self.T_FC_local=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[15.3223,-8.66070,0,1]])
+        # Transformation from backside center of T265 to local frame center in T265:
+        self.R_backside_local=np.array([[1,0,0],[1,0,0],[0,0,1]])
+        self.T_backside_local=np.array([[1,0,0,0],[1,0,0,0],[0,0,1,0],[0.154,-0.910,-5.75,1]]) #cm
+
+        # Transformation from FC to backside center of T265:
+        self.R_FC_backside=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
+        self.R_FC_backside=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[15.3223,-8.66070,0,1]]) #cm
+
+
         # Transformation from FC to T265 pose frame:
-        self.R_FC_cam=self.R_FC_local@self.R_FC_local
-        self.T_FC_cam=self.T_FC_local@self.T_FC_local
+        self.R_FC_cam=self.R_FC_backside@self.R_backside_local@self.R_local_cam
+        self.T_FC_cam=self.R_FC_backside@self.T_backside_local@self.T_local_cam
 
         # Transformation from global to T265 pose frame:
         self.R_global_cam=self.R_FC_cam
