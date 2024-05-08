@@ -44,10 +44,30 @@ private:
     float altitude_control_value;
 
     // XY controller
-    float prev_x_error;
-    float prev_y_error;
+    // -Ouputs
     float regulator_pitch_value;
     float regulator_roll_value;
+
+    // -Inputs
+    float x_error;
+    float y_error;
+    float prev_x_error;
+    float prev_y_error;
+
+    // Z controller
+    // -Outputs
+    float regulator_altitude_value;
+
+    // -Inputs
+    float z_error;
+    float prev_z_error;
+
+    // Yaw controller
+    // -Outputs
+    float regulator_yaw_value;
+
+    // -Inputs
+    float yaw_error;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -171,6 +191,29 @@ private:
         }
     }
 
+    void yaw_controller(float yaw_error)
+    {
+        float Kp_yaw = 15;
+        float saturation_value = 900;
+
+        float yaw_value = Kp_yaw * yaw_error;
+
+        regulator_yaw_value = saturation(yaw_value, saturation_value);
+    }
+
+    void Z_controller(float z_error)
+    {
+        float Kp_altitude = 0.01;
+        float Kd_altitude = 10;
+        float saturation_value = 900;
+
+        float altitude_value = 10*((z_error - prev_z_error)/samples_pr_sec)+0.01*z_error;
+
+        regulator_altitude_value = saturation(altitude_value, saturation_value);
+
+        prev_z_error = z_error;
+    }
+
     void XY_controller(float x_error, float y_error) // float pitch_angle, float roll_angle
     {
         // Define PD controller parameters
@@ -178,14 +221,14 @@ private:
         float Kd_pitch = 0.7;
         float Kp_roll = 0.002;
         float Kd_roll = 0.7;
-        sample_time = 100;
+        float sample_time = 100;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
-        saturation_value = 900;  
+        float saturation_value = 900;  
 
         // Discretized PD controller for x and y
-        pitch_value = (kd_pitch*(x_error-prev_x_error)/sample_time)+x_error*(kp_pitch);
-        roll_value = (kd_yaw*(y_error-prev_y_error)/sample_time)+y_error*(kp_roll);
+        float pitch_value = (kd_pitch*(x_error-prev_x_error)/sample_time)+x_error*(kp_pitch);
+        float roll_value = (kd_yaw*(y_error-prev_y_error)/sample_time)+y_error*(kp_roll);
 
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
@@ -211,6 +254,13 @@ private:
         }
         return value;
     }
+    
+    float ref_signal(float t, float ref, float delay)
+    {
+        float signal = ref*(1-exp(-t/delay));
+        return signal;
+    }
+
 };
 
 
