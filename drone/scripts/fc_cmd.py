@@ -536,6 +536,9 @@ class FC_Commander(Node):
             # Send command.    
             self.flight_cmd()
 
+        # Go into emergency stop mode, to complete the emergency landing
+        self.emergency_stop()
+
     def reset_cmd(self):
         """
         Reset the command variables
