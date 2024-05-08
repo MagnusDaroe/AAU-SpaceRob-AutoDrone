@@ -225,15 +225,15 @@ class T265(Node):
                 self.get_pose_data(self.frames)
 
                 t=time.time()
-                self.get_logger().info("time diff in ms: ",(t-self.t_old)*1000)
+                self.get_logger().info(f"time diff in ms: {t-self.t_old*1000}")
                 self.t_old=t
 
                 self.get_global_pose()
-                self.get_logger().info("Global pose: x: {}, y: {}, z: {}".format(round(self.t_vec_global[0][0],2),round(self.t_vec_global[1][0],2),round(self.t_vec_global[2][0],2)))
+                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global[0][0],2)}, y: {round(self.t_vec_global[1][0],2)}, z: {round(self.t_vec_global[2][0],2)}")
                 self.R_to_euler_angles()
 
-                self.get_logger().info("Euler angles xyz: ",self.euler_xyz)
-                self.get_logger().info("Euler angles xyz deg: x: {}, y: {}, z: {}".format(round(math.degrees(self.euler_xyz[0]),2),round(math.degrees(self.euler_xyz[1]),2),round(math.degrees(self.euler_xyz[2]),2)))
+                self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
+                self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
             #time.sleep(0.1)
 
             msg = DroneControlData()
