@@ -117,7 +117,7 @@ def create_gui(window):
         console_print("Waypoints Updated")
         #import waypoints from .csv
         #update waypoint_labels
-        waypoint_list = np.loadtxt("Control/waypoints copy.csv", delimiter=",")
+        waypoint_list = np.loadtxt("drone/scripts/waypoints.csv", delimiter=",")
         #make a waypoint text
         waypoint_list_textbox.configure(state='normal')
         waypoint_list_textbox.delete('1.0', tk.END)
