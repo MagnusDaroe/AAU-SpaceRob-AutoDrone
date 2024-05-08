@@ -41,7 +41,7 @@ private:
     float prev_roll_angle;
     float regulator_pitch_value;
     float regulator_roll_value;
-    float altitude_control_value
+    float altitude_control_value;
 
     // XY controller
     float prev_x_error;
@@ -193,11 +193,10 @@ private:
         prev_x_error = x_error;
         prev_y_error = y_error;
     } 
-};
 
     float saturation(float value, float max_value)
-        // Saturate value to + or - max_value
     {
+        // Saturate value to + or - max_value
         if (value > max_value)       // Saturate to max value
         {
             value = max_value;
@@ -212,6 +211,8 @@ private:
         }
         return value;
     }
+};
+
 
 int main(int argc, char *argv[])
 {
