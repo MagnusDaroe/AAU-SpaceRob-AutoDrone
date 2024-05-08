@@ -61,7 +61,7 @@ private:
         globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
         localErrorToAngle(local_error_x, local_error_y);
         
-        XY_controller(msg->vicon_x, msg->vicon_y, BLANK, BLANK); // skal have x og y ref fra en ny ramp
+        XY_controller(local_error_x, local_error_y);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
@@ -171,23 +171,47 @@ private:
         }
     }
 
-    void XY_controller(float x_pos, float y_pos, float x_ref, float y_ref) // float pitch_angle, float roll_angle
+    void XY_controller(float x_error, float y_error) // float pitch_angle, float roll_angle
     {
+        // Define PD controller parameters
         float Kp_pitch = 0.002;
         float Kd_pitch = 0.7;
         float Kp_roll = 0.002;
         float Kd_roll = 0.7;
-        x_error = x_ref - x_pos;
-        y_error = y_ref - y_pos;
-        sample_time = 100 
+        sample_time = 100;
 
-        regulator_pitch_value = ((x_error-prev_x_error)/sample_time)+x_error*(kp_pitch/kd_pitch)
-        regulator_roll_value = ((y_error-prev_y_error)/sample_time)+y_error*(kp_roll/kd_roll)
+        // Max allowed value (1000 is max max, but we aint chill like that)
+        saturation_value = 900;  
+
+        // Discretized PD controller for x and y
+        pitch_value = ((x_error-prev_x_error)/sample_time)+x_error*(kp_pitch/kd_pitch);
+        roll_value = ((y_error-prev_y_error)/sample_time)+y_error*(kp_roll/kd_roll);
+
+        regulator_pitch_value = saturation(pitch_value, saturation_value);
+        regulator_roll_value = saturation(roll_value, saturation_value);
 
         prev_x_error = x_error;
         prev_y_error = y_error;
     } 
 };
+
+    float saturation(float value, float max_value)
+        // Saturate value to + or - max_value
+    {
+        if (value > max_value)       // Saturate to max value
+        {
+            value = max_value;
+        }
+        else if (value < -max_value) // Saturate to minimum
+        {
+            value = -max_value;
+        }
+        else                         // Do nothing
+        {
+            ;
+        }
+        return value;
+    }
 
 int main(int argc, char *argv[])
 {
@@ -198,3 +222,4 @@ int main(int argc, char *argv[])
     rclcpp::shutdown();
     return 0;
 }
+
