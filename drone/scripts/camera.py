@@ -25,6 +25,22 @@ class T265(Node):
         self.t_old=0
         ##########
 
+        # Flag to indicate if the global frame has been updated
+        self.global_frame_updated = False
+
+        # Initialize the needed math
+        self.math_init()
+
+        # Initialize the camera
+        self.camera_init()
+
+        # Create publisher and subscriber
+        self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
+        self.create_timer(0.1, self.run)
+
+        self.subscriber_ = self.create_subscription(DroneControlData, '/ViconData', self.updatepos, 10)
+
+    def math_init(self):
         __LEFT_2_C_MM=-32.00 #Distance from the left camera sensor to the center of the T265 in mm
         __LENS_2_C_MM=6.55 #Distance from the lense to the center of the T265 in mm
 
@@ -32,23 +48,40 @@ class T265(Node):
         __LENS_2_C_CM=__LENS_2_C_MM/10 #Distance from the lense to the center of the T265 in cm
 
         __THETA=-np.pi
+        
         # Define the Transformation matrix from the left camera sensor to pose center of the T265
         self.__T_C_LEFT=np.array([[1 , 0,0,__LEFT_2_C_CM],
                         [0,np.cos(__THETA),-np.sin(__THETA),0],
                         [0,np.sin(__THETA),np.cos(__THETA),__LENS_2_C_CM],
                         [0,0,0,1]])
         
+        # Transformation and rotation matrix from the local frame center in T265 (x=roll, y=pitch, z=yaw) to the T265 pose frame:
         self.R_local_cam=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
         self.T_local_cam=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
-        self.R_global_cam=self.R_local_cam
-        self.T_global_cam=self.T_local_cam
+        
+        # Transformation from backside center of T265 to local frame center in T265:
+        self.R_backside_local=np.array([[1,0,0],[1,0,0],[0,0,1]])
+        self.T_backside_local=np.array([[1,0,0,0],[1,0,0,0],[0,0,1,0],[0.154,-0.910,-5.75,1]]) #cm
+
+        # Transformation from FC to backside center of T265:
+        self.R_FC_backside=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
+        self.R_FC_backside=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[15.3223,-8.66070,0,1]]) #cm
+
+
+        # Transformation from FC to T265 pose frame:
+        self.R_FC_cam=self.R_FC_backside@self.R_backside_local@self.R_local_cam
+        self.T_FC_cam=self.R_FC_backside@self.T_backside_local@self.T_local_cam
+
+        # Transformation from global to T265 pose frame:
+        self.R_global_cam=self.R_FC_cam
+        self.T_global_cam=self.T_FC_cam
 
 
 
         self.dist=np.array([[-0.22814816,0.04330513,-0.00027584,0.00057192,-0.00322855]])
         self.mtx=np.array( [[289.17101938,0.,426.23687843],[0.,289.14205298,401.22256516],[0.,0.,1.]])
 
-
+    def camera_init(self):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         self.pipe = rs.pipeline()
 
@@ -58,10 +91,14 @@ class T265(Node):
         # variable to stop and start camera loop
         self.stop=False
 
-        # Create publisher
-        self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
-        self.create_timer(0.1, self.run)
+   
+    def updatepos(self, msg):
+        """Update the global position of the drone
+        """
+        self.global_frame_updated = True
 
+        P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+        self.update_position(P_global)
 
     def get_pose_data(self,frames):
         """Get the pose data from the T265 camera
@@ -98,15 +135,16 @@ class T265(Node):
         """Convert a rotation matrix to euler angles
         """
         #get extrinsic euler angles
+            #sqrt(R11^2+R21^2)
         sy = math.sqrt(self.r_mtx_global[0,0] * self.r_mtx_global[0,0] +  self.r_mtx_global[1,0] * self.r_mtx_global[1,0])
         singular = sy < 1e-6
         if  not singular :
-            x = math.atan2(self.r_mtx_global[2,1] , self.r_mtx_global[2,2])
-            y = math.atan2(-self.r_mtx_global[2,0], sy)
-            z = math.atan2(self.r_mtx_global[1,0], self.r_mtx_global[0,0])
+            x = math.atan2(self.r_mtx_global[2,1] , self.r_mtx_global[2,2]) #atan2(R32,R33)
+            y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
+            z = math.atan2(self.r_mtx_global[1,0], self.r_mtx_global[0,0]) #atan2(R21,R11)
         else :
-            x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1])
-            y = math.atan2(-self.r_mtx_global[2,0], sy)
+            x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1]) #atan2(-R23,R22)
+            y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
             z = 0
         self.euler_xyz=[x,y,z]
 
@@ -122,11 +160,23 @@ class T265(Node):
         self.r_mtx_global=self.R_global_cam@R_rot
         
 
-    def update_start_frame(self,T_global_UAV):
+    def update_start_frame(self,T_global_FC):
         """Update the start frame of the camera
         """
-        self.T_global_cam=T_global_UAV
+        self.T_global_cam=T_global_FC@self.T_FC_cam
         self.R_global_cam=self.T_global_cam[:3,:3]
+
+    def update_position(self,P_global):
+        """Update the global position of the drone
+        """
+        diff_x=P_global[0]-self.t_vec_global[0][0] #cm
+        diff_y=P_global[1]-self.t_vec_global[1][0] #cm
+        diff_z=P_global[2]-self.t_vec_global[2][0] #cm
+
+        #Update T_global_cam with the position difference
+        self.T_global_cam[0,3]=self.T_global_cam[0,3]+diff_x
+        self.T_global_cam[1,3]=self.T_global_cam[1,3]+diff_y
+        self.T_global_cam[2,3]=self.T_global_cam[2,3]+diff_z
 
 
     def show_image(self,undist=True):
@@ -149,36 +199,39 @@ class T265(Node):
             
     
     def run(self):
-        # Get the frames from the T265 camera, when the data is available
-        self.frames = self.pipe.wait_for_frames()
-        left_frame = self.frames.get_fisheye_frame(1)
+        if self.global_frame_updated:
+            # Get the frames from the T265 camera, when the data is available
+            self.frames = self.pipe.wait_for_frames()
+            left_frame = self.frames.get_fisheye_frame(1)
 
-        # If the frame is available, get the image from the left camera and show it undistorted in a window
-        if left_frame:          
-            self.image_left = np.asanyarray(left_frame.get_data())
-            self.get_pose_data(self.frames)
-            
-            t=time.time()
-            print("time diff in ms: ",(t-self.t_old)*1000)
-            self.t_old=t
+            # If the frame is available, get the image from the left camera and show it undistorted in a window
+            if left_frame:          
+                self.image_left = np.asanyarray(left_frame.get_data())
+                self.get_pose_data(self.frames)
 
-            self.get_global_pose()
-            print("Global pose: x: {}, y: {}, z: {}".format(round(self.t_vec_global[0][0],2),round(self.t_vec_global[1][0],2),round(self.t_vec_global[2][0],2)))
-            self.R_to_euler_angles()
+                t=time.time()
+                self.get_logger().info("time diff in ms: ",(t-self.t_old)*1000)
+                self.t_old=t
 
-            print("Euler angles xyz: ",self.euler_xyz)
-            print("Euler angles xyz deg: x: {}, y: {}, z: {}".format(round(math.degrees(self.euler_xyz[0]),2),round(math.degrees(self.euler_xyz[1]),2),round(math.degrees(self.euler_xyz[2]),2)))
-        #time.sleep(0.1)
+                self.get_global_pose()
+                self.get_logger().info("Global pose: x: {}, y: {}, z: {}".format(round(self.t_vec_global[0][0],2),round(self.t_vec_global[1][0],2),round(self.t_vec_global[2][0],2)))
+                self.R_to_euler_angles()
 
-        msg = DroneControlData()
-        msg.camera_x = float(self.t_vec_global[0][0])*10 # mm
-        msg.camera_y = float(self.t_vec_global[1][0])*10 # mm
-        msg.camera_z = float(self.t_vec_global[2][0])*10 # mm
-        msg.camera_pitch = float(self.euler_xyz[0]) # rad
-        msg.camera_roll = float(self.euler_xyz[1]) # rad
-        msg.camera_yaw = float(self.euler_xyz[2]) # rad
-        
-        self.publisher_.publish(msg)
+                self.get_logger().info("Euler angles xyz: ",self.euler_xyz)
+                self.get_logger().info("Euler angles xyz deg: x: {}, y: {}, z: {}".format(round(math.degrees(self.euler_xyz[0]),2),round(math.degrees(self.euler_xyz[1]),2),round(math.degrees(self.euler_xyz[2]),2)))
+            #time.sleep(0.1)
+
+            msg = DroneControlData()
+            msg.camera_x = float(self.t_vec_global[0][0])*10 # mm
+            msg.camera_y = float(self.t_vec_global[1][0])*10 # mm
+            msg.camera_z = float(self.t_vec_global[2][0])*10 # mm
+            msg.camera_pitch = float(self.euler_xyz[0]) # rad
+            msg.camera_roll = float(self.euler_xyz[1]) # rad
+            msg.camera_yaw = float(self.euler_xyz[2]) # rad
+            self.publisher_.publish(msg)
+        else: 
+            self.get_logger().warning('No global frame data available')
+
 
 
 

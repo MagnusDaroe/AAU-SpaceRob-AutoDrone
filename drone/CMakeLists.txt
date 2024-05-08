@@ -32,6 +32,7 @@
 	"msg/DroneControlData.msg"
 	"msg/DroneStatus.msg"
 	"msg/DroneVideo.msg"
+	"msg/ViconData.msg"
 	"srv/Clock.srv"
 	DEPENDENCIES builtin_interfaces geometry_msgs std_msgs sensor_msgs)
 
