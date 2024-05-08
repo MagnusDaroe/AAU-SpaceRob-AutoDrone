@@ -15,7 +15,7 @@ import math
 import rclpy
 from rclpy.node import Node
 import threading
-from drone.msg import DroneControlData
+from drone.msg import DroneControlData, ViconData
 
 
 class T265(Node):
@@ -38,7 +38,7 @@ class T265(Node):
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
         self.create_timer(0.1, self.run)
 
-        self.subscriber_ = self.create_subscription(DroneControlData, '/ViconData', self.updatepos, 10)
+        self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.updatepos, 10)
 
     def math_init(self):
         __LEFT_2_C_MM=-32.00 #Distance from the left camera sensor to the center of the T265 in mm
