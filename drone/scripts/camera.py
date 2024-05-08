@@ -56,13 +56,14 @@ class T265(Node):
                         [0,0,0,1]])
         
         #Rotations matrix for -75 degrees around the x-axis
+        angle=75
         self.R_rot15_cam=np.array([[1,0,0],
-                        [0,np.cos(np.deg2rad(-75)),-np.sin(np.deg2rad(-75))],
-                        [0,np.sin(np.deg2rad(-75)),np.cos(np.deg2rad(-75))]])
+                        [0,np.cos(np.deg2rad(angle)),-np.sin(np.deg2rad(angle))],
+                        [0,np.sin(np.deg2rad(angle)),np.cos(np.deg2rad(angle))]])
         #Transformation matrix for -75 degrees around the x-axis
         self.T_rot15_cam=np.array([[1,0,0,0],
-                        [0,np.cos(np.deg2rad(-75)),-np.sin(np.deg2rad(-75)),0],
-                        [0,np.sin(np.deg2rad(-75)),np.cos(np.deg2rad(-75)),0],
+                        [0,np.cos(np.deg2rad(angle)),-np.sin(np.deg2rad(angle)),0],
+                        [0,np.sin(np.deg2rad(angle)),np.cos(np.deg2rad(angle)),0],
                         [0,0,0,1]])
         
         # Transformation and rotation matrix from the local frame center in T265 (x=roll, y=pitch, z=yaw) to the T265 pose frame:
