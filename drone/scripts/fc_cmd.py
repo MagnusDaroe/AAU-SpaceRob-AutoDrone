@@ -374,31 +374,9 @@ class FC_Commander(Node):
                 self.emergency_stop() # Implement an emergency land.
             # Check if the drone is armed
             elif self.fc_command.cmd_arm == 1:
-                # Check if the drone is in manual, autonomous mode and test mode
-                if self.fc_command.cmd_mode == 0:
-                    # Manual mode
-                    self.flight_mode()
-                elif self.fc_command.cmd_mode == 1:
-                    # Autonomous mode
-                    self.flight_mode()
-                elif self.fc_command.cmd_mode == 2:
-                    # Test mode
-    
-                    # If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
-                    x = 400
-                    if self.fc_command.cmd_roll:
-                        if self.fc_command.cmd_roll > 0:
-                            self.fc_command.cmd_roll = float(x)
-                        elif self.fc_command.cmd_roll < 0:
-                            self.fc_command.cmd_roll = float(-x)
-                        else:
-                            self.fc_command.cmd_roll = float(0)
-                    self.flight_mode()
-                else:
-                    self.get_logger().fatal("Drone mode not recognized")
-                    # Shut down
-                    rclpy.shutdown()
-    
+                # Send command
+                self.flight_mode()
+                
                 # Sleep to keep the update rate
                 rate_controller.sleep()
             else:
@@ -421,6 +399,22 @@ class FC_Commander(Node):
         """
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
+            if self.fc_command.mode not in [0,1,2]:
+                self.get_logger().fatal("Drone mode not recognized")
+                # Shut down
+                rclpy.shutdown()
+                
+            if self.fc_command.mode == 2:
+                #Testmode - If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
+                x = 400
+                if self.fc_command.cmd_roll:
+                    if self.fc_command.cmd_roll > 0:
+                        self.fc_command.cmd_roll = float(x)
+                    elif self.fc_command.cmd_roll < 0:
+                        self.fc_command.cmd_roll = float(-x)
+                    else:
+                        self.fc_command.cmd_roll = float(0)
+             
             # Update command variables - if no new command is received, the previous command is sent
             timestamp = self.fc_command.timestamp
             
@@ -438,8 +432,7 @@ class FC_Commander(Node):
                 self.get_logger().warn("No new command received. Going into safe mode.")
                 self.safe_mode()
                 self.fc_command.cmd_estop = 1
-
-
+        
         self.previous_timestamp = timestamp
 
     def flight_cmd(self):
