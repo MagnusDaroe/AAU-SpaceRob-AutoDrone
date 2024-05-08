@@ -95,10 +95,25 @@ class T265(Node):
     def update_global_pos(self, msg):
         """Update the global position of the drone
         """
-        self.global_frame_updated = True
+        if not self.global_frame_updated:
+            roll=msg.vicon_roll
+            pitch=msg.vicon_pitch
+            yaw=msg.vicon_yaw
+            x=msg.vicon_x
+            y=msg.vicon_y
+            z=msg.vicon_z
+            #Extrinsic rotation matrix from roll, pitch and yaw
+            T_global=np.array([[np.cos(yaw)*np.cos(pitch),np.cos(yaw)*np.sin(pitch)*np.sin(roll)-np.sin(yaw)*np.cos(roll),np.cos(yaw)*np.sin(pitch)*np.cos(roll)+np.sin(yaw)*np.sin(roll),x],
+                            [np.sin(yaw)*np.cos(pitch),np.sin(yaw)*np.sin(pitch)*np.sin(roll)+np.cos(yaw)*np.cos(roll),np.sin(yaw)*np.sin(pitch)*np.cos(roll)-np.cos(yaw)*np.sin(roll),y],
+                            [-np.sin(pitch),np.cos(pitch)*np.sin(roll),np.cos(pitch)*np.cos(roll),z],
+                            [0,0,0,1]])
+            
+            self.update_start_frame(T_global)
+        else:
+            P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            self.update_position(P_global)
 
-        P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
-        self.update_start_frame(P_global)
+        self.global_frame_updated = True
 
     def get_pose_data(self,frames):
         """Get the pose data from the T265 camera
