@@ -55,9 +55,19 @@ class T265(Node):
                         [0,np.sin(__THETA),np.cos(__THETA),__LENS_2_C_CM],
                         [0,0,0,1]])
         
+        #Rotations matrix for -75 degrees around the x-axis
+        self.R_rot15_cam=np.array([[1,0,0],
+                        [0,np.cos(np.deg2rad(-75)),-np.sin(np.deg2rad(-75))],
+                        [0,np.sin(np.deg2rad(-75)),np.cos(np.deg2rad(-75))]])
+        #Transformation matrix for -75 degrees around the x-axis
+        self.T_rot15_cam=np.array([[1,0,0,0],
+                        [0,np.cos(np.deg2rad(-75)),-np.sin(np.deg2rad(-75)),0],
+                        [0,np.sin(np.deg2rad(-75)),np.cos(np.deg2rad(-75)),0],
+                        [0,0,0,1]])
+        
         # Transformation and rotation matrix from the local frame center in T265 (x=roll, y=pitch, z=yaw) to the T265 pose frame:
-        self.R_local_cam=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
-        self.T_local_cam=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
+        self.R_local_rot15=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
+        self.T_local_rot15=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
         
         # Transformation from backside center of T265 to local frame center in T265:
         self.R_backside_local=np.array([[1,0,0],[0,1,0],[0,0,1]])
@@ -69,8 +79,8 @@ class T265(Node):
 
 
         # Transformation from FC to T265 pose frame:
-        self.R_FC_cam=self.R_FC_backside@self.R_backside_local@self.R_local_cam
-        self.T_FC_cam=self.T_FC_backside@self.T_backside_local@self.T_local_cam
+        self.R_FC_cam=self.R_FC_backside@self.R_backside_local@self.R_local_rot15@self.R_rot15_cam
+        self.T_FC_cam=self.T_FC_backside@self.T_backside_local@self.T_local_rot15@self.T_rot15_cam
 
         # Transformation from global to T265 pose frame:
         self.R_global_cam=self.R_FC_cam
