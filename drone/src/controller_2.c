@@ -184,8 +184,8 @@ private:
         saturation_value = 900;  
 
         // Discretized PD controller for x and y
-        pitch_value = ((x_error-prev_x_error)/sample_time)+x_error*(kp_pitch/kd_pitch);
-        roll_value = ((y_error-prev_y_error)/sample_time)+y_error*(kp_roll/kd_roll);
+        pitch_value = (kd_pitch*(x_error-prev_x_error)/sample_time)+x_error*(kp_pitch);
+        roll_value = (kd_yaw*(y_error-prev_y_error)/sample_time)+y_error*(kp_roll);
 
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
