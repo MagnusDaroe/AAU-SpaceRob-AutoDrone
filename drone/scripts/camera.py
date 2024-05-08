@@ -56,7 +56,7 @@ class T265(Node):
                         [0,0,0,1]])
         
         #Rotations matrix for -75 degrees around the x-axis
-        angle=75
+        angle=0
         self.R_rot15_cam=np.array([[1,0,0],
                         [0,np.cos(np.deg2rad(angle)),-np.sin(np.deg2rad(angle))],
                         [0,np.sin(np.deg2rad(angle)),np.cos(np.deg2rad(angle))]])
