@@ -23,7 +23,7 @@ class JoystickControlNode(Node):
         
     def send_control_command(self, DroneCommand):
         self.publisher_.publish(DroneCommand)
-        self.get_logger().info(f"Armed={DroneCommand.cmd_arm}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
+        self.get_logger().info(f"Armed={DroneCommand.cmd_arm}, Eland={DroneCommand.cmd_eland}, Estop={DroneCommand.cmd_estop}, mode={mode_dict[DroneCommand.cmd_mode]}, Timestamp={DroneCommand.timestamp},Roll={DroneCommand.cmd_roll}, Pitch={DroneCommand.cmd_pitch}, Thrust={DroneCommand.cmd_thrust}, Yaw={DroneCommand.cmd_yaw}")
 
 
 def get_mode(node):
@@ -43,7 +43,7 @@ def control_loop(node):
 
         
         arm = int(node.controller.get_axis(6))+1  # SF 3-way switch 
-        estop = int(node.controller.get_axis(4))+1  # SG 3-way switch 0 is normal operation, above 0 is Emergency stop
+        estop = float(node.controller.get_axis(4))+1  # SG 3-way switch 0 is normal operation, above 0 is Emergency stop
 
         Drone_cmd = DroneCommand()
 
@@ -51,7 +51,16 @@ def control_loop(node):
         Drone_cmd.timestamp = float(node.get_clock().now().nanoseconds) / 1e9
         Drone_cmd.cmd_mode = get_mode(node)
         Drone_cmd.cmd_arm = True if arm == 1 else False
-        Drone_cmd.cmd_estop = True if estop > 0 else False
+
+        if estop == 1:
+            Drone_cmd.cmd_eland = True 
+            Drone_cmd.cmd_estop = False
+        elif estop > 1:
+            Drone_cmd.cmd_eland = False
+            Drone_cmd.cmd_estop = True
+        else:
+            Drone_cmd.cmd_eland = False
+            Drone_cmd.cmd_estop = False
 
         if Drone_cmd.cmd_mode == 1:
             # Send nan values to the drone

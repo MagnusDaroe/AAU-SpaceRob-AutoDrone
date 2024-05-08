@@ -111,6 +111,7 @@ class FC_Commander(Node):
             if not math.isnan(msg.cmd_mode):
                 if msg.identifier == 0:
                     self.fc_command.cmd_estop = msg.cmd_estop
+                    self.fc_command.cmd_eland = msg.cmd_eland
                     self.fc_command.cmd_arm = msg.cmd_arm
                     self.fc_command.cmd_mode = msg.cmd_mode
                 if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
@@ -354,11 +355,15 @@ class FC_Commander(Node):
         # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
             # Check for estop condition
-            if self.fc_command.cmd_estop == 1:
+            if self.fc_command.cmd_estop == True:
                 # Emergency stop
                 self.emergency_stop()
                 # Sleep to keep the update rate
-                rate_controller.sleep()
+                continue
+            elif self.fc_command.cmd_eland == True:
+                # Emergency land
+                self.safe_mode()
+                # Sleep to keep the update rate
                 continue
             
             # Check the battery voltage if requested
@@ -399,12 +404,12 @@ class FC_Commander(Node):
         """
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
-            if self.fc_command.mode not in [0,1,2]:
+            if self.fc_command.cmd_mode not in [0,1,2]:
                 self.get_logger().fatal("Drone mode not recognized")
                 # Shut down
                 rclpy.shutdown()
                 
-            if self.fc_command.mode == 2:
+            if self.fc_command.cmd_mode == 2:
                 #Testmode - If yaw is positive, set it to x, else set it to 0. If yaw is negative, set it to -x
                 x = 400
                 if self.fc_command.cmd_roll:
@@ -515,6 +520,11 @@ class FC_Commander(Node):
         
         # Decrement start_thrust a set amount, until a lower bound is reached
         while decrement_thrust > land_thrust:
+            if self.fc_command.cmd_estop == True:
+                # Emergency stop
+                self.emergency_stop()
+                break
+
             decrement_thrust = decrement_thrust - decrement
 
             if decrement_thrust < land_thrust:
