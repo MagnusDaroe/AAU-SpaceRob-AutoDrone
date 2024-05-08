@@ -18,6 +18,7 @@ class T265():
         ##########
         self.o=0
         self.t_old=0
+        self.Xframe_number=0
         ##########
 
         __LEFT_2_C_MM=-32.00 #Distance from the left camera sensor to the center of the T265 in mm
@@ -65,9 +66,15 @@ class T265():
 
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         self.pipe = rs.pipeline()
+        # Build configuation object and request pose data from the T265
+        self.cfg = rs.config()
+        # Enable the pose stream
+        self.cfg.enable_stream(rs.stream.pose)
 
         # Start streaming with requested configuration
-        self.pipe.start()
+        self.pipe.start(self.cfg)
+        # Start streaming with requested configuration
+        #self.pipe.start()
 
         # variable to stop and start camera loop
         self.stop=False
@@ -289,11 +296,19 @@ class T265():
             left_frame=None
             if left_frame:
                 print("left_frame is not None")
+            self.pipe.stop()
+            #self.pipe = rs.pipeline()
+            #self.cfg = rs.config()
+            # Enable the pose stream
+            #self.cfg.enable_stream(rs.stream.pose)
+            self.pipe.start(self.cfg)
+
+            self.Xframe_number=0
         else:
             #get the pose data from the T265 camera
             self.get_pose_data(self.frames)
             #get time in ms
-            
+            t=time.time()
             self.get_global_pose()
             print("time diff in ms: ",(t-self.t_old)*1000)
             print("time stamp: ",self.time_stamp)
@@ -301,8 +316,15 @@ class T265():
             self.R_to_euler_angles()
             print("Euler angles xyz: ",self.euler_xyz)
             self.t_old=t
+            self.Xframe_number+=1
         
-        
+        if self.Xframe_number<5000:
+            self.pipe.stop()
+            #self.pipe = rs.pipeline()
+            self.pipe.start()
+
+           
+
         #print("\n\nT265 Pose Data\nPosition: x: {}, y: {}, z: {}".format(round(self.translation_xyz[0]*100,2),round(self.translation_xyz[1]*100,2),round(self.translation_xyz[2]*100,2)))
         #print("Rotation: x: {}, y: {}, z: {}, w: {}".format(self.rotation_xyzw[0],self.rotation_xyzw[1],self.rotation_xyzw[2],self.rotation_xyzw[3]))
         #self.get_global_pose()

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 """
 opencv-contrib-python         4.7.0.72
 opencv-python                 4.8.1.78
@@ -9,11 +12,15 @@ import numpy as np
 import cv2
 import time
 import math
+import rclpy
+from rclpy.node import Node
+import threading
+from drone.msg import DroneControlData
 
 
-class T265():
-    
+class T265(Node):
     def __init__(self):
+        super().__init__('camera_node')
         ##########
         self.t_old=0
         ##########
@@ -31,16 +38,26 @@ class T265():
                         [0,np.sin(__THETA),np.cos(__THETA),__LENS_2_C_CM],
                         [0,0,0,1]])
         
+        # Transformation and rotation matrix from the local frame center in T265 (x=roll, y=pitch, z=yaw) to the T265 pose frame:
         self.R_local_cam=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
         self.T_local_cam=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
-        self.R_global_cam=self.R_local_cam
-        self.T_global_cam=self.T_local_cam
+        
+        # Transformation from FC to local frame center in T265:
+        self.R_FC_local=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
+        self.T_FC_local=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[15.3223,-8.66070,0,1]])
+        # Transformation from FC to T265 pose frame:
+        self.R_FC_cam=self.R_FC_local@self.R_FC_local
+        self.T_FC_cam=self.T_FC_local@self.T_FC_local
+
+        # Transformation from global to T265 pose frame:
+        self.R_global_cam=self.R_FC_cam
+        self.T_global_cam=self.T_FC_cam
 
 
-        __CALIBRATION_FILE = "_Calibrate_camera_2\calib_new_1.npz"
 
-        with np.load(__CALIBRATION_FILE) as X:
-            self.ret,self.mtx, self.dist = [X[i] for i in ("ret","mtx", "dist")]
+        self.dist=np.array([[-0.22814816,0.04330513,-0.00027584,0.00057192,-0.00322855]])
+        self.mtx=np.array( [[289.17101938,0.,426.23687843],[0.,289.14205298,401.22256516],[0.,0.,1.]])
+
 
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         self.pipe = rs.pipeline()
@@ -50,6 +67,11 @@ class T265():
 
         # variable to stop and start camera loop
         self.stop=False
+
+        # Create publisher
+        self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
+        self.create_timer(0.1, self.run)
+
 
     def get_pose_data(self,frames):
         """Get the pose data from the T265 camera
@@ -86,15 +108,16 @@ class T265():
         """Convert a rotation matrix to euler angles
         """
         #get extrinsic euler angles
+            #sqrt(R11^2+R21^2)
         sy = math.sqrt(self.r_mtx_global[0,0] * self.r_mtx_global[0,0] +  self.r_mtx_global[1,0] * self.r_mtx_global[1,0])
         singular = sy < 1e-6
         if  not singular :
-            x = math.atan2(self.r_mtx_global[2,1] , self.r_mtx_global[2,2])
-            y = math.atan2(-self.r_mtx_global[2,0], sy)
-            z = math.atan2(self.r_mtx_global[1,0], self.r_mtx_global[0,0])
+            x = math.atan2(self.r_mtx_global[2,1] , self.r_mtx_global[2,2]) #atan2(R32,R33)
+            y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
+            z = math.atan2(self.r_mtx_global[1,0], self.r_mtx_global[0,0]) #atan2(R21,R11)
         else :
-            x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1])
-            y = math.atan2(-self.r_mtx_global[2,0], sy)
+            x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1]) #atan2(-R23,R22)
+            y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
             z = 0
         self.euler_xyz=[x,y,z]
 
@@ -110,10 +133,10 @@ class T265():
         self.r_mtx_global=self.R_global_cam@R_rot
         
 
-    def update_start_frame(self,T_global_UAV):
+    def update_start_frame(self,T_global_FC):
         """Update the start frame of the camera
         """
-        self.T_global_cam=T_global_UAV
+        self.T_global_cam=T_global_FC@self.T_FC_cam
         self.R_global_cam=self.T_global_cam[:3,:3]
 
 
@@ -150,27 +173,34 @@ class T265():
             print("time diff in ms: ",(t-self.t_old)*1000)
             self.t_old=t
 
-
             self.get_global_pose()
             print("Global pose: x: {}, y: {}, z: {}".format(round(self.t_vec_global[0][0],2),round(self.t_vec_global[1][0],2),round(self.t_vec_global[2][0],2)))
             self.R_to_euler_angles()
+
             print("Euler angles xyz: ",self.euler_xyz)
             print("Euler angles xyz deg: x: {}, y: {}, z: {}".format(round(math.degrees(self.euler_xyz[0]),2),round(math.degrees(self.euler_xyz[1]),2),round(math.degrees(self.euler_xyz[2]),2)))
-        time.sleep(0.1)
+        #time.sleep(0.1)
+
+        msg = DroneControlData()
+        msg.camera_x = float(self.t_vec_global[0][0])*10 # mm
+        msg.camera_y = float(self.t_vec_global[1][0])*10 # mm
+        msg.camera_z = float(self.t_vec_global[2][0])*10 # mm
+        msg.camera_pitch = float(self.euler_xyz[0]) # rad
+        msg.camera_roll = float(self.euler_xyz[1]) # rad
+        msg.camera_yaw = float(self.euler_xyz[2]) # rad
+        self.publisher_.publish(msg)
 
 
-#create an instance of the T265 class
-t265=T265()
 
 
+def main(args=None):
+    rclpy.init(args=args)
+    #create an instance of the T265 class
+    camera=T265()
 
-#run the main function
-#t265.main()
-try:
-    while t265.stop==False:
-        t265.run()
-        t265.show_image()
-finally:
-    cv2.destroyAllWindows() 
-    t265.pipe.stop()
+    camera.get_logger().info('camera node has been started :-)')
+    rclpy.spin(camera)
+    rclpy.shutdown()
 
+if __name__ == '__main__':
+    main()
