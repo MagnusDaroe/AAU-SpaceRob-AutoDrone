@@ -47,10 +47,10 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
     {
-        float x_pos = msg->vicon_x;
-        float y_pos = msg->vicon_y;
-        float z_pos = msg->vicon_z;
-        float yaw = msg->vicon_yaw;
+        float x_pos = msg->camera_x;
+        float y_pos = msg->camera_y;
+        float z_pos = msg->camera_z;
+        float yaw = msg->camera_yaw;
 
         //std::cout << "x: " << pos_x << " y: " << pos_y << " yaw: " << yaw << "z_ref: " << z_ref << std::endl;
 
