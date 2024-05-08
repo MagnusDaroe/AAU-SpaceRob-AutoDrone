@@ -38,7 +38,7 @@ class T265(Node):
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
         self.create_timer(0.1, self.run)
 
-        self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.updatepos, 10)
+        self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
 
     def math_init(self):
         __LEFT_2_C_MM=-32.00 #Distance from the left camera sensor to the center of the T265 in mm
@@ -92,13 +92,13 @@ class T265(Node):
         self.stop=False
 
    
-    def updatepos(self, msg):
+    def update_global_pos(self, msg):
         """Update the global position of the drone
         """
         self.global_frame_updated = True
 
         P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
-        self.update_position(P_global)
+        self.update_start_frame(P_global)
 
     def get_pose_data(self,frames):
         """Get the pose data from the T265 camera
