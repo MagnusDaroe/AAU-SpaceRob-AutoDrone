@@ -61,7 +61,7 @@ class T265(Node):
         
         # Transformation from backside center of T265 to local frame center in T265:
         self.R_backside_local=np.array([[1,0,0],[1,0,0],[0,0,1]])
-        self.T_backside_local=np.array([[1,0,0,0],[1,0,0,0],[0,0,1,0],[0.154,-0.910,-5.75,1]]) #cm
+        self.T_backside_local=np.array([[1,0,0,0],[1,0,0,0],[0,0,1,0],[0.154,-0.910,-0.575,1]]) #cm
 
         # Transformation from FC to backside center of T265:
         self.R_FC_backside=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
