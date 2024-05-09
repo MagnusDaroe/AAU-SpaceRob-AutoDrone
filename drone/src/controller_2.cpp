@@ -4,7 +4,7 @@
 #include <iostream>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
-#include "drone/msg/drone_control_data.hpp"
+#include "drone/msg/vicon_data.hpp"
 #include "drone/msg/drone_command.hpp"
 
 using namespace std::chrono_literals;
