@@ -80,39 +80,33 @@ private:
         if (data_request == true)
         {
             x_ref = x_ref_list[array_counter];
-            y_ref = y_ref_list[0];
-            z_ref = z_ref_list[0]; 
-            yaw_ref = yaw_ref_list[0];
+            y_ref = y_ref_list[array_counter];
+            z_ref = z_ref_list[array_counter]; 
+            yaw_ref = yaw_ref_list[array_counter];
 
             time_start = std::chrono::system_clock::now();
             data_request = false;
 
-            if(array_counter < array_size-1){
+            if(array_counter < array_size-2){ // ÆNDRE TILBAGE TIL 1
                 array_counter++;
             }
         }
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
-        std::cout << "array counter: " << array_counter << std::endl;
         std::cout << "Time duration: " << time_duration << std::endl;
-        std::cout << "x_ref: " << x_ref << std::endl;
-        std::cout << "y_ref: " << y_ref << std::endl;
-        std::cout << "z_ref: " << z_ref << std::endl;
-        std::cout << "yaw_ref: " << yaw_ref << std::endl;
 
         // kører xy controller
         float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration omregnet til sekunder
-        std::cout << "x_ref_signal: " << x_ref_signal << std::endl;
-        float y_ref_signal = ref_signal(time_duration, y_ref, 2);
+        float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration omregnet til sekunder
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
-        float z_ref_signal = ref_signal(time_duration/1000, z_ref, 1);
+        float z_ref_signal = ref_signal(time_duration/1000, z_ref, 1); // time duration omregnet til sekunder
         Z_controller(z_ref_signal, msg->vicon_z); // note vicon ups
 
         // Yaw controller
-        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 1);
+        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 1); // time duration omregnet til sekunder
         yaw_controller(yaw_signal, msg->vicon_yaw);
 
         // How close is it to the reference point
@@ -203,9 +197,9 @@ private:
     void XY_controller(float local_x_error, float local_y_error)
     {
         // Define PD controller parameters
-        float Kp_pitch = 0.002;
+        float Kp_pitch = 0.02;
         float Kd_pitch = 0.7;
-        float Kp_roll = 0.002;
+        float Kp_roll = 0.02;
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
