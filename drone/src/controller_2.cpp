@@ -32,7 +32,7 @@ private:
     float regulator_roll_value;
 
     // -Inputs
-    float prev_x_error = -2337;
+    float prev_x_error = 0;
     float prev_y_error = 0;
 
     // Z controller
@@ -99,8 +99,6 @@ private:
         float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration omregnet til sekunder
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration omregnet til sekunder
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
-        std::cout << "vicon x: "<< msg->vicon_x << std::endl;
-        std::cout << "vicon yaw: "<< msg->vicon_yaw << std::endl;
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
@@ -113,7 +111,6 @@ private:
 
         // How close is it to the reference point
         float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
-        std::cout << "Total error: " << total_error << std::endl;
 
         // Check if error is under threshold to request new data
         if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT
@@ -137,7 +134,6 @@ private:
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
     {
         float x_global_error = x_ref - x_global_mes;
-        std::cout << "x ref: " << x_ref << std::endl;
         float y_global_error = y_ref - y_global_mes;
         float roll = 0;
         float pitch = 0;
@@ -210,8 +206,6 @@ private:
         // Discretized PD controller for x and y
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
-        std::cout << "x error: "<< local_x_error << std::endl;
-        std::cout << "pitch: " << pitch_value << std::endl;
 
 
         regulator_pitch_value = saturation(pitch_value, saturation_value);
