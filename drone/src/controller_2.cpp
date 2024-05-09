@@ -62,7 +62,7 @@ private:
     float z_ref;
     float yaw_ref;
 
-    float sample_time = 100;
+    float sample_time = 1/100;
 
     int array_counter = 0;
 
