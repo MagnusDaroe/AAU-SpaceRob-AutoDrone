@@ -61,6 +61,8 @@ private:
     float z_ref;
     float yaw_ref;
 
+    float sample_time = 100;
+
 
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
@@ -174,7 +176,7 @@ private:
 
         float z_error = z_ref - z_mes;
 
-        float altitude_value = 10*((z_error - prev_z_error)/samples_pr_sec)+0.01*z_error;
+        float altitude_value = 10*((z_error - prev_z_error)/sample_time)+0.01*z_error;
 
         regulator_altitude_value = saturation(altitude_value, saturation_value, 1);
 
@@ -188,7 +190,6 @@ private:
         float Kd_pitch = 0.7;
         float Kp_roll = 0.002;
         float Kd_roll = 0.7;
-        float sample_time = 100;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
         float saturation_value = 900;  
