@@ -42,7 +42,7 @@
 	find_package(drone REQUIRED)
 
 	# Create Cpp executables - Controller_node
-	add_executable(Controller_node src/Controller_node.cpp) # change name of node
+	add_executable(Controller_node src/controller_2.cpp) # change name of node
 	ament_target_dependencies(Controller_node rclcpp drone)
 
 	# Install Cpp executables
