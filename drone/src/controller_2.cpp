@@ -100,6 +100,7 @@ private:
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration omregnet til sekunder
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         std::cout << "vicon x: "<< msg->vicon_x << std::endl;
+        std::cout << "vicon yaw: "<< msg->vicon_yaw << std::endl;
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
