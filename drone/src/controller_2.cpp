@@ -211,7 +211,8 @@ private:
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
         std::cout << local_x_error << std::endl;
         std::cout << prev_x_error << std::endl;
-        std::cout << "roll value: " << roll_value << std::endl;
+        std::cout << "diff: " << pitch_value << std::endl;
+        std::cout << "roll value: " << local_x_error-prev_x_error << std::endl;
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
 
