@@ -61,6 +61,9 @@ private:
     float z_ref;
     float yaw_ref;
 
+    std::chrono::system_clock::time_point time_start;
+    std::chrono::system_clock::time_point time_stop;
+
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
@@ -75,10 +78,10 @@ private:
             z_ref = z_ref_list[0]; 
             yaw_ref = yaw_ref_list[0];
 
-            std::chrono::system_clock::time_point time_start = std::chrono::system_clock::now();
+            time_start = std::chrono::system_clock::now();
             data_request = false;
         }
-        std::chrono::system_clock::time_point time_stop = std::chrono::system_clock::now();
+        time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
 
         // kører xy controller
