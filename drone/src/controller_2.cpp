@@ -196,9 +196,9 @@ private:
     void XY_controller(float local_x_error, float local_y_error)
     {
         // Define PD controller parameters
-        float Kp_pitch = 0.002;
+        float Kp_pitch = 0.2; // originalt 0.002
         float Kd_pitch = 0.7;
-        float Kp_roll = 0.002;
+        float Kp_roll = 0.2;  // originalt 0.002
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
@@ -209,6 +209,8 @@ private:
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
         std::cout << "x error: "<< local_x_error << std::endl;
         std::cout << "prev x error: " << prev_x_error << std::endl;
+        std::cout << "diff led:" << Kd_pitch*(local_x_error-prev_x_error)/sample_time; << std::endl;
+        std::cout << "kp led: " << local_x_error*(Kp_pitch) << std::endl;
         std::cout << "pitch: " << pitch_value << std::endl;
 
 
