@@ -51,10 +51,11 @@ private:
 
 
     // cook
-    float x_ref_list[2] = {1200, 500};
-    float y_ref_list[2] = {1000, -700};
-    float z_ref_list[2] = {500, 1000}; 
-    float yaw_ref_list[2] = {0, 90};
+    int array_size = 2;
+    float x_ref_list[array_size] = {1200, 500};
+    float y_ref_list[array_size] = {1000, -700};
+    float z_ref_list[array_size] = {500, 1000}; 
+    float yaw_ref_list[array_size] = {0, 90};
 
     float x_ref;
     float y_ref;
@@ -63,7 +64,7 @@ private:
 
     float sample_time = 100;
 
-    int list_counter = 0;
+    int array_counter = 0;
 
 
     std::chrono::system_clock::time_point time_start;
@@ -78,15 +79,17 @@ private:
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
         {
-            x_ref = x_ref_list[list_counter];
-            y_ref = y_ref_list[list_counter];
-            z_ref = z_ref_list[list_counter]; 
-            yaw_ref = yaw_ref_list[list_counter];
+            x_ref = x_ref_list[array_counter];
+            y_ref = y_ref_list[array_counter];
+            z_ref = z_ref_list[array_counter]; 
+            yaw_ref = yaw_ref_list[array_counter];
 
             time_start = std::chrono::system_clock::now();
             data_request = false;
 
-            list_counter++;
+            if(array_counter < array_size){
+                array_counter++;
+            }
         }
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
