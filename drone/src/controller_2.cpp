@@ -214,11 +214,12 @@ private:
         }
         else if (value < -max_value) // Saturate to minimum
         {
-            if only_positive == 0
+            if (only_positive == 0){
                 value = -max_value;
-            else
+            }
+            else{
                 value = 1; // Smallest allowed value when only saturating to positive numbers
-
+            }
         }
         else                         // Do nothing
         {
