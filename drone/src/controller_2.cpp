@@ -87,7 +87,7 @@ private:
             time_start = std::chrono::system_clock::now();
             data_request = false;
 
-            if(array_counter < array_size){
+            if(array_counter < array_size-1){
                 array_counter++;
             }
         }
