@@ -129,7 +129,6 @@ private:
         control_msg.cmd_auto_yaw = regulator_yaw_value;
         control_msg.identifier = 1;
         Control_publisher_->publish(control_msg);
-        std::cout << "control message publish: " << control_msg.cmd_auto_roll << std::endl;
     }
 
     //XY_controller functions    
@@ -197,9 +196,9 @@ private:
     void XY_controller(float local_x_error, float local_y_error)
     {
         // Define PD controller parameters
-        float Kp_pitch = 0.02;
+        float Kp_pitch = 0.002;
         float Kd_pitch = 0.7;
-        float Kp_roll = 0.02;
+        float Kp_roll = 0.002;
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
