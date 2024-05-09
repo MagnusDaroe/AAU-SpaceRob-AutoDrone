@@ -99,6 +99,7 @@ private:
         float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration omregnet til sekunder
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration omregnet til sekunder
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
+        std::cout << "vicon x: "<< msg->vicon_x << std::endl;
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
@@ -208,7 +209,6 @@ private:
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
         std::cout << "x error: "<< local_x_error << std::endl;
-        std::cout << "vicon x: "<< msg->vicon_x << std::endl;
         std::cout << "pitch: " << pitch_value << std::endl;
 
 
