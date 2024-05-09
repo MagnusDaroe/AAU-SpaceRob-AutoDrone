@@ -86,7 +86,7 @@ private:
         }
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
-
+        std::cout << "Time duration: " << time_duration << std::endl;
         // kører xy controller
         float x_ref_signal = ref_signal(time_duration, x_ref, 1);
         float y_ref_signal = ref_signal(time_duration, y_ref, 1);
