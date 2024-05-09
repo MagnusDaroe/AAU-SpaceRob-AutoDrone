@@ -51,10 +51,10 @@ private:
 
 
     // cook
-    float x_ref_list[1] = {1200, 500};
-    float y_ref_list[1] = {1000, -700};
-    float z_ref_list[1] = {500, 1000}; 
-    float yaw_ref_list[1] = {0, 90};
+    float x_ref_list[2] = {1200, 500};
+    float y_ref_list[2] = {1000, -700};
+    float z_ref_list[2] = {500, 1000}; 
+    float yaw_ref_list[2] = {0, 90};
 
     float x_ref;
     float y_ref;
@@ -110,7 +110,7 @@ private:
         float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
 
         // Check if error is under threshold to request new data
-        if (total_error < 100){
+        if (total_error < 1000){
             data_request = true;
         }
         else{
