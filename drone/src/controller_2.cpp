@@ -22,23 +22,9 @@ public:
     }
 
 private:
-    //reference values
-    float x_ref = 1200;
-    float y_ref = 1000;
-    float z_ref = 500;
-
-    float altitude_control_value;
-    float regulator_z_value;
-    float integral;
-    float prev_z_error = 0;
-    float prev_z_ref = 0;
-
+    // Variables
     float local_error_x;
     float local_error_y;
-    float pitch_angle;
-    float roll_angle;
-    float prev_pitch_angle;
-    float prev_roll_angle;
 
     // XY controller
     // -Ouputs
@@ -46,28 +32,22 @@ private:
     float regulator_roll_value;
 
     // -Inputs
-    float x_error;
-    float y_error;
-    float prev_x_error;
-    float prev_y_error;
+    float prev_x_error = 0;
+    float prev_y_error = 0;
 
     // Z controller
     // -Outputs
     float regulator_altitude_value;
 
     // -Inputs
-    float z_error;
-    float prev_z_error;
+    float prev_z_error = 0;
 
     // Yaw controller
     // -Outputs
     float regulator_yaw_value;
 
-    // -Inputs
-    float yaw_error;
-
     // timer shit
-    float data_request = true
+    bool data_request = true;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -76,44 +56,43 @@ private:
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på vicon data
     { 
         // Check if data is requested. Reset data and timer if so
-        if data_request == true
-            x_ref =
-            y_ref = 
-            z_ref = 
-            yaw_ref = 
+        if (data_request == true)
+        {
+            float x_ref = 1200;
+            float y_ref = 1000;
+            float z_ref = 500; 
+            float yaw_ref = 0;
 
-            start_time = 
-        else
-        ;
-        time = current_time - start_time
+            std::chrono::system_clock::time_point time_start = std::chrono::system_clock::now();
+            data_request = false;
+        }
+        std::chrono::system_clock::time_point time_stop = std::chrono::system_clock::now();
+        auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
 
         // kører xy controller
-        float x_ref_signal = ref_signal(msg->time, x_ref, 1);
-        float y_ref_signal = ref_signal(msg->time, y_ref, 1);
+        float x_ref_signal = ref_signal(time_duration, x_ref, 1);
+        float y_ref_signal = ref_signal(time_duration, y_ref, 1);
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
-        float z_ref_signal = ref_signal(msg->time, z_ref, 1);
+        float z_ref_signal = ref_signal(time_duration, z_ref, 1);
         Z_controller(z_ref_signal, msg->vicon_z); // note vicon ups
 
         // Yaw controller
-        float yaw_signal = ref_signal(msg->time, yaw_ref, 1);
+        float yaw_signal = ref_signal(time_duration, yaw_ref, 1);
         yaw_controller(yaw_signal, msg->camera_yaw);
 
-        float total_error = (x_mes + y_mes + z_mes) - (x_ref + y_ref + z_ref);
+        // How close is it to the reference point
+        float total_error = abs((x_mes + y_mes + z_mes) - (x_ref + y_ref + z_ref));
 
         // Check if error is under threshold to request new data
-        if total_error > 100
-            data_request = true
-        else
-            data_request = false
-
-
-
-        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
-        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
-        //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
+        if (total_error < 100){
+            data_request = true;
+        }
+        else{
+            data_request = false;
+        }
 
         // Publish regulated pitch, roll, and thrust values
         auto control_msg = drone::msg::DroneCommand();
@@ -186,7 +165,7 @@ private:
         prev_z_error = z_error;
     }
 
-    void XY_controller(float x_error, float y_error) // float pitch_angle, float roll_angle
+    void XY_controller(float local_x_error, float local_y_error)
     {
         // Define PD controller parameters
         float Kp_pitch = 0.002;
@@ -199,14 +178,14 @@ private:
         float saturation_value = 900;  
 
         // Discretized PD controller for x and y
-        float pitch_value = (kd_pitch*(x_error-prev_x_error)/sample_time)+x_error*(kp_pitch);
-        float roll_value = (kd_yaw*(y_error-prev_y_error)/sample_time)+y_error*(kp_roll);
+        float pitch_value = (kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(kp_pitch);
+        float roll_value = (kd_yaw*(local_y_error-prev_y_error)/sample_time)+local_y_error*(kp_roll);
 
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
 
-        prev_x_error = x_error;
-        prev_y_error = y_error;
+        prev_x_error = local_x_error;
+        prev_y_error = local_y_error;
     } 
 
     float saturation(float value, float max_value, int only_positive = 0)
