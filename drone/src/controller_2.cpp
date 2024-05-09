@@ -51,10 +51,15 @@ private:
 
 
     // cook
-    float x_ref = 1200;
-    float y_ref = 1000;
-    float z_ref = 500; 
-    float yaw_ref = 0;
+    float x_ref_list[1] = 1200;
+    float y_ref_list[1] = 1000;
+    float z_ref_list[1] = 500; 
+    float yaw_ref_list[1] = 0;
+
+    float x_ref;
+    float y_ref;
+    float z_ref;
+    float yaw_ref;
 
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -65,10 +70,10 @@ private:
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
         {
-            // float x_ref = 1200;
-            // float y_ref = 1000;
-            // float z_ref = 500; 
-            // float yaw_ref = 0;
+            float x_ref = x_ref_list[0];
+            float y_ref = y_ref_list[0];
+            float z_ref = z_ref_list[0]; 
+            float yaw_ref = yaw_ref_list[0];
 
             std::chrono::system_clock::time_point time_start = std::chrono::system_clock::now();
             data_request = false;
