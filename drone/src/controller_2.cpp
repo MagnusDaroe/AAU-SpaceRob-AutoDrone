@@ -51,7 +51,7 @@ private:
 
 
     // cook
-    int array_size = 2;
+    const array_size = 2;
     float x_ref_list[array_size] = {1200, 500};
     float y_ref_list[array_size] = {1000, -700};
     float z_ref_list[array_size] = {500, 1000}; 
