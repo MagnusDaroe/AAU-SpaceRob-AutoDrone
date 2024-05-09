@@ -98,6 +98,7 @@ private:
 
         // kører xy controller
         float x_ref_signal = ref_signal(time_duration, x_ref, 2);
+        std::cout << "x_ref_signal: " << x_ref_signal << std::endl;
         float y_ref_signal = ref_signal(time_duration, y_ref, 2);
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         XY_controller(local_error_x, local_error_y);
