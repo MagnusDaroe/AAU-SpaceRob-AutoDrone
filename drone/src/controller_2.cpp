@@ -61,6 +61,7 @@ private:
     float z_ref;
     float yaw_ref;
 
+
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
 
@@ -68,7 +69,7 @@ private:
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på vicon data
+    void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på vicon data
     { 
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
