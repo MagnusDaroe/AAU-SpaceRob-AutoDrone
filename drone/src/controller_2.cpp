@@ -95,9 +95,10 @@ private:
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
         std::cout << "Time duration: " << time_duration << std::endl;
         std::cout << "x_ref: " << x_ref << std::endl;
+
         // kører xy controller
-        float x_ref_signal = ref_signal(time_duration, x_ref, 1);
-        float y_ref_signal = ref_signal(time_duration, y_ref, 1);
+        float x_ref_signal = ref_signal(time_duration, x_ref, 2);
+        float y_ref_signal = ref_signal(time_duration, y_ref, 2);
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         XY_controller(local_error_x, local_error_y);
 
@@ -127,6 +128,7 @@ private:
         control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         control_msg.cmd_auto_yaw = regulator_yaw_value;
+        control_msg.identifier = 1;
         Control_publisher_->publish(control_msg);
         std::cout << "control message publish: " << control_msg.cmd_auto_roll << std::endl;
     }
