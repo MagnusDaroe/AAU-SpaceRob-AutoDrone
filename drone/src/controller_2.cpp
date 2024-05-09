@@ -115,7 +115,7 @@ private:
         std::cout << "Total error: " << total_error << std::endl;
 
         // Check if error is under threshold to request new data
-        if (total_error < 1000){
+        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT
             data_request = true;
         }
         else{
