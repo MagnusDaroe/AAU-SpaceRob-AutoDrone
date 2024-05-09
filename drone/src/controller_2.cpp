@@ -176,7 +176,7 @@ private:
 
         float z_error = z_ref - z_mes;
 
-        float altitude_value = 10*((z_error - prev_z_error)/sample_time)+0.01*z_error;
+        float altitude_value = Kd_altitude*((z_error - prev_z_error)/sample_time)+Kp_altitude*z_error;
 
         regulator_altitude_value = saturation(altitude_value, saturation_value, 1);
 
@@ -195,8 +195,8 @@ private:
         float saturation_value = 900;  
 
         // Discretized PD controller for x and y
-        float pitch_value = (kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(kp_pitch);
-        float roll_value = (kd_yaw*(local_y_error-prev_y_error)/sample_time)+local_y_error*(kp_roll);
+        float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
+        float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
 
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
