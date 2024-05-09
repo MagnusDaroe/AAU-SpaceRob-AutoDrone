@@ -128,8 +128,7 @@ private:
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         control_msg.cmd_auto_yaw = regulator_yaw_value;
         Control_publisher_->publish(control_msg);
-        std::cout << "control message publish" << control_msg.cmd_auto_roll << std::endl;
-        std::cout << "regulator value" << regulator_roll_value << std::endl;
+        std::cout << "control message publish: " << control_msg.cmd_auto_roll << std::endl;
     }
 
     //XY_controller functions    
@@ -208,7 +207,7 @@ private:
         // Discretized PD controller for x and y
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
-
+        std::cout << "roll value: " << roll_value << std::endl;
         regulator_pitch_value = saturation(pitch_value, saturation_value);
         regulator_roll_value = saturation(roll_value, saturation_value);
 
