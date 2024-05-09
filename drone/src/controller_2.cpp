@@ -128,10 +128,8 @@ private:
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         control_msg.cmd_auto_yaw = regulator_yaw_value;
         Control_publisher_->publish(control_msg);
-        std::cout << "Published control message" << control_msg.cmd_auto_roll << std::endl;
-        std::cout << "Published control message" << control_msg.cmd_auto_pitch << std::endl;
-        std::cout << "Published control message" << control_msg.cmd_auto_thrust << std::endl;
-        std::cout << "Published control message" << control_msg.cmd_auto_yaw << std::endl;
+        std::cout << "control message publish" << control_msg.cmd_auto_roll << std::endl;
+        std::cout << "regulator value" << regulator_roll_value << std::endl;
     }
 
     //XY_controller functions    
