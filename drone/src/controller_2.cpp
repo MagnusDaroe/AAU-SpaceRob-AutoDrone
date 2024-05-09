@@ -51,10 +51,10 @@ private:
 
 
     // cook
-    float x_ref_list[1] = {1200};
-    float y_ref_list[1] = {1000};
-    float z_ref_list[1] = {500}; 
-    float yaw_ref_list[1] = {0};
+    float x_ref_list[1] = {1200, 500};
+    float y_ref_list[1] = {1000, -700};
+    float z_ref_list[1] = {500, 1000}; 
+    float yaw_ref_list[1] = {0, 90};
 
     float x_ref;
     float y_ref;
@@ -62,6 +62,8 @@ private:
     float yaw_ref;
 
     float sample_time = 100;
+
+    int list_counter = 0;
 
 
     std::chrono::system_clock::time_point time_start;
@@ -76,17 +78,20 @@ private:
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
         {
-            x_ref = x_ref_list[0];
-            y_ref = y_ref_list[0];
-            z_ref = z_ref_list[0]; 
-            yaw_ref = yaw_ref_list[0];
+            x_ref = x_ref_list[list_counter];
+            y_ref = y_ref_list[list_counter];
+            z_ref = z_ref_list[list_counter]; 
+            yaw_ref = yaw_ref_list[list_counter];
 
             time_start = std::chrono::system_clock::now();
             data_request = false;
+
+            list_counter++;
         }
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
         std::cout << "Time duration: " << time_duration << std::endl;
+        std::cout << "x_ref: " << x_ref << std::endl;
         // kører xy controller
         float x_ref_signal = ref_signal(time_duration, x_ref, 1);
         float y_ref_signal = ref_signal(time_duration, y_ref, 1);
