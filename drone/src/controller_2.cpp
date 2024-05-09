@@ -93,6 +93,7 @@ private:
         }
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
+        std::cout << "array counter: " << array_counter << std::endl;
         std::cout << "Time duration: " << time_duration << std::endl;
         std::cout << "x_ref: " << x_ref << std::endl;
         std::cout << "y_ref: " << y_ref << std::endl;
@@ -100,18 +101,18 @@ private:
         std::cout << "yaw_ref: " << yaw_ref << std::endl;
 
         // kører xy controller
-        float x_ref_signal = ref_signal(time_duration, x_ref, 2);
+        float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration omregnet til sekunder
         std::cout << "x_ref_signal: " << x_ref_signal << std::endl;
         float y_ref_signal = ref_signal(time_duration, y_ref, 2);
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
-        float z_ref_signal = ref_signal(time_duration, z_ref, 1);
+        float z_ref_signal = ref_signal(time_duration/1000, z_ref, 1);
         Z_controller(z_ref_signal, msg->vicon_z); // note vicon ups
 
         // Yaw controller
-        float yaw_signal = ref_signal(time_duration, yaw_ref, 1);
+        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 1);
         yaw_controller(yaw_signal, msg->vicon_yaw);
 
         // How close is it to the reference point
