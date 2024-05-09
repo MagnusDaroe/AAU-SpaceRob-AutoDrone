@@ -209,7 +209,7 @@ private:
         float roll_value = (Kd_roll*(local_y_error-prev_y_error)/sample_time)+local_y_error*(Kp_roll);
         std::cout << "x error: "<< local_x_error << std::endl;
         std::cout << "prev x error: " << prev_x_error << std::endl;
-        std::cout << "diff led:" << Kd_pitch*(local_x_error-prev_x_error)/sample_time; << std::endl;
+        std::cout << "diff led:" << Kd_pitch*(local_x_error-prev_x_error)/sample_time << std::endl;
         std::cout << "kp led: " << local_x_error*(Kp_pitch) << std::endl;
         std::cout << "pitch: " << pitch_value << std::endl;
 
