@@ -198,9 +198,9 @@ private:
     void XY_controller(float local_x_error, float local_y_error)
     {
         // Define PD controller parameters
-        float Kp_pitch = 0.2; // originalt 0.002
+        float Kp_pitch = 0.002; // originalt 0.002
         float Kd_pitch = 0.7;
-        float Kp_roll = 0.2;  // originalt 0.002
+        float Kp_roll = 0.002;  // originalt 0.002
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
