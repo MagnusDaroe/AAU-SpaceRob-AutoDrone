@@ -108,6 +108,7 @@ private:
 
         // How close is it to the reference point
         float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
+        std::cout << "Total error: " << total_error << std::endl;
 
         // Check if error is under threshold to request new data
         if (total_error < 1000){
