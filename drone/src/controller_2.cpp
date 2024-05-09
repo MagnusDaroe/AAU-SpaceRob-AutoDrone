@@ -15,7 +15,7 @@ public:
     ControllerNode() : Node("controller_node")
     {
         // Subscribe to altitude reference and measurement topics
-        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
+        Data_subscription_ = this->create_subscription<drone::msg::ViconData>("/ViconData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);
@@ -65,7 +65,7 @@ private:
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
 
-    rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
+    rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
