@@ -53,9 +53,9 @@ private:
     // cook
     const static int array_size = 2;
     float x_ref_list[array_size] = {1200, 500};
-    float y_ref_list[array_size] = {1000, -700};
-    float z_ref_list[array_size] = {500, 1000}; 
-    float yaw_ref_list[array_size] = {0, 90};
+    // float y_ref_list[array_size] = {1000, -700};
+    // float z_ref_list[array_size] = {500, 1000}; 
+    // float yaw_ref_list[array_size] = {0, 90};
 
     float x_ref;
     float y_ref;
@@ -80,9 +80,9 @@ private:
         if (data_request == true)
         {
             x_ref = x_ref_list[array_counter];
-            y_ref = y_ref_list[array_counter];
-            z_ref = z_ref_list[array_counter]; 
-            yaw_ref = yaw_ref_list[array_counter];
+            y_ref = y_ref_list[0];
+            z_ref = z_ref_list[0]; 
+            yaw_ref = yaw_ref_list[0];
 
             time_start = std::chrono::system_clock::now();
             data_request = false;
