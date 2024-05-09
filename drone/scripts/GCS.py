@@ -14,7 +14,7 @@ import threading
 import math
 import rclpy
 from rclpy.node import Node
-from drone.msg import DroneStatus, DroneControlData
+from drone.msg import DroneStatus, DroneControlData, ViconData
 
 #todo add color scheme to some of the states
 #todo add waypoint
@@ -324,8 +324,8 @@ class drone_listener(Node):
             10)
         
         self.subscription = self.create_subscription(
-            DroneControlData,
-            '/DroneControlData',
+            ViconData,
+            '/ViconData',
             self.pose_vicon,
             10)
         
