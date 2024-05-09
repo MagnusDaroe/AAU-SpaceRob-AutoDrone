@@ -88,7 +88,7 @@ private:
         // kører xy controller
         float x_ref_signal = ref_signal(time_duration, x_ref, 1);
         float y_ref_signal = ref_signal(time_duration, y_ref, 1);
-        globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
+        globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         XY_controller(local_error_x, local_error_y);
 
         // Z controller
@@ -97,10 +97,10 @@ private:
 
         // Yaw controller
         float yaw_signal = ref_signal(time_duration, yaw_ref, 1);
-        yaw_controller(yaw_signal, msg->camera_yaw);
+        yaw_controller(yaw_signal, msg->vicon_yaw);
 
         // How close is it to the reference point
-        float total_error = abs((x_mes + y_mes + z_mes) - (x_ref + y_ref + z_ref));
+        float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
 
         // Check if error is under threshold to request new data
         if (total_error < 100){
