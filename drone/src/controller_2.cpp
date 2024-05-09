@@ -66,12 +66,27 @@ private:
     // -Inputs
     float yaw_error;
 
+    // timer shit
+    float data_request = true
+
     rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_;
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
     void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på vicon data
-    {
+    { 
+        // Check if data is requested. Reset data and timer if so
+        if data_request == true
+            x_ref =
+            y_ref = 
+            z_ref = 
+            yaw_ref = 
+
+            start_time = 
+        else
+        ;
+        time = current_time - start_time
+
         // kører xy controller
         float x_ref_signal = ref_signal(msg->time, x_ref, 1);
         float y_ref_signal = ref_signal(msg->time, y_ref, 1);
@@ -85,6 +100,14 @@ private:
         // Yaw controller
         float yaw_signal = ref_signal(msg->time, yaw_ref, 1);
         yaw_controller(yaw_signal, msg->camera_yaw);
+
+        float total_error = (x_mes + y_mes + z_mes) - (x_ref + y_ref + z_ref);
+
+        // Check if error is under threshold to request new data
+        if total_error > 100
+            data_request = true
+        else
+            data_request = false
 
 
 
