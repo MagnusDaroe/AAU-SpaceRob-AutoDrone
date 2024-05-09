@@ -32,7 +32,7 @@ private:
     float regulator_roll_value;
 
     // -Inputs
-    float prev_x_error = 0;
+    float prev_x_error = -2337;
     float prev_y_error = 0;
 
     // Z controller
