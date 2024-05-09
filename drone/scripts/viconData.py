@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from drone.msg import DroneControlData
+from drone.msg import ViconData
 import time
 import socket
 
@@ -14,10 +14,10 @@ class ViconPublisher(Node):
     def __init__(self):
         super().__init__('vicon_publisher')
         
-        self.publisher_ = self.create_publisher(DroneControlData, 'DroneControlData', 10)
-        self.timer = self.create_timer(1/100, self.publish_message)
+        self.publisher_ = self.create_publisher(ViconData, '/ViconData', 10)
+        self.timer = self.create_timer(1/110, self.publish_message)
         self.mode = 1
-        self.HOST = '192.168.1.149'  # Listen on all network interfaces
+        self.HOST = '192.168.0.100'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.HOST, self.PORT))
@@ -31,7 +31,7 @@ class ViconPublisher(Node):
 
 
     def publish_message(self):
-            msg = DroneControlData()
+            msg = ViconData()
             self.data = self.conn.recv(1024)
             if not self.data:
                 return
