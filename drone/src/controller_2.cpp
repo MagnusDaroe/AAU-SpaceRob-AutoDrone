@@ -51,10 +51,10 @@ private:
 
 
     // cook
-    float x_ref_list[1] = 1200;
-    float y_ref_list[1] = 1000;
-    float z_ref_list[1] = 500; 
-    float yaw_ref_list[1] = 0;
+    float x_ref_list[1] = {1200};
+    float y_ref_list[1] = {1000};
+    float z_ref_list[1] = {500}; 
+    float yaw_ref_list[1] = {0};
 
     float x_ref;
     float y_ref;
