@@ -39,9 +39,6 @@ private:
     float roll_angle;
     float prev_pitch_angle;
     float prev_roll_angle;
-    float regulator_pitch_value;
-    float regulator_roll_value;
-    float altitude_control_value;
 
     // XY controller
     // -Ouputs
@@ -73,15 +70,24 @@ private:
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg)
+    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på vicon data
     {
-        ramped_reference(ControllerNode::z_ref);
-        control_value_regulated(ControllerNode::z_ref_ramped, msg->vicon_z);  //Skal have z_ref og z_pos
-        z_error_to_controller_value(ControllerNode::regulator_z_value);
-        globalErrorToLocalError(x_ref, y_ref, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
-        localErrorToAngle(local_error_x, local_error_y);
-        
+        // kører xy controller
+        float x_ref_signal = ref_signal(msg->time, x_ref, 1);
+        float y_ref_signal = ref_signal(msg->time, y_ref, 1);
+        globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->camera_yaw);
         XY_controller(local_error_x, local_error_y);
+
+        // Z controller
+        float z_ref_signal = ref_signal(msg->time, z_ref, 1);
+        Z_controller(z_ref_signal, msg->vicon_z); // note vicon ups
+
+        // Yaw controller
+        float yaw_signal = ref_signal(msg->time, yaw_ref, 1);
+        yaw_controller(yaw_signal, msg->camera_yaw);
+
+
+
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator pitch value: %d", regulator_pitch_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator roll value: %d", regulator_roll_value);
         //RCLCPP_DEBUG(ControllerNode->get_logger(), "Regulator altitude value: %d", regulator_z_value);
@@ -90,42 +96,9 @@ private:
         auto control_msg = drone::msg::DroneCommand();
         control_msg.cmd_auto_roll = regulator_roll_value;
         control_msg.cmd_auto_pitch = regulator_pitch_value;
-        control_msg.cmd_auto_thrust = altitude_control_value;
+        control_msg.cmd_auto_thrust = regulator_altitude_value;
+        control_msg.cmd_auto_yaw = regulator_yaw_value;
         Control_publisher_->publish(control_msg);
-    }
-    void ramped_reference(float z_ref)
-    {
-        float samples_pr_sec = 100;
-        float z_ref_ramped = (z_ref*samples_pr_sec+prev_z_ref)/(1+samples_pr_sec);
-        prev_z_ref = z_ref_ramped;
-    }
-
-    void z_error_to_controller_value(float regulator_z_value)
-    {
-        int max_value = 800;
-
-        if (regulator_z_value > max_value)
-        {
-            altitude_control_value = max_value;
-        }
-        else if (regulator_z_value < -max_value)
-        {
-            altitude_control_value = -max_value;
-        }
-        else
-        {
-            altitude_control_value = regulator_z_value;
-        }
-    }
-
-    void control_value_regulated(float z_ref_ramped, float z_pos)
-    {
-        float Kp_altitude = 0.01;
-        float Kd_altitude = 10;
-        float z_error = z_ref_ramped - z_pos;
-
-        regulator_z_value = 10*((z_error - prev_z_error)/samples_pr_sec)+0.01*z_error;
-        prev_z_error = z_error;
     }
 
     //XY_controller functions    
@@ -163,53 +136,29 @@ private:
         local_error_y = result[1][0];
     }
 
-    void localErrorToAngle(float local_error_x, float local_error_y)
-    {
-        int max_error = 200;
-        int max_angle = 20;
-
-        if (local_error_x > max_error)
-        {
-            pitch_angle = max_angle;
-        }
-        else if (local_error_x < -max_error)
-        {
-            pitch_angle = -max_angle;
-        }
-        else if (local_error_y > max_error)
-        {
-            roll_angle = max_angle;
-        }
-        else if (local_error_y < -max_error)
-        {
-            roll_angle = -max_angle;
-        }
-        else
-        {
-            pitch_angle = local_error_x / 10;
-            roll_angle = local_error_y / 10;
-        }
-    }
-
-    void yaw_controller(float yaw_error)
+    void yaw_controller(float yaw_ref, float yaw_mes)
     {
         float Kp_yaw = 15;
         float saturation_value = 900;
+
+        float yaw_error = yaw_ref - yaw_mes;
 
         float yaw_value = Kp_yaw * yaw_error;
 
         regulator_yaw_value = saturation(yaw_value, saturation_value);
     }
 
-    void Z_controller(float z_error)
+    void Z_controller(float z_ref, float z_mes)
     {
         float Kp_altitude = 0.01;
         float Kd_altitude = 10;
         float saturation_value = 900;
 
+        float z_error = z_ref - z_mes;
+
         float altitude_value = 10*((z_error - prev_z_error)/samples_pr_sec)+0.01*z_error;
 
-        regulator_altitude_value = saturation(altitude_value, saturation_value);
+        regulator_altitude_value = saturation(altitude_value, saturation_value, 1);
 
         prev_z_error = z_error;
     }
@@ -237,7 +186,7 @@ private:
         prev_y_error = y_error;
     } 
 
-    float saturation(float value, float max_value)
+    float saturation(float value, float max_value, int only_positive = 0)
     {
         // Saturate value to + or - max_value
         if (value > max_value)       // Saturate to max value
@@ -246,7 +195,11 @@ private:
         }
         else if (value < -max_value) // Saturate to minimum
         {
-            value = -max_value;
+            if only_positive == 0
+                value = -max_value;
+            else
+                value = 1; // Smallest allowed value when only saturating to positive numbers
+
         }
         else                         // Do nothing
         {
