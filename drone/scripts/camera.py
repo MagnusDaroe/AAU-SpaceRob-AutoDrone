@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-
-
-"""
-opencv-contrib-python         4.7.0.72
-opencv-python                 4.8.1.78
-"""
-
 import pyrealsense2 as rs
-#from numpy.linalg import inv
+from numpy.linalg import inv
 import numpy as np
 import cv2
 import time
@@ -41,53 +34,31 @@ class T265(Node):
         self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
 
     def math_init(self):
-        __LEFT_2_C_MM=-32.00 #Distance from the left camera sensor to the center of the T265 in mm
-        __LENS_2_C_MM=6.55 #Distance from the lense to the center of the T265 in mm
+        #self.R_FC_backside=np.array([[1,0,0],[0,1,0],[0,0,1]])
+        self.T_FC_backside=np.array([[1,0,0,153.223],[0,1,0,0],[0,0,1,86.6070],[0,0,0,1]]) #mm
 
-        __LEFT_2_C_CM=__LEFT_2_C_MM/10 #Distance from the left camera sensor to the center of the T265 in cm
-        __LENS_2_C_CM=__LENS_2_C_MM/10 #Distance from the lense to the center of the T265 in cm
+        # Transformation from backside center of T265 to cam frame center in T265:
+        self.T_backside_center=np.array([[1,0,0,1.54],[0,1,0,-9.10],[0,0,1,05.75],[0,0,0,1]]) #mm
 
-        __THETA=-np.pi
-        
-        # Define the Transformation matrix from the left camera sensor to pose center of the T265
-        self.__T_C_LEFT=np.array([[1 , 0,0,__LEFT_2_C_CM],
-                        [0,np.cos(__THETA),-np.sin(__THETA),0],
-                        [0,np.sin(__THETA),np.cos(__THETA),__LENS_2_C_CM],
-                        [0,0,0,1]])
-        
-        #Rotations matrix for -75 degrees around the x-axis
-        angle=0
-        self.R_rot15_cam=np.array([[1,0,0],
-                        [0,np.cos(np.deg2rad(angle)),-np.sin(np.deg2rad(angle))],
-                        [0,np.sin(np.deg2rad(angle)),np.cos(np.deg2rad(angle))]])
-        #Transformation matrix for -75 degrees around the x-axis
-        self.T_rot15_cam=np.array([[1,0,0,0],
-                        [0,np.cos(np.deg2rad(angle)),-np.sin(np.deg2rad(angle)),0],
-                        [0,np.sin(np.deg2rad(angle)),np.cos(np.deg2rad(angle)),0],
-                        [0,0,0,1]])
-        
-        # Transformation and rotation matrix from the local frame center in T265 (x=roll, y=pitch, z=yaw) to the T265 pose frame:
-        self.R_local_rot15=np.array([[0,0,-1],[-1,0,0],[0,1,0]]) 
-        self.T_local_rot15=np.array([[0,0,-1,0],[-1,0,0,0],[0,1,0,0],[0,0,0,1]])
-        
-        # Transformation from backside center of T265 to local frame center in T265:
-        self.R_backside_local=np.array([[1,0,0],[0,1,0],[0,0,1]])
-        self.T_backside_local=np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0.154,-0.910,-0.575,1]]) #cm
+        # Transformation from pose frame to the FC:
+        self.T_pose_FC=inv(self.T_FC_backside@self.T_backside_center)
 
-        # Transformation from FC to backside center of T265:
-        self.R_FC_backside=np.array([[-1,0,0],[0,-1,0],[0,0,1]])
-        self.T_FC_backside=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[15.3223,0,-8.66070,1]]) #cm
+        # Transformation from the pose frame to the poseCam frame, where the camera is rotated -75 degrees around the y-axis:
+        angle=-75
+        self.T_pose_poseCam=np.array([[np.cos(np.deg2rad(angle)),0,np.sin(np.deg2rad(angle)),0],
+                                    [0,1,0,0],
+                                    [-np.sin(np.deg2rad(angle)),0,np.cos(np.deg2rad(angle)),0],
+                                    [0,0,0,1]])
+        self.R_pose_poseCam=self.T_pose_poseCam[:3,:3]
+
+        __P_CAM_FC_local=np.array([self.T_pose_FC[0,3],self.T_pose_FC[1,3],self.T_pose_FC[2,3]])
+        self.T_start_ref=np.array([[1,0,0,-1*__P_CAM_FC_local[0]],[0,1,0,-1*__P_CAM_FC_local[1]],[0,0,1,-1*__P_CAM_FC_local[2]],[0,0,0,1]])
+
+        self.T_Vicon_Drone=np.array([[-1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,1]])
+        self.T_global_start=self.T_Vicon_Drone
 
 
-        # Transformation from FC to T265 pose frame:
-        self.R_FC_cam=self.R_FC_backside@self.R_backside_local@self.R_local_rot15@self.R_rot15_cam
-        self.T_FC_cam=self.T_FC_backside@self.T_backside_local@self.T_local_rot15@self.T_rot15_cam
-
-        # Transformation from global to T265 pose frame:
-        self.R_global_cam=self.R_FC_cam
-        self.T_global_cam=self.T_FC_cam
-
-
+        self.T_global_ref=self.T_global_start@self.T_start_ref
 
         self.dist=np.array([[-0.22814816,0.04330513,-0.00027584,0.00057192,-0.00322855]])
         self.mtx=np.array( [[289.17101938,0.,426.23687843],[0.,289.14205298,401.22256516],[0.,0.,1.]])
@@ -134,28 +105,92 @@ class T265(Node):
         data = pose.get_pose_data()
         if pose:
             self.time_stamp=pose.timestamp
-            self.translation_xyz = [data.translation.x, data.translation.y, data.translation.z]
+            self.translation_xyz_mm = [data.translation.x*1000, data.translation.y*1000, data.translation.z*1000] #mm
             self.rotation_xyzw = [data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w]
             self.pose_confidence = data.tracker_confidence
 
-    def __get_T_matrix_q(self,qrot_xyzw,translation_xyz):
-        """Convert a quaternion to a rotation matrix
+    def q_to_RPY(self):
         """
-        x_t=translation_xyz[0]*100
-        y_t=translation_xyz[1]*100
-        z_t=translation_xyz[2]*100
-        
-        # Define quaternion (w, x, y, z)
+        Convert a quaternion to roll pitch and yaw angles, 
+        NB: the pitch is -75 degrees off due to the camera orientation
+
+        Surce: https://github.com/IntelRealSense/librealsense/issues/5178#issuecomment-550217609
+        """
+        qrot_xyzw=self.rotation_xyzw
         w = qrot_xyzw[3]
-        x = qrot_xyzw[0]
-        y = qrot_xyzw[1]
-        z = qrot_xyzw[2]
-        Transfromation_mtx = np.array([[-(1-2*y*y-2*z*z), 2*x*y-2*z*w, -(2*x*z+2*y*w),x_t],
-                        [-(2*x*y+2*z*w), 1-2*x*x-2*z*z, -(2*y*z-2*x*w),y_t],
-                        [-(2*x*z-2*y*w), 2*y*z+2*x*w, -(1-2*x*x-2*y*y),z_t],
-                        [0,0,0,1]])
+        x = -qrot_xyzw[2]
+        y = qrot_xyzw[0]
+        z = -qrot_xyzw[1]
+
+        self.pitch =  -math.asin(2.0 * (x*z - w*y)) #rad - NB: the pitch is -75 degrees off
+        self.roll  =  math.atan2(2.0 * (w*x + y*z), w*w - x*x - y*y + z*z) #rad
+        self.yaw   =  math.atan2(2.0 * (w*z + x*y), w*w + x*x - y*y - z*z) #rad
+
+    def RPY_and_pos_to_T(self):
+        """Convert excentric roll, pitch, and yaw to a rotation matrix and then Transformation matrix
+        """
+        # Calculate trigonometric values
+        cos_r = np.cos(self.roll)
+        sin_r = np.sin(self.roll)
+        cos_p = np.cos(self.pitch)
+        sin_p = np.sin(self.pitch)
+        cos_y = np.cos(self.yaw)
+        sin_y = np.sin(self.yaw)
         
-        return Transfromation_mtx
+        # Compute rotation matrix
+        R_x = np.array([[1, 0, 0],
+                        [0, cos_r, -sin_r],
+                        [0, sin_r, cos_r]])
+        
+        R_y = np.array([[cos_p, 0, sin_p],
+                            [0, 1, 0],
+                            [-sin_p, 0, cos_p]])
+        
+        R_z = np.array([[cos_y, -sin_y, 0],
+                        [sin_y, cos_y, 0],
+                        [0, 0, 1]])
+        
+        # Compute rotation of the cam frame to poseCam frame
+        R_cam_poseCam= R_z @ R_y @ R_x
+
+        # Compute the rotation matrix from the pose frame to the poseCam frame
+        R_mtx=R_cam_poseCam@inv(self.R_pose_poseCam)
+
+        # Compute the Transformation matrix of the translation from the ref frame to the cam frame:
+        T_ref_cam=np.array([[1,0,0, -1*self.translation_xyz_mm[2]],
+                    [0,1,0, self.translation_xyz_mm[0]],
+                    [0,0,1, -1*self.translation_xyz_mm[1]],
+                    [0, 0, 0, 1]])
+        
+        # Compute the Transformation matrix of the rotation from the ref frame to the cam frame:
+        T_cam_pose=np.array([[R_mtx[0,0], R_mtx[0,1], R_mtx[0,2], 0],
+                    [R_mtx[1,0], R_mtx[1,1], R_mtx[1,2], 0],
+                    [R_mtx[2,0], R_mtx[2,1], R_mtx[2,2], 0],
+                    [0, 0, 0, 1]])
+        
+        # Compute the Transformation matrix from the ref frame to the pose frame:
+        T_ref_pose=T_ref_cam@T_cam_pose
+        ######################## HUSK at flytte T_pose_FC ############################
+
+        return T_ref_pose
+
+
+
+
+    def get_global_pose(self):
+        """Get the global pose of the camera
+        """
+        # Convert the quaternion and translation to a trnasformation matrix from ref frame to pose frame
+        self.T_ref_pose=self.RPY_and_pos_to_T()
+        # Compute the transformation from global frame to FC frame
+        self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
+
+        # Get the global position of the camera
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
+        
+        # Get the global rotation of the camera
+        self.R_global_FC=self.T_global_FC[:3,:3]
+        self.r_mtx_global=self.R_global_FC
 
     def R_to_euler_angles(self):
         """Convert a rotation matrix to euler angles
@@ -172,38 +207,28 @@ class T265(Node):
             x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1]) #atan2(-R23,R22)
             y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
             z = 0
-        self.euler_xyz=[x,y,z]
+        self.euler_xyz=[x,y,z]       
 
-
-    def get_global_pose(self):
-        """Get the global pose of the camera
-        """
-        T_q=self.__get_T_matrix_q(self.rotation_xyzw,self.translation_xyz)
-
-        R_rot=T_q[:3,:3]
-        
-        self.t_vec_global=self.T_global_cam@np.array([[self.translation_xyz[0]*100],[self.translation_xyz[1]*100],[self.translation_xyz[2]*100],[1]])
-        self.r_mtx_global=self.R_global_cam@R_rot
-        
-
-    def update_start_frame(self,T_global_FC):
+    def update_start_frame(self,T_global_start):
         """Update the start frame of the camera
         """
-        self.T_global_cam=T_global_FC@self.T_FC_cam
-        self.R_global_cam=self.T_global_cam[:3,:3]
+        self.T_global_start=T_global_start@self.T_Vicon_Drone
+        self.T_global_ref=self.T_global_start@self.T_start_ref
 
-    def update_position(self,P_global):
+    def update_position(self,P_global_FC):
         """Update the global position of the drone
         """
-        diff_x=P_global[0]-self.t_vec_global[0][0] #cm
-        diff_y=P_global[1]-self.t_vec_global[1][0] #cm
-        diff_z=P_global[2]-self.t_vec_global[2][0] #cm
+        diff_x=P_global_FC[0]-self.t_vec_global_FC[0] #mm
+        diff_y=P_global_FC[1]-self.t_vec_global_FC[1] #mm
+        diff_z=P_global_FC[2]-self.t_vec_global_FC[2] #mm
 
-        #Update T_global_cam with the position difference
-        self.T_global_cam[0,3]=self.T_global_cam[0,3]+diff_x
-        self.T_global_cam[1,3]=self.T_global_cam[1,3]+diff_y
-        self.T_global_cam[2,3]=self.T_global_cam[2,3]+diff_z
+        #Update T_global_start with the position difference
+        self.T_global_start[0,3]+=diff_x
+        self.T_global_start[1,3]+=diff_y
+        self.T_global_start[2,3]+=diff_z
 
+        #Update T_global_ref
+        self.T_global_ref=self.T_global_start@self.T_start_ref
 
     def show_image(self,undist=True):
         """
@@ -239,8 +264,9 @@ class T265(Node):
                 self.get_logger().info(f"time diff in ms: {t-self.t_old*1000}")
                 self.t_old=t
 
+                self.q_to_RPY()
                 self.get_global_pose()
-                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global[0][0],2)}, y: {round(self.t_vec_global[1][0],2)}, z: {round(self.t_vec_global[2][0],2)}")
+                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
                 self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
@@ -248,9 +274,9 @@ class T265(Node):
             #time.sleep(0.1)
 
             msg = DroneControlData()
-            msg.camera_x = float(self.t_vec_global[0][0])*10 # mm
-            msg.camera_y = float(self.t_vec_global[1][0])*10 # mm
-            msg.camera_z = float(self.t_vec_global[2][0])*10 # mm
+            msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+            msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+            msg.camera_z = float(self.t_vec_global_FC[2]) # mm
             msg.camera_pitch = float(self.euler_xyz[0]) # rad
             msg.camera_roll = float(self.euler_xyz[1]) # rad
             msg.camera_yaw = float(self.euler_xyz[2]) # rad
