@@ -218,9 +218,9 @@ class T265(Node):
     def update_position(self,P_global_FC):
         """Update the global position of the drone
         """
-        diff_x=P_global_FC[0]-self.t_vec_global_FC[0][0] #mm
-        diff_y=P_global_FC[1]-self.t_vec_global_FC[1][0] #mm
-        diff_z=P_global_FC[2]-self.t_vec_global_FC[2][0] #mm
+        diff_x=P_global_FC[0]-self.t_vec_global_FC[0] #mm
+        diff_y=P_global_FC[1]-self.t_vec_global_FC[1] #mm
+        diff_z=P_global_FC[2]-self.t_vec_global_FC[2] #mm
 
         #Update T_global_start with the position difference
         self.T_global_start[0,3]+=diff_x
@@ -266,7 +266,7 @@ class T265(Node):
 
                 self.q_to_RPY()
                 self.get_global_pose()
-                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0][0],2)}, y: {round(self.t_vec_global_FC[1][0],2)}, z: {round(self.t_vec_global_FC[2][0],2)}")
+                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
                 self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
@@ -274,9 +274,9 @@ class T265(Node):
             #time.sleep(0.1)
 
             msg = DroneControlData()
-            msg.camera_x = float(self.t_vec_global_FC[0][0]) # mm
-            msg.camera_y = float(self.t_vec_global_FC[1][0]) # mm
-            msg.camera_z = float(self.t_vec_global_FC[2][0]) # mm
+            msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+            msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+            msg.camera_z = float(self.t_vec_global_FC[2]) # mm
             msg.camera_pitch = float(self.euler_xyz[0]) # rad
             msg.camera_roll = float(self.euler_xyz[1]) # rad
             msg.camera_yaw = float(self.euler_xyz[2]) # rad
