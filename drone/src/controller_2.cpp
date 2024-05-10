@@ -128,7 +128,7 @@ private:
         float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
 
         // Check if error is under threshold to request new data
-        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTE VIRKER
+        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER
             data_request = true;    // Reset data request if close to waypoint
         }
         else{
