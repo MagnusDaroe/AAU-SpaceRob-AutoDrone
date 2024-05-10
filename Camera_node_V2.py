@@ -105,22 +105,23 @@ class T265(Node):
         data = pose.get_pose_data()
         if pose:
             self.time_stamp=pose.timestamp
-            self.translation_xyz = [data.translation.x, data.translation.y, data.translation.z]
+            self.translation_xyz_mm = [data.translation.x*1000, data.translation.y*1000, data.translation.z*1000] #mm
             self.rotation_xyzw = [data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w]
             self.pose_confidence = data.tracker_confidence
 
-    def q_to_RPY(self,qrot_xyzw):
+    def q_to_RPY(self):
         """
         Convert a quaternion to roll pitch and yaw angles, 
         NB: the pitch is -75 degrees off due to the camera orientation
 
         Surce: https://github.com/IntelRealSense/librealsense/issues/5178#issuecomment-550217609
         """
+        qrot_xyzw=self.rotation_xyzw
         w = qrot_xyzw[3]
         x = -qrot_xyzw[2]
         y = qrot_xyzw[0]
         z = -qrot_xyzw[1]
-        
+
         self.pitch =  -math.asin(2.0 * (x*z - w*y)) #rad - NB: the pitch is -75 degrees off
         self.roll  =  math.atan2(2.0 * (w*x + y*z), w*w - x*x - y*y + z*z) #rad
         self.yaw   =  math.atan2(2.0 * (w*z + x*y), w*w + x*x - y*y - z*z) #rad
@@ -173,25 +174,6 @@ class T265(Node):
 
         return T_ref_pose
 
-
-    def __get_T_matrix_q(self,qrot_xyzw,translation_xyz):
-        """Convert a quaternion to a rotation matrix
-        """
-        x_t=translation_xyz[0]*100
-        y_t=translation_xyz[1]*100
-        z_t=translation_xyz[2]*100
-        
-        # Define quaternion (w, x, y, z)
-        w = qrot_xyzw[3]
-        x = qrot_xyzw[0]
-        y = qrot_xyzw[1]
-        z = qrot_xyzw[2]
-        Transfromation_mtx = np.array([[-(1-2*y*y-2*z*z), 2*x*y-2*z*w, -(2*x*z+2*y*w),x_t],
-                        [-(2*x*y+2*z*w), 1-2*x*x-2*z*z, -(2*y*z-2*x*w),y_t],
-                        [-(2*x*z-2*y*w), 2*y*z+2*x*w, -(1-2*x*x-2*y*y),z_t],
-                        [0,0,0,1]])
-        
-        return Transfromation_mtx
 
 
 
@@ -282,6 +264,7 @@ class T265(Node):
                 self.get_logger().info(f"time diff in ms: {t-self.t_old*1000}")
                 self.t_old=t
 
+                self.q_to_RPY()
                 self.get_global_pose()
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0][0],2)}, y: {round(self.t_vec_global_FC[1][0],2)}, z: {round(self.t_vec_global_FC[2][0],2)}")
                 self.R_to_euler_angles()
