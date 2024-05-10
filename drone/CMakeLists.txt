@@ -64,6 +64,7 @@
 	scripts/GCS.py
 	scripts/viconData.py
 	scripts/camera.py
+	scripts/emulateViconData.py
 	DESTINATION lib/${PROJECT_NAME} # change name of node in python
 	)
 
