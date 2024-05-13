@@ -269,7 +269,7 @@ private:
     // Generates a reference signal according to ramp function
     {
         float signal = slope*t+offset;
-        return saturation(signal, ref)
+        return saturation(signal, ref);
     }
 
 };
