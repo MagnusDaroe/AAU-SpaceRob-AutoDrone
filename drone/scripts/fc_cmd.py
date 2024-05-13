@@ -516,7 +516,7 @@ class FC_Commander(Node):
             decrement_thrust = 600
 
         land_thrust = 100
-        decrement = 1
+        decrement = 0.5
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
