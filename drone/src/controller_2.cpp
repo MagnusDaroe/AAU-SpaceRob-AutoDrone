@@ -196,8 +196,8 @@ private:
     void Z_controller(float z_ref, float z_mes)
     // PD controller for altitude
     {
-        float Kp_altitude = 0.01;       // Proportional gain
-        float Kd_altitude = 10;         // Derivative gain
+        float Kp_altitude = 0.6;       // Proportional gain
+        float Kd_altitude = 0.5;         // Derivative gain
         float saturation_value = 200;   // Max and min value allowed to be sent to the drone
         float hover_value = 495;        // controller value for hovering (found by m*g/thrust to newton relation)
 
@@ -205,7 +205,7 @@ private:
 
         float altitude_value = Kd_altitude*((z_error - prev_z_error)/sample_time)+Kp_altitude*z_error; // PD regulated value
 
-        regulator_altitude_value = saturation(altitude_value, saturation_value)+hover_value; // Saturate value
+        regulator_altitude_value = saturation(altitude_value, saturation_value)+hover_value; // Saturate value and add hover value
 
         prev_z_error = z_error; // Update previous error
     }
@@ -269,7 +269,6 @@ private:
     // Generates a reference signal according to ramp function
     {
         float signal = slope*t+offset;
-    
         return saturation(signal, ref)
     }
 
