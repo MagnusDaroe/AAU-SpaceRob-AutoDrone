@@ -511,8 +511,8 @@ class FC_Commander(Node):
         """
         Safe mode. The drone will land and disarm if the mode is set to safe mode
         """
-        decrement_thrust = self.fc_command.cmd_thrust
-        land_thrust = 400
+        decrement_thrust = 500
+        land_thrust = 100
         decrement = 1
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)

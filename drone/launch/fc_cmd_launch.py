@@ -1,19 +1,18 @@
-#!/usr/bin/env python3
-
-import launch
+from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    return launch.LaunchDescription([
+    return LaunchDescription([
         Node(
             package='drone',
-            executable='fc_cmd.py',
-            name='FCCommander',
+            node_executable='fc_cmd.py',
+            node_namespace='FCCommander',
             output='screen', # to see the output of the node
         ),
         Node(
             package='drone',
-            executable='Controller_node',
+            node_executable='Controller_node',
+            node_namespace='controlnode',
             output='screen',  # Direct output to screen (terminal)
         ),
     ])
