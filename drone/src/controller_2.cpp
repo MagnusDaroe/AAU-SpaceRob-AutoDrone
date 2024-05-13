@@ -68,10 +68,10 @@ private:
     float yaw_ref;
 
     //Variables that hold current position
-    float current_x = msg->vicon_x;
-    float current_y = msg->vicon_y;
-    float current_z = msg->vicon_z;
-    float current_yaw = msg->vicon_yaw;
+    float current_x;
+    float current_y;
+    float current_z;
+    float current_yaw;
 
     // Variables to hold previous filter value
     float prev_filter_val = 0;   // DER SKAL SQ NOK OPRETES EN FOR HVER SLAGS MÅLT VÆRDI SÅ DER IKKE GÅR GED I DEN
@@ -90,6 +90,12 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
     { 
+
+            current_x = msg->vicon_x;
+            current_y = msg->vicon_y;
+            current_z = msg->vicon_z;
+            current_yaw = msg->vicon_yaw;
+    
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
         {
