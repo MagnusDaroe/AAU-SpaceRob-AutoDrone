@@ -163,7 +163,7 @@ private:
         control_msg.cmd_auto_roll = 0;//regulator_roll_value;
         control_msg.cmd_auto_pitch = 0;//regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
-        std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
+        // std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
         control_msg.identifier = 1;
         Control_publisher_->publish(control_msg);
