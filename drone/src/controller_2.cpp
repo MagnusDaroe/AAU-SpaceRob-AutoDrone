@@ -67,7 +67,7 @@ private:
     float yaw_ref;
 
     // Variables to hold previous filter value
-    float prev_filter_val = 0;
+    float prev_filter_val = 0;   // DER SKAL SQ NOK OPRETES EN FOR HVER SLAGS MÅLT VÆRDI SÅ DER IKKE GÅR GED I DEN
 
     // Sample time of all controllers
     float sample_time = 0.01;
@@ -112,10 +112,10 @@ private:
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration is converted to seconds
 
         // Denoise the recieved position variables
-        denoised_vicon_x = low_pass(msg->vicon_x, 10);
-        denoised_vicon_y = low_pass(msg->vicon_y, 10);
-        denoised_vicon_z = low_pass(msg->vicon_z, 10);
-        denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
+        float denoised_vicon_x = low_pass(msg->vicon_x, 10);
+        float denoised_vicon_y = low_pass(msg->vicon_y, 10);
+        float denoised_vicon_z = low_pass(msg->vicon_z, 10);
+        float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
 
         // recieves the reference signal and the current position and calculates the local error
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
