@@ -265,6 +265,14 @@ private:
         return signal;
     }
 
+    float ref_ramp(float t, float ref, float slope, float offset = 0)
+    // Generates a reference signal according to ramp function
+    {
+        float signal = slope*t+offset;
+    
+        return saturation(signal, ref)
+    }
+
 };
 
 
