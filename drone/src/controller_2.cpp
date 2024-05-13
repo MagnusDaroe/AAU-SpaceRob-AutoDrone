@@ -83,8 +83,8 @@ private:
     // Defines time variables
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
-    long long timestamp;
-
+    std::chrono::system_clock::time_point timestamp;
+    std::chrono::system_clock::duration time_since_epoch; 
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -160,8 +160,9 @@ private:
             data_request = false;   // Still false if not close
         }
 
-        timestamp = std::time(0);
-        std::cout << "timestamp: " << timestamp << std::endl;
+        timestamp = std::chrono::system_clock::now();
+        time_since_epoch = timestamp.time_since_epoch();
+        std::cout << "timestamp: "<< float(time_since_epoch.count()/1000000) << std::endl;
 
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
