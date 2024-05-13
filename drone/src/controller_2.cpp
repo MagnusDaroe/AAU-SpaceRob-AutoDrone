@@ -157,13 +157,14 @@ private:
         else{
             data_request = false;   // Still false if not close
         }
-
+        auto timestamp = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
+        std::cout << "timestamp: " << timestamp << std::endl;
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
         control_msg.cmd_auto_roll = 0;//regulator_roll_value;
         control_msg.cmd_auto_pitch = 0;//regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
-        // std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
+        std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
         control_msg.identifier = 1;
         Control_publisher_->publish(control_msg);
