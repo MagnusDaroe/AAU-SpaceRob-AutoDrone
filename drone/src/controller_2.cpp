@@ -4,7 +4,8 @@
 #include <iostream>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
-#include "drone/msg/vicon_data.hpp"
+// #include "drone/msg/vicon_data.hpp"
+#include "drone/msg/drone_control_data.hpp"
 #include "drone/msg/drone_command.hpp"
 
 using namespace std::chrono_literals;
@@ -15,7 +16,7 @@ public:
     ControllerNode() : Node("controller_node")
     {
         // Subscribe to altitude reference and measurement topics
-        Data_subscription_ = this->create_subscription<drone::msg::ViconData>("/ViconData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1));
+        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1)); //KAMERA
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);
@@ -77,11 +78,11 @@ private:
     std::chrono::system_clock::time_point time_stop;
 
     // Subscribers and publishers
-    rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_;
+    rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
+    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
     { 
         // Check if data is requested. Reset data and timer if so
         if (data_request == true)
@@ -118,7 +119,7 @@ private:
         // float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
 
         // recieves the reference signal and the current position and calculates the local error
-        globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
+        globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->camera_x, msg->camera_y, msg->camera_yaw); //KAMERA
         // recieves the local error and calculates controller values for roll and pitch
         XY_controller(local_error_x, local_error_y);
 
@@ -126,16 +127,16 @@ private:
         // Generates reference signal
         float z_ref_signal = ref_signal(time_duration/1000, z_ref, 1); // time duration is converted to seconds
         // Generates controller value for altitude
-        Z_controller(z_ref_signal, msg->vicon_z); // Note: skal ændres hvis kamera skal bruges
+        Z_controller(z_ref_signal, msg->camera_z); // Note: skal ændres hvis kamera skal bruges
 
         // Yaw controller
         // Generates reference signal
         float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 1); // time duration is converted to seconds
         // Generates controller value for yaw
-        yaw_controller(yaw_signal, msg->vicon_yaw);
+        yaw_controller(yaw_signal, msg->camera_yaw); //KAMERA
 
         // Shitty way to calculate the distance to the point but square roots and shit aint worth it
-        float total_error = abs((msg->vicon_x + msg->vicon_y + msg->vicon_z) - (x_ref + y_ref + z_ref));
+        float total_error = abs((msg->camera_x + msg->camera_y + msg->camera_z) - (x_ref + y_ref + z_ref)); //KAMERA
 
         // Check if error is under threshold to request new data
         if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER
