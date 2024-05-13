@@ -54,8 +54,9 @@ class T265(Node):
         __P_CAM_FC_local=np.array([self.T_pose_FC[0,3],self.T_pose_FC[1,3],self.T_pose_FC[2,3]])
         self.T_start_ref=np.array([[1,0,0,-1*__P_CAM_FC_local[0]],[0,1,0,-1*__P_CAM_FC_local[1]],[0,0,1,-1*__P_CAM_FC_local[2]],[0,0,0,1]])
 
-        self.T_Vicon_Drone=np.array([[-1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,1]])
-        self.T_global_start=self.T_Vicon_Drone
+        self.T_Vicon_drone_start=np.array([[-1,0,0,0],[0,1,0,0],[0,0,-1,0],[0,0,0,1]])
+        self.T_global_vicon=np.array([[-1,0,0,0],[0,-1,0,0],[0,0,1,0],[0,0,0,1]])
+        self.T_global_start=self.T_global_vicon@self.T_Vicon_drone_start
 
 
         self.T_global_ref=self.T_global_start@self.T_start_ref
@@ -209,19 +210,19 @@ class T265(Node):
             z = 0
         self.euler_xyz=[x,y,z]       
 
-    def update_start_frame(self,T_global_start):
+    def update_start_frame(self,T_vicon_start):
         """Update the start frame of the camera
         """
-        self.T_global_start=T_global_start@self.T_Vicon_Drone
+        self.T_global_start=self.T_global_vicon@T_vicon_start@self.T_Vicon_drone_start
         self.T_global_ref=self.T_global_start@self.T_start_ref
 
-    def update_position(self,P_global_FC):
+    def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        diff_x=P_global_FC[0]-self.t_vec_global_FC[0] #mm
-        diff_y=P_global_FC[1]-self.t_vec_global_FC[1] #mm
-        diff_z=P_global_FC[2]-self.t_vec_global_FC[2] #mm
-
+        diff_x=-1*P_vicon_FC[0]-self.t_vec_global_FC[0] #mm
+        diff_y=-1*P_vicon_FC[1]-self.t_vec_global_FC[1] #mm
+        diff_z=P_vicon_FC[2]-self.t_vec_global_FC[2] #mm
+        
         #Update T_global_start with the position difference
         self.T_global_start[0,3]+=diff_x
         self.T_global_start[1,3]+=diff_y
