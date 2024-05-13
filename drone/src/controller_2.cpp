@@ -57,7 +57,7 @@ private:
 
     float x_ref_list[array_size] = {1200, 500};
     float y_ref_list[array_size] = {1000, -700};
-    float z_ref_list[array_size] = {500, 1000}; 
+    float z_ref_list[array_size] = {1000, 1000}; 
     float yaw_ref_list[array_size] = {0, 90};
 
     int array_counter = 0;                     // counter for array
