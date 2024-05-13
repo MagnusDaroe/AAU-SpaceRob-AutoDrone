@@ -116,7 +116,7 @@ private:
         // Check time now and calculate time duration
         time_stop = std::chrono::system_clock::now();
         auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
-        std::cout << "Time duration: " << time_duration << std::endl;
+        // std::cout << "Time duration: " << time_duration << std::endl;
 
         // XY controller
         // Generates a reference signal according to exponential function
