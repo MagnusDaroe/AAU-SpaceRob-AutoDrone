@@ -162,7 +162,7 @@ private:
 
         timestamp = std::chrono::system_clock::now();
         time_since_epoch = timestamp.time_since_epoch();
-        double time_since_epoch_double = time_since_epoch.count()/1000000;
+        double time_since_epoch_double = time_since_epoch.count()   ;
         std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
 
         // Publish regulated pitch, roll, thrust, and yaw values
