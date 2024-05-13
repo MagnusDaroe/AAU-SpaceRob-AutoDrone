@@ -19,7 +19,7 @@ public:
         Data_subscription_ = this->create_subscription<drone::msg::ViconData>("/ViconData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1)); //KAMERA
 
         // Publish regulated altitude control value
-        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("regulated_altitude_control", 10);
+        Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
     }
 
 private:
