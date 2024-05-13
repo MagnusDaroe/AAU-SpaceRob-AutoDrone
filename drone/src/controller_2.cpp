@@ -66,6 +66,9 @@ private:
     float z_ref;
     float yaw_ref;
 
+    // Variables to hold previous filter value
+    float prev_filter_val = 0;
+
     // Sample time of all controllers
     float sample_time = 0.01;
 
@@ -107,6 +110,13 @@ private:
         // Signal function requires current time, final reference signal, and time constant
         float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration is converted to seconds
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration is converted to seconds
+
+        // Denoise the recieved position variables
+        denoised_vicon_x = low_pass(msg->vicon_x, 10);
+        denoised_vicon_y = low_pass(msg->vicon_y, 10);
+        denoised_vicon_z = low_pass(msg->vicon_z, 10);
+        denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
+
         // recieves the reference signal and the current position and calculates the local error
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
         // recieves the local error and calculates controller values for roll and pitch
@@ -270,6 +280,16 @@ private:
     {
         float signal = slope*t+offset;
         return saturation(signal, ref);
+    }
+    float low_pass(float signal, float filter_val)
+    // Low pass filter for noise on the measured position signal
+    {
+        // Discretized low pass filter
+        float lowpass_signal = (signal*filter_val*sample_time+prev_filter_val)/(1+filter_val*sample_time);
+        // Update previous filter value
+        prev_filter_val = lowpass_signal;
+
+        return lowpass_signal;
     }
 
 };
