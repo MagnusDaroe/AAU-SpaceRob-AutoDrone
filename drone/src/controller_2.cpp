@@ -168,7 +168,7 @@ private:
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
         control_msg.cmd_auto_roll = regulator_roll_value;
-        control_msg.cmd_auto_pitch = regulator_pitch_value;
+        control_msg.cmd_auto_pitch = -regulator_pitch_value; //CHANGE
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
