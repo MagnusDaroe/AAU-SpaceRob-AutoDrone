@@ -1,4 +1,5 @@
 #include <chrono>
+#include <time.h>
 #include <memory>
 #include <math.h>
 #include <iostream>
@@ -82,6 +83,7 @@ private:
     // Defines time variables
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
+    long long timestamp;
 
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
@@ -157,8 +159,10 @@ private:
         else{
             data_request = false;   // Still false if not close
         }
-        auto timestamp = std::chrono::duration_cast< std::chrono::milliseconds >(std::chrono::system_clock::now().time_since_epoch());
+
+        timestamp = std::time(0);
         std::cout << "timestamp: " << timestamp << std::endl;
+
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
         control_msg.cmd_auto_roll = 0;//regulator_roll_value;
