@@ -162,7 +162,7 @@ private:
 
         timestamp = std::chrono::system_clock::now();
         time_since_epoch = timestamp.time_since_epoch();
-        double time_since_epoch_double = time_since_epoch.count()   ;
+        double time_since_epoch_double = time_since_epoch.count()/1000000;
         std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
 
         // Publish regulated pitch, roll, thrust, and yaw values
@@ -173,6 +173,7 @@ private:
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
         control_msg.identifier = 1;
+        control_msg.timestamp = time_since_epoch_double;
         Control_publisher_->publish(control_msg);
     }
 
