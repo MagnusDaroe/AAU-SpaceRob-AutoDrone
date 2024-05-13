@@ -55,7 +55,7 @@ private:
     // Defining waypoints
     const static int array_size = 2;            // size of array
 
-    float x_ref_list[array_size] = {500, 500};
+    float x_ref_list[array_size] = {-500, 500};
     float y_ref_list[array_size] = {0, -700};
     float z_ref_list[array_size] = {500, 1000}; 
     float yaw_ref_list[array_size] = {0, 90};
