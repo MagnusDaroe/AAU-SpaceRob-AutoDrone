@@ -162,7 +162,8 @@ private:
 
         timestamp = std::chrono::system_clock::now();
         time_since_epoch = timestamp.time_since_epoch();
-        std::cout << "timestamp: "<< float(time_since_epoch.count()/1000000) << std::endl;
+
+        std::cout << "timestamp: "<< time_since_epoch.count() << std::endl;
 
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
