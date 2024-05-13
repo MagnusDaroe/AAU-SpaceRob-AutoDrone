@@ -55,9 +55,9 @@ private:
     // Defining waypoints
     const static int array_size = 2;            // size of array
 
-    float x_ref_list[array_size] = {1200, 500};
-    float y_ref_list[array_size] = {1000, -700};
-    float z_ref_list[array_size] = {1000, 1000}; 
+    float x_ref_list[array_size] = {500, 500};
+    float y_ref_list[array_size] = {0, -700};
+    float z_ref_list[array_size] = {500, 1000}; 
     float yaw_ref_list[array_size] = {0, 90};
 
     int array_counter = 0;                     // counter for array
@@ -167,8 +167,8 @@ private:
 
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
-        control_msg.cmd_auto_roll = 0;//regulator_roll_value;
-        control_msg.cmd_auto_pitch = 0;//regulator_pitch_value;
+        control_msg.cmd_auto_roll = regulator_roll_value;
+        control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
@@ -252,7 +252,7 @@ private:
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
-        float saturation_value = 900;  
+        float saturation_value = 50;  //CHANGE
 
         // Discretized PD controller for x and y
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
