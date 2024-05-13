@@ -198,13 +198,14 @@ private:
     {
         float Kp_altitude = 0.01;       // Proportional gain
         float Kd_altitude = 10;         // Derivative gain
-        float saturation_value = 900;   // Max and min value allowed to be sent to the drone
+        float saturation_value = 200;   // Max and min value allowed to be sent to the drone
+        float hover_value = 495;        // controller value for hovering (found by m*g/thrust to newton relation)
 
         float z_error = z_ref - z_mes;  // Error between reference and measurement
 
         float altitude_value = Kd_altitude*((z_error - prev_z_error)/sample_time)+Kp_altitude*z_error; // PD regulated value
 
-        regulator_altitude_value = saturation(altitude_value, saturation_value, 1); // Saturate value
+        regulator_altitude_value = saturation(altitude_value, saturation_value)+hover_value; // Saturate value
 
         prev_z_error = z_error; // Update previous error
     }
