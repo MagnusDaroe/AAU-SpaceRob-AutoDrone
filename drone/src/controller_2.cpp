@@ -111,11 +111,11 @@ private:
         float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration is converted to seconds
         float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration is converted to seconds
 
-        // Denoise the recieved position variables
-        float denoised_vicon_x = low_pass(msg->vicon_x, 10);
-        float denoised_vicon_y = low_pass(msg->vicon_y, 10);
-        float denoised_vicon_z = low_pass(msg->vicon_z, 10);
-        float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
+        // // Denoise the recieved position variables
+        // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
+        // float denoised_vicon_y = low_pass(msg->vicon_y, 10);
+        // float denoised_vicon_z = low_pass(msg->vicon_z, 10);
+        // float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
 
         // recieves the reference signal and the current position and calculates the local error
         globalErrorToLocalError(x_ref_signal, y_ref_signal, msg->vicon_x, msg->vicon_y, msg->vicon_yaw);
