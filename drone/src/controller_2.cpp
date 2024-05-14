@@ -170,10 +170,13 @@ private:
         control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
         control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
+        control_msg.cmd_auto_yaw = regulator_yaw_value;
+
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
         std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
-        control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
+        std::cout<<"yaw val: "<< regulator_yaw_value << std::endl;
+        
         control_msg.identifier = 1;
         control_msg.timestamp = time_since_epoch_double;
         Control_publisher_->publish(control_msg);
@@ -219,8 +222,8 @@ private:
     void yaw_controller(float yaw_ref, float yaw_mes)
     // P controller for yaw position
     {
-        float Kp_yaw = 15;              // Proportional gain
-        float saturation_value = 900;   // Max and min value allowed to be sent to the drone
+        float Kp_yaw = 10;              // Proportional gain
+        float saturation_value = 300;   // Max and min value allowed to be sent to the drone
 
         float yaw_error = yaw_ref - yaw_mes;  // Error between reference and measurement
 
