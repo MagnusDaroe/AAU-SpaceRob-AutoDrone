@@ -113,6 +113,7 @@ private:
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
+    auto control_msg = drone::msg::DroneCommand();
 
     //Controller functions
     void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
@@ -181,7 +182,7 @@ private:
                     total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
                 }
                 else{
-                    z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 4);
+                    z_ref_signal = ref_signal(time_duration/1000, 130, z_ref_old, 4); //130 because of the it is floor height
                     total_error = abs((current_z) - (z_ref)); //KAMERA
                 }
                 // Generates controller value for altitude
@@ -202,7 +203,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 50 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         data_request = true;    // Reset data request if close to waypoint
@@ -222,21 +223,17 @@ private:
                 //std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
 
                 // Publish regulated pitch, roll, thrust, and yaw values
-                auto control_msg = drone::msg::DroneCommand();
                 control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
                 control_msg.cmd_auto_pitch = regulator_pitch_value;
                 control_msg.cmd_auto_thrust = regulator_altitude_value;
-                control_msg.cmd_auto_yaw = -regulator_yaw_value;
-                
-                std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
-                std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
-                std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
-                std::cout<<"yaw val: "<< regulator_yaw_value << std::endl;
-                
+                control_msg.cmd_auto_yaw = -regulator_yaw_value;  //Minus because fc coordinates system is downwards maybe                
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
                 control_msg.cmd_auto_disarm = cmd_auto_land;
-
+                if(z_ref == 0){
+                    std::cout << "total_error: " << total_error << std::endl;
+                }
+                
                 Control_publisher_->publish(control_msg);
             }
         }
