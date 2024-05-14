@@ -515,7 +515,7 @@ class FC_Commander(Node):
         if decrement_thrust < 600:
             decrement_thrust = 600
 
-        land_thrust = 300
+        land_thrust = 350
         decrement = 0.1
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
@@ -523,6 +523,8 @@ class FC_Commander(Node):
         
         # Decrement start_thrust a set amount, until a lower bound is reached
         while decrement_thrust > land_thrust:
+            rclpy.spin_once(self)
+
             if self.fc_command.cmd_estop == True:
                 # Emergency stop
                 self.emergency_stop()
