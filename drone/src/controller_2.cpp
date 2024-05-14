@@ -219,7 +219,7 @@ private:
 
                 Control_publisher_->publish(control_msg);
             }
-            rclcpp::spin_some(this);
+            //rclcpp::spin_some(this);
         }
     }
 
