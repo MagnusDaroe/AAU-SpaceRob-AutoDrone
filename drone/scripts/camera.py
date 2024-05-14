@@ -224,10 +224,10 @@ class T265(Node):
         diff_z=P_vicon_FC[2]-self.t_vec_global_FC[2] #mm
         
         #Update T_global_start with the position difference
-        self.T_global_start[0,3]+=diff_x
-        self.T_global_start[1,3]+=diff_y
-        self.T_global_start[2,3]+=diff_z
-
+        self.T_global_vicon[0,3]=diff_x
+        self.T_global_vicon[1,3]=diff_y
+        self.T_global_vicon[2,3]=diff_z
+        self.T_global_start=self.T_global_vicon@self.T_Vicon_drone_start
         #Update T_global_ref
         self.T_global_ref=self.T_global_start@self.T_start_ref
 
@@ -267,6 +267,8 @@ class T265(Node):
 
                 self.q_to_RPY()
                 self.get_global_pose()
+                self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
+
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
