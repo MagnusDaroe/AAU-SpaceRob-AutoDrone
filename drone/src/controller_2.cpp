@@ -252,7 +252,7 @@ private:
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
-        float saturation_value = 100;  //CHANGE
+        float saturation_value = 200;  //CHANGE
 
         // Discretized PD controller for x and y
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
