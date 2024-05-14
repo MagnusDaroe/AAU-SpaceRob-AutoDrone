@@ -53,12 +53,12 @@ private:
 
 
     // Defining waypoints
-    const static int array_size = 4;            // size of array
+    const static int array_size = 5;            // size of array
 
-    float x_ref_list[array_size] = {-500, -450, -290, -1500};
-    float y_ref_list[array_size] = {0, -600, 250, 420};
-    float z_ref_list[array_size] = {500, 700, 500, 600}; 
-    float yaw_ref_list[array_size] = {0, 0, 0, 0}; //Ref is in radians
+    float x_ref_list[array_size] = {-500, -450, -290, -1500, -1500};
+    float y_ref_list[array_size] = {0, -600, 250, 420, 420};
+    float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
+    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
 
     int array_counter = 0;                     // counter for array
 
@@ -70,6 +70,8 @@ private:
     float x_ref_old = 0;
     float y_ref_old = 0;
     float z_ref_old = 0;
+    float total_error;
+    //float z_ref_signal;
 
     //Variables that hold current position
     float current_x;
@@ -127,8 +129,8 @@ private:
         // XY controller
         // Generates a reference signal according to exponential function
         // Signal function requires current time, final reference signal, and time constant
-        float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 2); // time duration is converted to seconds
-        float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 2); // time duration is converted to seconds
+        float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds
+        float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 1); // time duration is converted to seconds
 
         // // Denoise the recieved position variables
         // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
@@ -140,21 +142,28 @@ private:
         globalErrorToLocalError(x_ref_signal, y_ref_signal, current_x, current_y, current_yaw); //KAMERA
         // recieves the local error and calculates controller values for roll and pitch
         XY_controller(local_error_x, local_error_y);
+        
 
         // Z controller
         // Generates reference signal
-        float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 1); // time duration is converted to seconds
+        if (z_ref != 0){
+            float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 2); // time duration is converted to seconds
+            total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
+        }
+        else{
+            float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 4);
+            total_error = abs((current_z) - (z_ref)); //KAMERA
+        }
         // Generates controller value for altitude
-        Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges
-
+        Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges 
         // Yaw controller
         // Generates reference signal
         float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 0, 1); // time duration is converted to seconds
-        // Generates controller value for yaw
+        // Generates controller value for yaw 
         yaw_controller(yaw_signal, current_yaw); //KAMERA
 
         // Shitty way to calculate the distance to the point but square roots and shit aint worth it
-        float total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
+        
 
         // Check if error is under threshold to request new data
         if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
@@ -336,6 +345,9 @@ private:
 
         return lowpass_signal;
     }
+
+    float landing_signal()
+
 
 };
 
