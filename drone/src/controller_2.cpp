@@ -346,7 +346,7 @@ private:
         return lowpass_signal;
     }
 
-    float landing_signal()
+    //float landing_signal()
 
 
 };
