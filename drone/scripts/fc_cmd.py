@@ -478,14 +478,11 @@ class FC_Commander(Node):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
         """
-        self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control")
+        self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop/Eland and set throttle to 0, to regain control")
         
-        # disengage the emergency stop flag
-        self.emergency_landing_flag = False
-        self.decremented_thrust = 0
-
+        
         # Disarm the drone
-        while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
+        while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_eland== 1 or self.fc_command.cmd_thrust != 0:
             if not self.test_mode:
                     self.the_connection.mav.command_long_send(self.the_connection.target_system,           # Target system ID
                     self.the_connection.target_component,       # Target component ID
@@ -500,6 +497,10 @@ class FC_Commander(Node):
                     0                      # Empty
                     )
             time.sleep(0.5)
+
+        # disengage the emergency stop flag
+        self.emergency_landing_flag = False
+        self.decremented_thrust = 0
         self.get_logger().info("Emergency stop command released")
     
     def check_battery(self):
