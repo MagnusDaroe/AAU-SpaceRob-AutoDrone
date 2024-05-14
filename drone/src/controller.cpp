@@ -113,7 +113,6 @@ private:
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
-    auto control_msg = drone::msg::DroneCommand();
 
     //Controller functions
     void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
@@ -222,6 +221,7 @@ private:
                 double time_since_epoch_double = time_since_epoch.count()*pow(10, -9);
                 //std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
 
+                auto control_msg = drone::msg::DroneCommand();
                 // Publish regulated pitch, roll, thrust, and yaw values
                 control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
                 control_msg.cmd_auto_pitch = regulator_pitch_value;
