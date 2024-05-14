@@ -523,7 +523,11 @@ class FC_Commander(Node):
         
         # Decrement start_thrust a set amount, until a lower bound is reached
         while decrement_thrust > land_thrust:
-            rclpy.spin_once(self)
+            
+            try:
+                rclpy.spin_once(self)
+            except ValueError:
+                pass
 
             if self.fc_command.cmd_estop == True:
                 # Emergency stop
