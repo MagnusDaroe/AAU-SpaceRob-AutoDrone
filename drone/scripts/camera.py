@@ -233,10 +233,14 @@ class T265(Node):
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
+        """
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
-
+        """
+        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
+        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
+        self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
         #Update T_global_start with the position difference
         #self.T_global_start[0,3]-=diff_x
         #self.T_global_start[1,3]-=diff_y
