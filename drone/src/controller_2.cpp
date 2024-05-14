@@ -115,6 +115,7 @@ private:
 
     void Controller(){
         while(rclcpp::ok()){
+            std::cout<<"Inside Controller"<<std::endl;
             if (new_msg == true){
                 new_msg = false;
                 // Check if data is requested. Reset data and timer if so
