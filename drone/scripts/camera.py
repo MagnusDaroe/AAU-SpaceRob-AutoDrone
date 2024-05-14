@@ -196,9 +196,9 @@ class T265(Node):
         # Compute the transformation from global frame to FC frame
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
         self.T_global_FC_NO_update=self.T_global_FC
-        self.T_global_FC[0,3]+=self.diff_x
-        self.T_global_FC[1,3]+=self.diff_y
-        self.T_global_FC[2,3]+=self.diff_z
+        self.T_global_FC[0,3]+=(self.diff_x-self.P_vicon_start[0])
+        self.T_global_FC[1,3]+=(self.diff_y-self.P_vicon_start[1])
+        self.T_global_FC[2,3]+=(self.diff_z-self.P_vicon_start[2])
         # Get the global position of the camera
         self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
         
@@ -233,7 +233,7 @@ class T265(Node):
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        """
+        
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
@@ -244,7 +244,7 @@ class T265(Node):
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
-        
+        """
         #Update T_global_start with the position difference
         #self.T_global_start[0,3]-=diff_x
         #self.T_global_start[1,3]-=diff_y
