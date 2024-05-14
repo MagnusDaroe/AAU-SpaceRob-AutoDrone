@@ -175,7 +175,7 @@ private:
         control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
         control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
-        control_msg.cmd_auto_yaw = regulator_yaw_value;
+        control_msg.cmd_auto_yaw = -regulator_yaw_value;
 
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
