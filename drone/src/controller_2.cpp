@@ -377,7 +377,7 @@ private:
 
 int main(int argc, char *argv[])
 {
-    //RCLCPP_DEBUG(ControllerNode->get_logger(), "My log message is: Hi");
+    std::cout << "Starting controller node" << std::endl;
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ControllerNode>();
     rclcpp::spin(node);
