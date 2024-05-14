@@ -110,6 +110,7 @@ private:
             current_z = msg->vicon_z;
             current_yaw = msg->vicon_yaw;
             new_msg = true;
+            std::cout<<"Callback"<<std::endl;
     }
 
     void Controller(){
