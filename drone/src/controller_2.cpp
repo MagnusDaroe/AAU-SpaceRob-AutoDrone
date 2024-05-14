@@ -171,6 +171,8 @@ private:
         control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
+        std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
+        std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
         control_msg.cmd_auto_yaw = 0;//regulator_yaw_value;
         control_msg.identifier = 1;
         control_msg.timestamp = time_since_epoch_double;
@@ -246,6 +248,9 @@ private:
     void XY_controller(float local_x_error, float local_y_error)
     // PD controller for x and y
     {
+        std::cout<<"local_x_error: "<< local_x_error << std::endl;
+        std::cout<<"local_y_error: "<< local_y_error << std::endl;
+        
         // PD controller gains
         float Kp_pitch = 0.002; 
         float Kd_pitch = 0.7;
