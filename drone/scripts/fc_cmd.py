@@ -405,14 +405,13 @@ class FC_Commander(Node):
                 # Safe mode
                 self.safe_mode()
                 # Sleep to keep the update rate
-                rate_controller.sleep()
             elif self.auto_disarm and not self.fc_command.cmd_auto_disarm:
                 # Arm the drone again   
                 self.drone_arm()
                 self.auto_disarm = False
             elif self.auto_disarm:  
                 # Sleep to keep the update rate
-                rate_controller.sleep()
+                pass
             else:
                 # Check the battery voltage if requested
                 if self.battery_check_requested:
@@ -431,7 +430,6 @@ class FC_Commander(Node):
                     self.flight_mode()
                     
                     # Sleep to keep the update rate
-                    rate_controller.sleep()
                 else:
                     self.get_logger().info("Waiting for arm command")
                     while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
@@ -445,6 +443,8 @@ class FC_Commander(Node):
                     # Arm the drone again
                     if not self.test_mode:
                         self.drone_arm()
+                        
+            rate_controller.sleep()
     
     def flight_mode(self):
         """
