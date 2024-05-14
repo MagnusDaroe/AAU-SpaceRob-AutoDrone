@@ -230,7 +230,7 @@ private:
     {
         float Kp_altitude = 0.6;       // Proportional gain
         float Kd_altitude = 0.5;         // Derivative gain
-        float saturation_value = 50;   // Max and min value allowed to be sent to the drone
+        float saturation_value = 100;   // Max and min value allowed to be sent to the drone
         float hover_value = 560;        // controller value for hovering (found by m*g/thrust to newton relation)
 
         float z_error = z_ref - z_mes;  // Error between reference and measurement
@@ -246,10 +246,10 @@ private:
     // PD controller for x and y
     {
         // PD controller gains
-        float Kp_pitch = 0.02; 
-        float Kd_pitch = 0.007;
-        float Kp_roll = 0.02;
-        float Kd_roll = 0.007;
+        float Kp_pitch = 0.002; 
+        float Kd_pitch = 0.7;
+        float Kp_roll = 0.002;
+        float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
         float saturation_value = 200;  //CHANGE
