@@ -56,7 +56,7 @@ private:
     const static int array_size = 4;            // size of array
 
     float x_ref_list[array_size] = {-500, -450, -290, -1500};
-    float y_ref_list[array_size] = {0, -600, 264, 420};
+    float y_ref_list[array_size] = {0, -600, 250, 420};
     float z_ref_list[array_size] = {500, 700, 500, 600}; 
     float yaw_ref_list[array_size] = {0, 0, 0, 0}; //Ref is in radians
 
@@ -151,10 +151,10 @@ private:
         yaw_controller(yaw_signal, current_yaw); //KAMERA
 
         // Shitty way to calculate the distance to the point but square roots and shit aint worth it
-        float total_error = abs((current_x + current_y + current_z/2) - (x_ref + y_ref + z_ref/2)); //KAMERA
+        float total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
 
         // Check if error is under threshold to request new data
-        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+        if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
             ghetto_ur++;
             if (ghetto_ur > 200){
                 data_request = true;    // Reset data request if close to waypoint
