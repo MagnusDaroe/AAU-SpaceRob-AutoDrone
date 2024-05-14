@@ -126,7 +126,14 @@ private:
 
     void ControlLoop(){
         while(rclcpp::ok()){
-            if (new_msg == true){
+            if(cmd_auto_land == 1){
+                ghetto_ur++;
+                if(ghetto_ur > 1000){ //Waits for 10 seconds before sending the arm command
+                    cmd_auto_land = 0;
+                    ghetto_ur = 0;
+                }
+            }
+            else if(new_msg == true){
                 new_msg = false;
                 // Check if data is requested. Reset data and timer if so
                 if (data_request == true){
