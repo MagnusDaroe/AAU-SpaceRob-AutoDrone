@@ -98,7 +98,7 @@ class T265(Node):
         else:
             P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
             self.update_position(P_global)
-
+            self.get_logger().info(f"vicon pose: x: {round(msg.vicon_x,2)}, y: {round(msg.vicon_y,2)}, z: {round(msg.vicon_z,2)}")
         self.global_frame_updated = True
 
     def get_pose_data(self,frames):
@@ -275,8 +275,8 @@ class T265(Node):
                 self.q_to_RPY()
                 self.get_global_pose()
                 self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
-                msg = ViconData()
-                self.get_logger().info(f"vicon pose: x: {round(msg.vicon_x,2)}, y: {round(msg.vicon_y,2)}, z: {round(msg.vicon_z,2)}")
+
+                
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
