@@ -157,7 +157,7 @@ private:
         float total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
 
         // Check if error is under threshold to request new data
-        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+        if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
             ghetto_ur++;
             if (ghetto_ur > 200){
                 data_request = true;    // Reset data request if close to waypoint
