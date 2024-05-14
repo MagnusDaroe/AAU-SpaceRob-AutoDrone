@@ -163,7 +163,7 @@ private:
         timestamp = std::chrono::system_clock::now();
         time_since_epoch = timestamp.time_since_epoch();
         double time_since_epoch_double = time_since_epoch.count()*pow(10, -9);
-        std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
+        //std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
 
         // Publish regulated pitch, roll, thrust, and yaw values
         auto control_msg = drone::msg::DroneCommand();
@@ -234,6 +234,7 @@ private:
         float hover_value = 560;        // controller value for hovering (found by m*g/thrust to newton relation)
 
         float z_error = z_ref - z_mes;  // Error between reference and measurement
+        std::cout<<"z_error: "<< z_error << std::endl;
 
         float altitude_value = Kd_altitude*((z_error - prev_z_error)/sample_time)+Kp_altitude*z_error; // PD regulated value
 
