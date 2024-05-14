@@ -21,6 +21,7 @@ public:
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
+        this->Controller();
     }
 
 private:
@@ -101,116 +102,119 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
     { 
-
             current_x = msg->vicon_x;
             current_y = msg->vicon_y;
             current_z = msg->vicon_z;
             current_yaw = msg->vicon_yaw;
-    
-        // Check if data is requested. Reset data and timer if so
-        if (data_request == true)
-        {
-            // Next waypoint is saved in seperate variable
-            x_ref = x_ref_list[array_counter];
-            y_ref = y_ref_list[array_counter];
-            z_ref = z_ref_list[array_counter]; 
-            yaw_ref = yaw_ref_list[array_counter];
-
-            time_start = std::chrono::system_clock::now(); // Timer is reset
-            data_request = false;                          // Reset data request
-
-            // Only increment if there are more waypoints
-            if(array_counter < array_size-1){
-                array_counter++;
-            }
-        }
-        // Check time now and calculate time duration
-        time_stop = std::chrono::system_clock::now();
-        auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
-        // std::cout << "Time duration: " << time_duration << std::endl;
-
-        // XY controller
-        // Generates a reference signal according to exponential function
-        // Signal function requires current time, final reference signal, and time constant
-        float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds
-        float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 1); // time duration is converted to seconds
-
-        // // Denoise the recieved position variables
-        // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
-        // float denoised_vicon_y = low_pass(msg->vicon_y, 10);
-        // float denoised_vicon_z = low_pass(msg->vicon_z, 10);
-        // float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
-
-        // recieves the reference signal and the current position and calculates the local error
-        globalErrorToLocalError(x_ref_signal, y_ref_signal, current_x, current_y, current_yaw); //KAMERA
-        // recieves the local error and calculates controller values for roll and pitch
-        XY_controller(local_error_x, local_error_y);
-        
-
-        // Z controller
-        // Generates reference signal
-        if (z_ref != 0){
-            float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 2); // time duration is converted to seconds
-            total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
-        }
-        else{
-            float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 4);
-            total_error = abs((current_z) - (z_ref)); //KAMERA
-        }
-        // Generates controller value for altitude
-        Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges 
-        // Yaw controller
-        // Generates reference signal
-        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 0, 1); // time duration is converted to seconds
-        // Generates controller value for yaw 
-        yaw_controller(yaw_signal, current_yaw); //KAMERA
-
-        // Shitty way to calculate the distance to the point but square roots and shit aint worth it
-        
-        if (z_ref == 0 && total_error < 50){
-            ghetto_ur++;
-            if (ghetto_ur > 200){
-                cmd_auto_land = 1; //Meaning it sends a request to disarm
-            }
-        }
-        // Check if error is under threshold to request new data
-        else if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
-            ghetto_ur++;
-            if (ghetto_ur > 200){
-                data_request = true;    // Reset data request if close to waypoint
-                ghetto_ur = 0;
-                x_ref_old = x_ref;
-                y_ref_old = y_ref;
-                z_ref_old = z_ref;
-            }
-        }
-        else{
-            data_request = false;   // Still false if not close
-        }
-
-        timestamp = std::chrono::system_clock::now();
-        time_since_epoch = timestamp.time_since_epoch();
-        double time_since_epoch_double = time_since_epoch.count()*pow(10, -9);
-        //std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
-
-        // Publish regulated pitch, roll, thrust, and yaw values
-        auto control_msg = drone::msg::DroneCommand();
-        control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
-        control_msg.cmd_auto_pitch = regulator_pitch_value;
-        control_msg.cmd_auto_thrust = regulator_altitude_value;
-        control_msg.cmd_auto_yaw = -regulator_yaw_value;
-        
-        std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
-        std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
-        std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
-        std::cout<<"yaw val: "<< regulator_yaw_value << std::endl;
-        
-        control_msg.identifier = 1;
-        control_msg.timestamp = time_since_epoch_double;
-        control_msg.cmd_auto_land = cmd_auto_land;
-
-        Control_publisher_->publish(control_msg);
     }
+
+    void Controller(){
+        while(rclcpp::ok()){
+            // Check if data is requested. Reset data and timer if so
+            if (data_request == true){
+                // Next waypoint is saved in seperate variable
+                x_ref = x_ref_list[array_counter];
+                y_ref = y_ref_list[array_counter];
+                z_ref = z_ref_list[array_counter]; 
+                yaw_ref = yaw_ref_list[array_counter];
+
+                time_start = std::chrono::system_clock::now(); // Timer is reset
+                data_request = false;                          // Reset data request
+
+                // Only increment if there are more waypoints
+                if(array_counter < array_size-1){
+                    array_counter++;
+                }
+            }
+            // Check time now and calculate time duration
+            time_stop = std::chrono::system_clock::now();
+            auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
+            // std::cout << "Time duration: " << time_duration << std::endl;
+
+            // XY controller
+            // Generates a reference signal according to exponential function
+            // Signal function requires current time, final reference signal, and time constant
+            float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds
+            float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 1); // time duration is converted to seconds
+
+            // // Denoise the recieved position variables
+            // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
+            // float denoised_vicon_y = low_pass(msg->vicon_y, 10);
+            // float denoised_vicon_z = low_pass(msg->vicon_z, 10);
+            // float denoised_vicon_yaw = low_pass(msg->vicon_yaw, 10);
+
+            // recieves the reference signal and the current position and calculates the local error
+            globalErrorToLocalError(x_ref_signal, y_ref_signal, current_x, current_y, current_yaw); //KAMERA
+            // recieves the local error and calculates controller values for roll and pitch
+            XY_controller(local_error_x, local_error_y);
+            
+
+            // Z controller
+            // Generates reference signal
+            if (z_ref != 0){
+                z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 2); // time duration is converted to seconds
+                total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
+            }
+            else{
+                z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 4);
+                total_error = abs((current_z) - (z_ref)); //KAMERA
+            }
+            // Generates controller value for altitude
+            Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges 
+            // Yaw controller
+            // Generates reference signal
+            float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 0, 1); // time duration is converted to seconds
+            // Generates controller value for yaw 
+            yaw_controller(yaw_signal, current_yaw); //KAMERA
+
+            // Shitty way to calculate the distance to the point but square roots and shit aint worth it
+            
+            if (z_ref == 0 && total_error < 50){
+                ghetto_ur++;
+                if (ghetto_ur > 200){
+                    cmd_auto_land = 1; //Meaning it sends a request to disarm
+                }
+            }
+            // Check if error is under threshold to request new data
+            else if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                ghetto_ur++;
+                if (ghetto_ur > 200){
+                    data_request = true;    // Reset data request if close to waypoint
+                    ghetto_ur = 0;
+                    x_ref_old = x_ref;
+                    y_ref_old = y_ref;
+                    z_ref_old = z_ref;
+                }
+            }
+            else{
+                data_request = false;   // Still false if not close
+            }
+
+            timestamp = std::chrono::system_clock::now();
+            time_since_epoch = timestamp.time_since_epoch();
+            double time_since_epoch_double = time_since_epoch.count()*pow(10, -9);
+            //std::cout << "timestamp: "<< time_since_epoch_double << std::endl;
+
+            // Publish regulated pitch, roll, thrust, and yaw values
+            auto control_msg = drone::msg::DroneCommand();
+            control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
+            control_msg.cmd_auto_pitch = regulator_pitch_value;
+            control_msg.cmd_auto_thrust = regulator_altitude_value;
+            control_msg.cmd_auto_yaw = -regulator_yaw_value;
+            
+            std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
+            std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
+            std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
+            std::cout<<"yaw val: "<< regulator_yaw_value << std::endl;
+            
+            control_msg.identifier = 1;
+            control_msg.timestamp = time_since_epoch_double;
+            control_msg.cmd_auto_disarm = cmd_auto_land;
+
+            Control_publisher_->publish(control_msg);
+        }
+    }
+
 
     //XY_controller functions    
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
