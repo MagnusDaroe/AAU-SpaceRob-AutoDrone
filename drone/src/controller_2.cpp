@@ -58,7 +58,7 @@ private:
     float x_ref_list[array_size] = {-500, -450, -290, -1500};
     float y_ref_list[array_size] = {0, -600, 264, 420};
     float z_ref_list[array_size] = {500, 700, 500, 600}; 
-    float yaw_ref_list[array_size] = {-M_PI, -M_PI, -M_PI, -M_PI}; //Ref is in radians
+    float yaw_ref_list[array_size] = {M_PI, M_PI, M_PI, M_PI}; //Ref is in radians
 
     int array_counter = 0;                     // counter for array
 
