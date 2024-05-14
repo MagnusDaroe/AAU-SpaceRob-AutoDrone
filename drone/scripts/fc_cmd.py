@@ -439,13 +439,14 @@ class FC_Commander(Node):
                         if self.fc_command.cmd_estop:
                             self.emergency_stop()
                             break  
+                    self.get_logger().info("hiii2")
                     self.reset_cmd()
-                    
+                    self.get_logger().info("hiii3")
                     # Arm the drone again
                     if not self.test_mode:
                         self.drone_arm()
 
-                self.get_logger().info("hiii2")
+               
                         
             rate_controller.sleep()
     
