@@ -227,7 +227,7 @@ private:
     void yaw_controller(float yaw_ref, float yaw_mes)
     // P controller for yaw position
     {
-        float Kp_yaw = 10;              // Proportional gain
+        float Kp_yaw = 200;              // Proportional gain
         float saturation_value = 300;   // Max and min value allowed to be sent to the drone
 
         float yaw_error = yaw_ref - yaw_mes;  // Error between reference and measurement
