@@ -444,6 +444,8 @@ class FC_Commander(Node):
                     # Arm the drone again
                     if not self.test_mode:
                         self.drone_arm()
+
+                self.get_logger().info("hiii2")
                         
             rate_controller.sleep()
     
