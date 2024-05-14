@@ -46,6 +46,13 @@ class FC_Commander(Node):
         self.time_offset = 0
         self.TIME_CALIBRATION_ITERATIONS = 5
 
+        # Safety variables
+        self.emergency_landing_flag = False
+        self.decremented_thrust = 0
+        self.LAND_THRUST = 400
+        self.START_LAND_THRUST = 600
+        self.SAFE_DECREMENT = 0.1
+
         self.TIMEOUT = 0.5
         self.previous_timestamp = 0
         self.last_command_time = self.get_time()
@@ -335,6 +342,7 @@ class FC_Commander(Node):
 
             # Start the drone again
             self.drone_init()
+            self.reset_cmd()
         else:
             # If the drone is rebooted too soon, wait for the reboot interval to expire
             if not self.test_mode: 
@@ -360,43 +368,51 @@ class FC_Commander(Node):
                 self.emergency_stop()
                 # Sleep to keep the update rate
                 continue
-            elif self.fc_command.cmd_eland == True:
-                # Emergency land
-                self.safe_mode()
+            elif self.fc_command.cmd_eland == True and not self.emergency_landing_flag:
+                # Start emergency land
+                self.begin_safe_mode()
                 # Sleep to keep the update rate
                 continue
+
             
-            # Check the battery voltage if requested
-            if self.battery_check_requested:
-                self.get_logger().info("Battery check requested")
-                self.check_battery()
-                self.battery_check_requested = False
-            
-            # Verify if the drone can keep operating
-            if not self.battery_ok:
-                # Battery voltage too low. Emergency stop activated
-                self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
-                self.emergency_stop() # Implement an emergency land.
-            # Check if the drone is armed
-            elif self.fc_command.cmd_arm == 1:
-                # Send command
-                self.flight_mode()
-                
+            if self.emergency_landing_flag:
+                # Safe mode
+                self.safe_mode()
                 # Sleep to keep the update rate
                 rate_controller.sleep()
             else:
-                self.get_logger().info("Waiting for arm command")
-                while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
-                    time.sleep(0.5)
-                    # Check if estop is activated
-                    if self.fc_command.cmd_estop:
-                        self.emergency_stop()
-                        break  
-                self.reset_cmd()
+
+                # Check the battery voltage if requested
+                if self.battery_check_requested:
+                    self.get_logger().info("Battery check requested")
+                    self.check_battery()
+                    self.battery_check_requested = False
                 
-                # Arm the drone again
-                if not self.test_mode:
-                    self.drone_arm()
+                # Verify if the drone can keep operating
+                if not self.battery_ok:
+                    # Battery voltage too low. Emergency stop activated
+                    self.get_logger().warn("Battery voltage too low. Emergency stop activated. Recharge the battery and restart the drone. ")
+                    self.emergency_stop() # Implement an emergency land.
+                # Check if the drone is armed
+                elif self.fc_command.cmd_arm == 1:
+                    # Send command
+                    self.flight_mode()
+                    
+                    # Sleep to keep the update rate
+                    rate_controller.sleep()
+                else:
+                    self.get_logger().info("Waiting for arm command")
+                    while not self.fc_command.cmd_arm and not self.fc_command.cmd_estop:
+                        time.sleep(0.5)
+                        # Check if estop is activated
+                        if self.fc_command.cmd_estop:
+                            self.emergency_stop()
+                            break  
+                    self.reset_cmd()
+                    
+                    # Arm the drone again
+                    if not self.test_mode:
+                        self.drone_arm()
     
     def flight_mode(self):
         """
@@ -435,7 +451,7 @@ class FC_Commander(Node):
             else:
                 # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
                 self.get_logger().warn("No new command received. Going into safe mode.")
-                self.safe_mode()
+                self.begin_safe_mode()
                 self.fc_command.cmd_estop = 1
         
         self.previous_timestamp = timestamp
@@ -464,6 +480,10 @@ class FC_Commander(Node):
         """
         self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop and set throttle to 0, to regain control")
         
+        # disengage the emergency stop flag
+        self.emergency_landing_flag = False
+        self.decremented_thrust = 0
+
         # Disarm the drone
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_thrust != 0:
             if not self.test_mode:
@@ -507,46 +527,34 @@ class FC_Commander(Node):
         self.battery_ok = True if self.battery_voltage > self.BATTERY_MIN_OP_VOLTAGE else False 
         self.get_logger().info(f"Battery voltage: {self.battery_voltage}, Battery ok: {self.battery_ok}")
 
+    def begin_safe_mode(self):
+        """
+        Safe mode engaged. Set the drone to safe mode by adjusting the flag
+        """
+        self.emergency_landing_flag = True
+        if self.fc_command.cmd_thrust < self.START_LAND_THRUST:
+            self.decremented_thrust = self.START_LAND_THRUST
+        else:
+            self.decremented_thrust = self.fc_command.cmd_thrust
+
     def safe_mode(self):
         """
         Safe mode. The drone will land and disarm if the mode is set to safe mode
         """
-        decrement_thrust = self.fc_command.cmd_thrust
-        if decrement_thrust < 600:
-            decrement_thrust = 600
 
-        land_thrust = 350
-        decrement = 0.1
         self.fc_command.cmd_roll = float(0)
         self.fc_command.cmd_pitch = float(0)
         self.fc_command.cmd_yaw = float(0)
-        
-        # Decrement start_thrust a set amount, until a lower bound is reached
-        while decrement_thrust > land_thrust:
-            
-            try:
-                rclpy.spin_once(self)
-            except ValueError:
-                pass
+        self.decremented_thrust = self.decremented_thrust - self.SAFE_DECREMENT
 
-            if self.fc_command.cmd_estop == True:
-                # Emergency stop
-                self.emergency_stop()
-                break
-
-            decrement_thrust = decrement_thrust - decrement
-
-            if decrement_thrust < land_thrust:
-                
-                self.fc_command.cmd_thrust  = float(0)
-            else:
-                self.fc_command.cmd_thrust = float(decrement_thrust)
-                
+        if self.decremented_thrust < self.LAND_THRUST:
+            self.fc_command.cmd_thrust  = float(0)
+            # Go into emergency stop mode, to complete the emergency landing
+            self.emergency_stop()
+        else:
+            self.fc_command.cmd_thrust = float(self.decremented_thrust)
             # Send command.    
             self.flight_cmd()
-
-        # Go into emergency stop mode, to complete the emergency landing
-        self.emergency_stop()
 
     def reset_cmd(self):
         """
