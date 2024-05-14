@@ -182,8 +182,10 @@ private:
     //XY_controller functions    
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
     {
-        float x_global_error = x_ref + x_global_mes; //x_global_mes negative because of Vicon //Kamera
-        float y_global_error = y_ref + y_global_mes; //y_global_mes negative because of Vicon //Kamera
+        float x_global_error = x_ref - x_global_mes; //x_global_mes negative because of Vicon //Kamera
+        float y_global_error = y_ref - y_global_mes; //y_global_mes negative because of Vicon //Kamera
+        x_global_error = -x_global_error; //Kamera
+        y_global_error = -y_global_error; //Kamera
         float roll = 0;
         float pitch = 0;
         float yaw = yaw_mes;
