@@ -255,9 +255,9 @@ private:
         
         // PD controller gains
         float Kp_pitch = 0.2; 
-        float Kd_pitch = 4;
+        float Kd_pitch = 1;
         float Kp_roll = 0.2;
-        float Kd_roll = 4;
+        float Kd_roll = 1;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
         float saturation_value = 500;  //CHANGE
