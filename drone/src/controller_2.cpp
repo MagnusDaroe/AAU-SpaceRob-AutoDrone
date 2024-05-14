@@ -53,12 +53,12 @@ private:
 
 
     // Defining waypoints
-    const static int array_size = 2;            // size of array
+    const static int array_size = 4;            // size of array
 
-    float x_ref_list[array_size] = {-500, 500};
-    float y_ref_list[array_size] = {0, -700};
-    float z_ref_list[array_size] = {500, 1000}; 
-    float yaw_ref_list[array_size] = {0, 90};
+    float x_ref_list[array_size] = {-500, -450, -290, -1500};
+    float y_ref_list[array_size] = {0, -600, 264, 420};
+    float z_ref_list[array_size] = {500, 700, 500, 600}; 
+    float yaw_ref_list[array_size] = {180, 180, 180, 180};
 
     int array_counter = 0;                     // counter for array
 
@@ -84,7 +84,8 @@ private:
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
     std::chrono::system_clock::time_point timestamp;
-    std::chrono::system_clock::duration time_since_epoch; 
+    std::chrono::system_clock::duration time_since_epoch;
+    int ghetto_ur = 0; 
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -150,11 +151,15 @@ private:
         yaw_controller(yaw_signal, current_yaw); //KAMERA
 
         // Shitty way to calculate the distance to the point but square roots and shit aint worth it
-        float total_error = abs((current_x + current_y + current_z) - (x_ref + y_ref + z_ref)); //KAMERA
+        float total_error = abs((current_x + current_y + current_z/2) - (x_ref + y_ref + z_ref/2)); //KAMERA
 
         // Check if error is under threshold to request new data
-        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER
-            data_request = true;    // Reset data request if close to waypoint
+        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+            ghetto_ur++;
+            if (ghetto_ur > 200){
+                data_request = true;    // Reset data request if close to waypoint
+                ghetto_ur = 0;
+            }
         }
         else{
             data_request = false;   // Still false if not close
