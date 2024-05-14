@@ -385,6 +385,7 @@ class FC_Commander(Node):
 
         # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
+            self.get_logger().info("hiii")
             # Check for estop condition
             if self.fc_command.cmd_estop == True:
                 # Emergency stop
