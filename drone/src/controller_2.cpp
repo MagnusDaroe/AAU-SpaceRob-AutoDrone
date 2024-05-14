@@ -67,10 +67,10 @@ private:
 
     //*test2 landing waypoints
     const static int array_size = 4;            // size of array
-    float x_ref_list[array_size] = {-500, -1500, 0, 0, 0};
-    float y_ref_list[array_size] = {0, 420, 0, 0, 0};
-    float z_ref_list[array_size] = {500, 0, 0, 0, 0};
-    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
+    float x_ref_list[array_size] = {-500, -1500, 0, 0};
+    float y_ref_list[array_size] = {0, 420, 0, 0};
+    float z_ref_list[array_size] = {500, 0, 0, 0};
+    float yaw_ref_list[array_size] = {0, 0, 0, 0}; //Ref is in radians
 
 
     int array_counter = 0;                     // counter for array
