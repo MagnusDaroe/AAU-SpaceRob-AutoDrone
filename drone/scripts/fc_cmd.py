@@ -61,6 +61,9 @@ class FC_Commander(Node):
         # Connection variables
         self.battery_check_requested = False
         
+        # Auto variables
+        self.auto_disarm = False
+
         #Reboot
         self.last_reboot = self.get_time()
         self.MIN_REBOOT_INTERVAL = 10
@@ -133,6 +136,7 @@ class FC_Commander(Node):
                     self.fc_command.cmd_roll = msg.cmd_auto_roll
                     self.fc_command.cmd_pitch = msg.cmd_auto_pitch
                     self.fc_command.cmd_yaw = msg.cmd_auto_yaw
+                    self.fc_command.cmd_auto_disarm = msg.cmd_auto_disarm
                 elif self.fc_command.cmd_mode == 2 and msg.identifier == 0:
                     # Test mode
                     self.fc_command.cmd_thrust = msg.cmd_thrust
@@ -313,6 +317,25 @@ class FC_Commander(Node):
             self.get_logger().fatal("Failed arm. Trying to reboot the drone...")
             self.drone_reboot()
 
+    def drone_disarm_auto(self):
+        """
+        Disarm the drone. Disarm the drone automatically
+        """
+        if self.auto_disarm:
+            pass
+        else:
+            self.auto_disarm = True
+            self.get_logger().info("Disarming the drone...")
+            # Disarm the vehicle
+            self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                                        0, 0, 0, 0, 0, 0, 0, 0)
+            Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+            if Ack.result == 0:
+                self.get_logger().info("Disarmed the drone")
+            else:
+                self.get_logger().fatal("Failed to disarm. Trying to reboot the drone...")
+                self.drone_reboot()
+
     def drone_reboot(self):
         """
         Reboot the drone.\n
@@ -373,15 +396,24 @@ class FC_Commander(Node):
                 self.begin_safe_mode()
                 # Sleep to keep the update rate
                 continue
+            if self.fc_command.cmd_auto_disarm:
+                self.get_logger().info("Auto disarm activated") 
+                self.drone_disarm_auto()
 
-            
+
             if self.emergency_landing_flag:
                 # Safe mode
                 self.safe_mode()
                 # Sleep to keep the update rate
                 rate_controller.sleep()
+            elif self.auto_disarm and not self.fc_command.cmd_auto_disarm:
+                # Arm the drone again   
+                self.drone_arm()
+                self.auto_disarm = False
+            elif self.auto_disarm:  
+                # Sleep to keep the update rate
+                rate_controller.sleep()
             else:
-
                 # Check the battery voltage if requested
                 if self.battery_check_requested:
                     self.get_logger().info("Battery check requested")
