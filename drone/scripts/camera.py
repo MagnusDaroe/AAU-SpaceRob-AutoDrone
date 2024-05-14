@@ -63,6 +63,9 @@ class T265(Node):
 
         self.dist=np.array([[-0.22814816,0.04330513,-0.00027584,0.00057192,-0.00322855]])
         self.mtx=np.array( [[289.17101938,0.,426.23687843],[0.,289.14205298,401.22256516],[0.,0.,1.]])
+        self.diff_x=0
+        self.diff_y=0
+        self.diff_z=0
 
     def camera_init(self):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
