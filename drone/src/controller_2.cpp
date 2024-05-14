@@ -180,8 +180,8 @@ private:
     //XY_controller functions    
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
     {
-        float x_global_error = x_ref - x_global_mes;
-        float y_global_error = y_ref - y_global_mes;
+        float x_global_error = x_ref + x_global_mes; //x_global_mes negative because of Vicon //Kamera
+        float y_global_error = y_ref + y_global_mes; //y_global_mes negative because of Vicon //Kamera
         float roll = 0;
         float pitch = 0;
         float yaw = yaw_mes;
@@ -252,7 +252,7 @@ private:
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
-        float saturation_value = 50;  //CHANGE
+        float saturation_value = 100;  //CHANGE
 
         // Discretized PD controller for x and y
         float pitch_value = (Kd_pitch*(local_x_error-prev_x_error)/sample_time)+local_x_error*(Kp_pitch);
