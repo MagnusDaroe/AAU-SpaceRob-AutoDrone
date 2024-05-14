@@ -58,12 +58,20 @@ private:
 
 
     // Defining waypoints
-    const static int array_size = 5;            // size of array
+    //*test1 waypoints
+    //const static int array_size = 5;            // size of array
+    //float x_ref_list[array_size] = {-500, -450, -290, -1500, -1500};
+    //float y_ref_list[array_size] = {0, -600, 250, 420, 420};
+    //float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
+    //float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
 
-    float x_ref_list[array_size] = {-500, -450, -290, -1500, -1500};
-    float y_ref_list[array_size] = {0, -600, 250, 420, 420};
-    float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
+    //*test2 landing waypoints
+    const static int array_size = 4;            // size of array
+    float x_ref_list[array_size] = {-500, -1500, 0, 0, 0};
+    float y_ref_list[array_size] = {0, 420, 0, 0, 0};
+    float z_ref_list[array_size] = {500, 0, 0, 0, 0};
     float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
+
 
     int array_counter = 0;                     // counter for array
 
@@ -183,6 +191,7 @@ private:
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
+                        data_request = true;
                     }
                 }
                 // Check if error is under threshold to request new data
