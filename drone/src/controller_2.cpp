@@ -3,6 +3,7 @@
 #include <memory>
 #include <math.h>
 #include <iostream>
+#include <thread>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "drone/msg/vicon_data.hpp"
@@ -221,7 +222,7 @@ private:
 
                 Control_publisher_->publish(control_msg);
             }
-            //rclcpp::spin_some(this);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 
