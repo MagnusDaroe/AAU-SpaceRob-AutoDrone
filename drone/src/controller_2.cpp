@@ -252,9 +252,9 @@ private:
         std::cout<<"local_y_error: "<< local_y_error << std::endl;
         
         // PD controller gains
-        float Kp_pitch = 0.002; 
+        float Kp_pitch = 0.02; 
         float Kd_pitch = 0.7;
-        float Kp_roll = 0.002;
+        float Kp_roll = 0.02;
         float Kd_roll = 0.7;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
