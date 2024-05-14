@@ -79,6 +79,9 @@ private:
     float current_z;
     float current_yaw;
 
+    //Publish varible
+    int cmd_auto_land = 0;
+
     // Variables to hold previous filter value
     float prev_filter_val = 0;   // DER SKAL SQ NOK OPRETES EN FOR HVER SLAGS MÅLT VÆRDI SÅ DER IKKE GÅR GED I DEN
 
@@ -164,9 +167,14 @@ private:
 
         // Shitty way to calculate the distance to the point but square roots and shit aint worth it
         
-
+        if (z_ref == 0 && total_error < 50){
+            ghetto_ur++;
+            if (ghetto_ur > 200){
+                cmd_auto_land = 1; //Meaning it sends a request to disarm
+            }
+        }
         // Check if error is under threshold to request new data
-        if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+        else if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
             ghetto_ur++;
             if (ghetto_ur > 200){
                 data_request = true;    // Reset data request if close to waypoint
@@ -191,7 +199,7 @@ private:
         control_msg.cmd_auto_pitch = regulator_pitch_value;
         control_msg.cmd_auto_thrust = regulator_altitude_value;
         control_msg.cmd_auto_yaw = -regulator_yaw_value;
-
+        
         std::cout<<"altitude val: "<< regulator_altitude_value << std::endl;
         std::cout<<"roll val: "<< -regulator_roll_value << std::endl;
         std::cout<<"pitch val: "<< regulator_pitch_value << std::endl;
@@ -199,6 +207,8 @@ private:
         
         control_msg.identifier = 1;
         control_msg.timestamp = time_since_epoch_double;
+        control_msg.cmd_auto_land = cmd_auto_land;
+
         Control_publisher_->publish(control_msg);
     }
 
