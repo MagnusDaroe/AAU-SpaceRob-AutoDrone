@@ -18,4 +18,5 @@ float32 cmd_auto_roll
 float32 cmd_auto_pitch
 float32 cmd_auto_yaw
 float32 cmd_auto_thrust
+uint8 cmd_auto_disarm
 

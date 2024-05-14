@@ -71,7 +71,7 @@ private:
     float y_ref_old = 0;
     float z_ref_old = 0;
     float total_error;
-    //float z_ref_signal;
+    float z_ref_signal;
 
     //Variables that hold current position
     float current_x;
