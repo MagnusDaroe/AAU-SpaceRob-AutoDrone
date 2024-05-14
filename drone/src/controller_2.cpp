@@ -67,6 +67,9 @@ private:
     float y_ref;
     float z_ref;
     float yaw_ref;
+    float x_ref_old = 0;
+    float y_ref_old = 0;
+    float z_ref_old = 0;
 
     //Variables that hold current position
     float current_x;
@@ -124,8 +127,8 @@ private:
         // XY controller
         // Generates a reference signal according to exponential function
         // Signal function requires current time, final reference signal, and time constant
-        float x_ref_signal = ref_signal(time_duration/1000, x_ref, 2); // time duration is converted to seconds
-        float y_ref_signal = ref_signal(time_duration/1000, y_ref, 2); // time duration is converted to seconds
+        float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 2); // time duration is converted to seconds
+        float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 2); // time duration is converted to seconds
 
         // // Denoise the recieved position variables
         // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
@@ -140,13 +143,13 @@ private:
 
         // Z controller
         // Generates reference signal
-        float z_ref_signal = ref_signal(time_duration/1000, z_ref, 1); // time duration is converted to seconds
+        float z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 1); // time duration is converted to seconds
         // Generates controller value for altitude
         Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges
 
         // Yaw controller
         // Generates reference signal
-        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 1); // time duration is converted to seconds
+        float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 0, 1); // time duration is converted to seconds
         // Generates controller value for yaw
         yaw_controller(yaw_signal, current_yaw); //KAMERA
 
@@ -154,11 +157,14 @@ private:
         float total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
 
         // Check if error is under threshold to request new data
-        if (total_error < 50){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+        if (total_error < 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
             ghetto_ur++;
             if (ghetto_ur > 200){
                 data_request = true;    // Reset data request if close to waypoint
                 ghetto_ur = 0;
+                x_ref_old = x_ref;
+                y_ref_old = y_ref;
+                z_ref_old = z_ref;
             }
         }
         else{
@@ -306,10 +312,11 @@ private:
         return value;
     }
     
-    float ref_signal(float t, float ref, float delay)
+    float ref_signal(float t, float ref, float old_ref, float delay)
     // Generates a reference signal according to exponential function
     {
-        float signal = ref*(1-exp(-t/delay));
+        float dif = ref - old_ref;
+        float signal = dif*(1-exp(-t/delay))+old_ref;
         return signal;
     }
 
