@@ -22,7 +22,10 @@ public:
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
-        this->Controller();
+        
+
+        // Start the control loop in a separate thread
+        control_loop_thread_ = std::thread(&ControllerNode::ControlLoop, this);
     }
 
 private:
@@ -106,17 +109,15 @@ private:
     //Controller functions
     void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
     { 
-            current_x = msg->vicon_x;
-            current_y = msg->vicon_y;
-            current_z = msg->vicon_z;
-            current_yaw = msg->vicon_yaw;
-            new_msg = true;
-            std::cout<<"Callback"<<std::endl;
+        current_x = msg->vicon_x;
+        current_y = msg->vicon_y;
+        current_z = msg->vicon_z;
+        current_yaw = msg->vicon_yaw;
+        new_msg = true;
     }
 
-    void Controller(){
+    void ControlLoop(){
         while(rclcpp::ok()){
-            std::cout<<"Inside Controller"<<std::endl;
             if (new_msg == true){
                 new_msg = false;
                 // Check if data is requested. Reset data and timer if so
@@ -222,7 +223,6 @@ private:
 
                 Control_publisher_->publish(control_msg);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 
@@ -373,6 +373,7 @@ private:
 
     //float landing_signal()
 
+    std::thread control_loop_thread_;
 
 };
 
