@@ -101,10 +101,10 @@ class T265(Node):
             self.update_start_frame(T_global)
         else:
             P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
-            self.update_position(P_global)
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
+            self.update_position(P_global)
             
         self.global_frame_updated = True
 
@@ -233,15 +233,11 @@ class T265(Node):
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        self.get_pose_data(self.frames)
-        self.q_to_RPY()
-        self.get_global_pose()
+        
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
-        self.get_pose_data(self.frames)
-        self.q_to_RPY()
-        self.get_global_pose()
+        
         """
         self.get_pose_data(self.frames)
         self.q_to_RPY()
