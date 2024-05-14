@@ -246,10 +246,10 @@ private:
     // PD controller for x and y
     {
         // PD controller gains
-        float Kp_pitch = 0.002; 
-        float Kd_pitch = 0.7;
-        float Kp_roll = 0.002;
-        float Kd_roll = 0.7;
+        float Kp_pitch = 0.02; 
+        float Kd_pitch = 0.007;
+        float Kp_roll = 0.02;
+        float Kd_roll = 0.007;
 
         // Max allowed value (1000 is max max, but we aint chill like that)
         float saturation_value = 200;  //CHANGE
