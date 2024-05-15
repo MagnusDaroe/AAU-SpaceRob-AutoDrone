@@ -35,12 +35,9 @@ class T265(Node):
 
         # Create publisher and subscriber
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
-        self.create_timer(0.1, self.run)
+        self.create_timer(0.01, self.run)
 
         self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
-        
-        # Initialize the rate controller
-        self.rate_controller = RateController(100)
 
     def math_init(self):
         #self.R_FC_backside=np.array([[1,0,0],[0,1,0],[0,0,1]])
@@ -322,8 +319,6 @@ class T265(Node):
             self.get_logger().warning('No global frame data available')
             time.sleep(0.2)
 
-        #Sleeps to maintain the desired rate
-        self.rate_controller.sleep()
 
 
 
