@@ -238,6 +238,22 @@ class T265(Node):
 
         ##############################
         self.euler_xyz=[x,y,z]
+    
+    def quaternion_to_yaw(self,quat):
+        # Normalize quaternion
+        quat /= np.linalg.norm(quat)
+
+        # Extract components
+        w, x, y, z = quat
+
+        # Compute yaw
+        yaw = np.arctan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y**2 + z**2))
+
+        # Convert yaw from radians to degrees
+        yaw_degrees = np.degrees(yaw)
+
+        return yaw_degrees
+
 
     def update_start_frame(self,T_vicon_start):
         """Update the start frame of the camera
@@ -320,6 +336,7 @@ class T265(Node):
 
                 self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                 self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
+                self.get_logger().info(f"Yaw deg: {self.quaternion_to_yaw(self.rotation_xyzw)}")
             #time.sleep(0.1)
 
             msg = DroneControlData()
