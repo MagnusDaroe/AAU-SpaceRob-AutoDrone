@@ -98,7 +98,7 @@ class FC_Commander(Node):
         self.publish_timer = self.create_timer(5, self.status_publisher)
 
         #Calibrate the clock
-        #self.calibrate_clock(persistence=False)
+        self.calibrate_clock(persistence=False)
 
         # Set the logging level based on command-line argument or default to INFO
         self.log_level = self.get_logger().get_effective_level()
