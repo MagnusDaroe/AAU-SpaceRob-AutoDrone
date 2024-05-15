@@ -251,6 +251,7 @@ class T265(Node):
 
         # Convert pitch from radians to degrees
         pitch_degrees = np.degrees(pitch)
+        pitch_degrees = (pitch_degrees + 360) % 360
 
         return pitch_degrees
 
