@@ -533,6 +533,9 @@ class FC_Commander(Node):
         """
         Send flight command to the drone
         """
+        # Log the command values
+        self.get_logger().info(f"Sending: Roll={int(self.fc_command.cmd_roll)}, Pitch={int(self.fc_command.cmd_pitch)}, Thrust={int(self.fc_command.cmd_thrust)}, Yaw={int(self.fc_command.cmd_yaw)}")
+       
         # Makes sure the correct command type is sent
         if not self.test_mode:
                 self.the_connection.mav.manual_control_send(
@@ -544,9 +547,7 @@ class FC_Commander(Node):
                     0
                 )
     
-        # Log the command values
-        self.get_logger().info(f"Sending: Roll={int(self.fc_command.cmd_roll)}, Pitch={int(self.fc_command.cmd_pitch)}, Thrust={int(self.fc_command.cmd_thrust)}, Yaw={int(self.fc_command.cmd_yaw)}")
-       
+        
     def emergency_stop(self):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
