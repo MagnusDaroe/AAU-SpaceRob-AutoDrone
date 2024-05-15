@@ -443,7 +443,7 @@ class FC_Commander(Node):
             if self.fc_command.cmd_auto_disarm:
                 self.drone_disarm_auto()
 
-            self.get_logger().info(f"landingflag: {self.emergency_landing_flag}")
+            #self.get_logger().info(f"eland: {self.fc_command.cmd_eland}")
 
             if self.emergency_landing_flag:
                 # Safe mode
@@ -610,7 +610,6 @@ class FC_Commander(Node):
         """
         Safe mode engaged. Set the drone to safe mode by adjusting the flag
         """
-       
         self.emergency_landing_flag = True
         if self.fc_command.cmd_thrust < self.START_LAND_THRUST:
             self.decremented_thrust = self.START_LAND_THRUST
