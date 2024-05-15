@@ -325,6 +325,11 @@ class FC_Commander(Node):
         else:
             self.auto_disarm = True
             self.get_logger().info("Disarming the drone...")
+            
+            # Send a null command
+            self.reset_cmd()
+            self.flight_cmd()
+
             # Disarm the vehicle
             self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
                                         0, 0, 0, 0, 0, 0, 0, 0)
@@ -332,8 +337,8 @@ class FC_Commander(Node):
             if Ack.result == 0:
                 self.get_logger().info("Disarmed the drone")
             else:
-                self.get_logger().fatal("Failed to disarm. Trying to reboot the drone...")
-                self.drone_reboot()
+                self.get_logger().fatal("Failed to disarm. Trying again drone...")
+                self.auto_disarm = False
 
     def drone_reboot(self):
         """
@@ -564,11 +569,7 @@ class FC_Commander(Node):
         """
         Safe mode engaged. Set the drone to safe mode by adjusting the flag
         """
-        # Send a null command
-        self.reset_cmd()
-        self.flight_cmd()
-        
-        
+       
         self.emergency_landing_flag = True
         if self.fc_command.cmd_thrust < self.START_LAND_THRUST:
             self.decremented_thrust = self.START_LAND_THRUST
