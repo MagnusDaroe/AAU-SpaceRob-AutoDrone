@@ -64,10 +64,10 @@ def control_loop(node):
 
         if Drone_cmd.cmd_mode == 1:
             # Send nan values to the drone
-            Drone_cmd.cmd_pitch = int('nan')
-            Drone_cmd.cmd_roll = int('nan')
-            Drone_cmd.cmd_thrust = int('nan')
-            Drone_cmd.cmd_yaw = int('nan')
+            Drone_cmd.cmd_pitch = 0 #int('nan')
+            Drone_cmd.cmd_roll = 0 #int('nan')
+            Drone_cmd.cmd_thrust = 0 #int('nan')
+            Drone_cmd.cmd_yaw = 0 #int('nan')
             time.sleep(0.2)
         elif Drone_cmd.cmd_mode == 0:
             # Map values.   
