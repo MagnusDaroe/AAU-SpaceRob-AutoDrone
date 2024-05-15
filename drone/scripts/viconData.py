@@ -17,7 +17,7 @@ class ViconPublisher(Node):
         self.publisher_ = self.create_publisher(ViconData, '/ViconData', 10)
         self.timer = self.create_timer(1/110, self.publish_message)
         self.mode = 1
-        self.HOST = '192.168.0.100'  # Listen on all network interfaces
+        self.HOST = '192.168.0.102'  # Listen on all network interfaces
         self.PORT = 12345      # Choose a port to listen on
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.HOST, self.PORT))
