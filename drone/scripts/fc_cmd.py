@@ -337,7 +337,7 @@ class FC_Commander(Node):
             if Ack.result == 0:
                 self.get_logger().info("Disarmed the drone")
             else:
-                self.get_logger().fatal("Failed to disarm. Trying again drone...")
+                self.get_logger().fatal("Failed to disarm. Trying again to disarm...")
                 self.auto_disarm = False
 
     def drone_reboot(self):
