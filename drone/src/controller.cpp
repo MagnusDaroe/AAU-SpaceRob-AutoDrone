@@ -181,7 +181,7 @@ private:
                     total_error = abs((current_x + current_y + current_z/3) - (x_ref + y_ref + z_ref/3)); //KAMERA
                 }
                 else{
-                    z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //130 because of the it is floor height
+                    z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //100 because it is 3 cm below floor height
                     total_error = abs((current_z) - (130)); //KAMERA
                 }
                 // Generates controller value for altitude
