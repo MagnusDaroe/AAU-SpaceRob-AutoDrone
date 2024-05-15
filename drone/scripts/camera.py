@@ -10,6 +10,16 @@ from rclpy.node import Node
 import threading
 from drone.msg import DroneControlData, ViconData
 
+class RateController:
+    def __init__(self, rate):
+        self.rate = rate
+        self.start_time = time.time()
+
+    def sleep(self):
+        elapsed_time = time.time() - self.start_time
+        sleep_time = max(0, 1 / self.rate - elapsed_time)
+        time.sleep(sleep_time)
+        self.start_time = time.time()
 
 class T265(Node):
     def __init__(self):
@@ -28,6 +38,9 @@ class T265(Node):
         self.create_timer(0.1, self.run)
 
         self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
+        
+        # Initialize the rate controller
+        self.rate_controller = RateController(100)
 
     def math_init(self):
         #self.R_FC_backside=np.array([[1,0,0],[0,1,0],[0,0,1]])
@@ -292,11 +305,11 @@ class T265(Node):
                 #self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
 
                 #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
-                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
+                ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
                 #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
-                self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
+                ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
 
             msg = DroneControlData()
             msg.timestamp = time.time()
@@ -310,6 +323,9 @@ class T265(Node):
         else: 
             self.get_logger().warning('No global frame data available')
             time.sleep(0.2)
+
+        #Sleeps to maintain the desired rate
+        self.rate_controller.sleep()
 
 
 
