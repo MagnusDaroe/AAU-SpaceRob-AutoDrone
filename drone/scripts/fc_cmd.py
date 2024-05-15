@@ -118,32 +118,31 @@ class FC_Commander(Node):
             # Assign commands only if they are not NaN
 
             #self.get_logger().info(f"{msg}")
-            if not math.isnan(msg.cmd_mode):
-                if msg.identifier == 0:
-                    self.fc_command.cmd_estop = msg.cmd_estop
-                    self.fc_command.cmd_eland = msg.cmd_eland
-                    self.fc_command.cmd_arm = msg.cmd_arm
-                    self.fc_command.cmd_mode = msg.cmd_mode
-                if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
-                    # Manual mode
-                    self.fc_command.cmd_thrust = msg.cmd_thrust
-                    self.fc_command.cmd_roll = msg.cmd_roll
-                    self.fc_command.cmd_pitch = msg.cmd_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_yaw
-                elif self.fc_command.cmd_mode == 1 and msg.identifier == 1:
-                    # Autonomous mode
-                    self.fc_command.cmd_thrust = msg.cmd_auto_thrust
-                    self.fc_command.cmd_roll = msg.cmd_auto_roll
-                    self.fc_command.cmd_pitch = msg.cmd_auto_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_auto_yaw
-                    self.fc_command.cmd_auto_disarm = msg.cmd_auto_disarm
-                elif self.fc_command.cmd_mode == 2 and msg.identifier == 0:
-                    # Test mode
-                    self.fc_command.cmd_thrust = msg.cmd_thrust
-                    self.fc_command.cmd_roll = msg.cmd_roll
-                    self.fc_command.cmd_pitch = msg.cmd_pitch
-                    self.fc_command.cmd_yaw = msg.cmd_yaw
-            
+            if msg.identifier == 0:
+                self.fc_command.cmd_estop = msg.cmd_estop
+                self.fc_command.cmd_eland = msg.cmd_eland
+                self.fc_command.cmd_arm = msg.cmd_arm
+                self.fc_command.cmd_mode = msg.cmd_mode
+            if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
+                # Manual mode
+                self.fc_command.cmd_thrust = msg.cmd_thrust
+                self.fc_command.cmd_roll = msg.cmd_roll
+                self.fc_command.cmd_pitch = msg.cmd_pitch
+                self.fc_command.cmd_yaw = msg.cmd_yaw
+            elif self.fc_command.cmd_mode == 1 and msg.identifier == 1:
+                # Autonomous mode
+                self.fc_command.cmd_thrust = msg.cmd_auto_thrust
+                self.fc_command.cmd_roll = msg.cmd_auto_roll
+                self.fc_command.cmd_pitch = msg.cmd_auto_pitch
+                self.fc_command.cmd_yaw = msg.cmd_auto_yaw
+                self.fc_command.cmd_auto_disarm = msg.cmd_auto_disarm
+            elif self.fc_command.cmd_mode == 2 and msg.identifier == 0:
+                # Test mode
+                self.fc_command.cmd_thrust = msg.cmd_thrust
+                self.fc_command.cmd_roll = msg.cmd_roll
+                self.fc_command.cmd_pitch = msg.cmd_pitch
+                self.fc_command.cmd_yaw = msg.cmd_yaw
+        
             # Assign the rest of the commands
             self.fc_command.timestamp = msg.timestamp
             
@@ -385,7 +384,6 @@ class FC_Commander(Node):
 
         # Main loop. Rclpy.ok() returns False when the node is shutdown
         while rclpy.ok():
-            self.get_logger().info("hiii")
             # Check for estop condition
             if self.fc_command.cmd_estop == True:
                 # Emergency stop
@@ -439,9 +437,7 @@ class FC_Commander(Node):
                         if self.fc_command.cmd_estop:
                             self.emergency_stop()
                             break  
-                    self.get_logger().info("hiii2")
                     self.reset_cmd()
-                    self.get_logger().info("hiii3")
                     # Arm the drone again
                     if not self.test_mode:
                         self.drone_arm()

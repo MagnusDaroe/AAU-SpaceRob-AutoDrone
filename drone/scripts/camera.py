@@ -14,10 +14,6 @@ from drone.msg import DroneControlData, ViconData
 class T265(Node):
     def __init__(self):
         super().__init__('camera_node')
-        ##########
-        self.t_old=0
-        ##########
-
         # Flag to indicate if the global frame has been updated
         self.global_frame_updated = False
 
@@ -253,30 +249,10 @@ class T265(Node):
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        """
-        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
-        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
-        self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
-        """
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
         
-        """
-        self.get_pose_data(self.frames)
-        self.q_to_RPY()
-        self.get_global_pose()
-        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
-        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
-        self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
-        """
-        #Update T_global_start with the position difference
-        #self.T_global_start[0,3]-=diff_x
-        #self.T_global_start[1,3]-=diff_y
-        #self.T_global_start[2,3]-=diff_z
-        #self.T_global_start=self.T_global_vicon@self.T_Vicon_drone_start
-        #Update T_global_ref
-        self.T_global_ref=self.T_global_start@self.T_start_ref
 
     def show_image(self,undist=True):
         """
@@ -308,23 +284,19 @@ class T265(Node):
                 self.image_left = np.asanyarray(left_frame.get_data())
                 self.get_pose_data(self.frames)
 
-                t=time.time()
-                self.get_logger().info(f"time diff in ms: {t-self.t_old*1000}")
-                self.t_old=t
 
                 self.q_to_RPY()
                 self.get_global_pose()
-                self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
+                #self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
                 #log the diff_x, diff_y and diff_z
-                self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
+                #self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
 
-                self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
+                #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
-                self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
+                #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                 self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-            #time.sleep(0.1)
 
             msg = DroneControlData()
             msg.camera_x = float(self.t_vec_global_FC[0]) # mm
