@@ -35,7 +35,6 @@ class T265(Node):
 
         # Create publisher and subscriber
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
-        self.create_timer(0.01, self.run)
 
         self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
 
@@ -282,43 +281,49 @@ class T265(Node):
             
     
     def run(self):
-        if self.global_frame_updated:
-            # Get the frames from the T265 camera, when the data is available
-            self.frames = self.pipe.wait_for_frames()
-            left_frame = self.frames.get_fisheye_frame(1)
+        
+        #Create rate controller
+        rate_controller = RateController(100)
 
-            # If the frame is available, get the image from the left camera and show it undistorted in a window
-            if left_frame:          
-                self.image_left = np.asanyarray(left_frame.get_data())
-                self.get_T265_pose_data(self.frames)
+        while rclpy.ok():
+            if self.global_frame_updated:
+                # Get the frames from the T265 camera, when the data is available
+                self.frames = self.pipe.wait_for_frames()
+                left_frame = self.frames.get_fisheye_frame(1)
+
+                # If the frame is available, get the image from the left camera and show it undistorted in a window
+                if left_frame:          
+                    self.image_left = np.asanyarray(left_frame.get_data())
+                    self.get_T265_pose_data(self.frames)
 
 
-                self.q_to_RPY()
-                self.get_global_pose()
-                #self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
-                #log the diff_x, diff_y and diff_z
-                #self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
+                    self.q_to_RPY()
+                    self.get_global_pose()
+                    #self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
+                    #log the diff_x, diff_y and diff_z
+                    #self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
 
-                #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
-                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
-                self.R_to_euler_angles()
+                    #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
+                    self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
+                    self.R_to_euler_angles()
 
-                #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
-                self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
+                    #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
+                    self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
 
-            msg = DroneControlData()
-            msg.timestamp = time.time()
-            msg.camera_x = float(self.t_vec_global_FC[0]) # mm
-            msg.camera_y = float(self.t_vec_global_FC[1]) # mm
-            msg.camera_z = float(self.t_vec_global_FC[2]) # mm
-            msg.camera_pitch = float(self.euler_xyz[0]) # rad
-            msg.camera_roll = float(self.euler_xyz[1]) # rad
-            msg.camera_yaw = float(self.euler_xyz[2]) # rad
-            self.publisher_.publish(msg)
-        else: 
-            self.get_logger().warning('No global frame data available')
-            time.sleep(0.2)
-
+                msg = DroneControlData()
+                msg.timestamp = time.time()
+                msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+                msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+                msg.camera_z = float(self.t_vec_global_FC[2]) # mm
+                msg.camera_pitch = float(self.euler_xyz[0]) # rad
+                msg.camera_roll = float(self.euler_xyz[1]) # rad
+                msg.camera_yaw = float(self.euler_xyz[2]) # rad
+                self.publisher_.publish(msg)
+            else: 
+                self.get_logger().warning('No global frame data available')
+                time.sleep(0.2)
+            
+            rate_controller.sleep()
 
 
 
@@ -327,6 +332,9 @@ def main(args=None):
     rclpy.init(args=args)
     #create an instance of the T265 class
     camera=T265()
+
+    #make a thread for the camera loop
+    threading.Thread(target=camera.run, daemon=True).start()
 
     camera.get_logger().info('camera node has been started :-)')
     rclpy.spin(camera)
