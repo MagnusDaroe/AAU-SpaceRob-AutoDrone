@@ -196,6 +196,7 @@ private:
                 
                 if (z_ref == 0 && total_error < 100){
                     ghetto_ur++;
+                    std::cout<< "Ghetto ur"<< std::endl;
                     if (ghetto_ur > 200){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
                         data_request = true;
