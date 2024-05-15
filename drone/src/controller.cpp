@@ -209,7 +209,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 100 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 80 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         data_request = true;    // Reset data request if close to waypoint
@@ -289,7 +289,7 @@ private:
     void yaw_controller(float yaw_ref, float yaw_mes)
     // P controller for yaw position
     {
-        float Kp_yaw = 100;              // Proportional gain
+        float Kp_yaw = 150;              // Proportional gain
         float saturation_value = 300;   // Max and min value allowed to be sent to the drone
 
         float yaw_error = yaw_ref - yaw_mes;  // Error between reference and measurement
