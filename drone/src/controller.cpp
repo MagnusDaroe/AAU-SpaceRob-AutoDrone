@@ -182,7 +182,7 @@ private:
                 }
                 else{
                     z_ref_signal = ref_signal(time_duration/1000, 130, z_ref_old, 4); //130 because of the it is floor height
-                    total_error = abs((current_z) - (z_ref)); //KAMERA
+                    total_error = abs((current_z) - (130)); //KAMERA
                 }
                 // Generates controller value for altitude
                 Z_controller(z_ref_signal, current_z); // Note: skal ændres hvis kamera skal bruges 
@@ -195,7 +195,7 @@ private:
                 std::cout<<"total_error: "<< total_error << std::endl;
                 std::cout<<"z_ref: "<< z_ref << std::endl;
                 
-                if (z_ref == 0 && total_error < 100){
+                if (z_ref == 0 && total_error < 50){
                     ghetto_ur++;
                     std::cout<< "Ghetto ur"<< std::endl;
                     if (ghetto_ur > 200){
