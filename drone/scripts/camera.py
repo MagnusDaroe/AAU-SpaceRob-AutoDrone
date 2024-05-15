@@ -206,9 +206,7 @@ class T265(Node):
         # Compute the transformation from global frame to FC frame
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
         self.T_global_FC_NO_update=self.T_global_FC
-        #self.T_global_FC[0,3]+=self.diff_x
-        #self.T_global_FC[1,3]+=self.diff_y
-        #self.T_global_FC[2,3]+=self.diff_z
+     
         # Get the global position of the camera
         self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
         
@@ -305,11 +303,11 @@ class T265(Node):
                 #self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
 
                 #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
-                ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
+                self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 
                 #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
-                ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
+                self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
 
             msg = DroneControlData()
             msg.timestamp = time.time()
