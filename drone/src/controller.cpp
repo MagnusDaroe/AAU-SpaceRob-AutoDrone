@@ -209,7 +209,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 50 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 100 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         data_request = true;    // Reset data request if close to waypoint
