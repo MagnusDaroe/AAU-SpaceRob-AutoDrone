@@ -66,11 +66,11 @@ private:
     //float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
 
     //*test2 landing waypoints
-    const static int array_size = 4;            // size of array
-    float x_ref_list[array_size] = {522, -1991, -500, -500};
-    float y_ref_list[array_size] = {-1815, 740, 0, 0};
-    float z_ref_list[array_size] = {500, 1000, 500, 0};
-    float yaw_ref_list[array_size] = {0, 0, 0, 0}; //Ref is in radians
+    const static int array_size = 8;            // size of array
+    float x_ref_list[array_size] = {522, -1991, 544, 544, 544, -2090, 522, 522};
+    float y_ref_list[array_size] = {-1815, 740, 707, 707, 707, -1670, -1815, -1815};
+    float z_ref_list[array_size] = {500, 1000, 500, 0, 500, 1000, 500, 0};
+    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
 
 
     int array_counter = 0;                     // counter for array
