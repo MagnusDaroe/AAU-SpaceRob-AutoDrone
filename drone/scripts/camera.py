@@ -200,7 +200,7 @@ class T265(Node):
         #self.T_global_FC[1,3]+=self.diff_y
         #self.T_global_FC[2,3]+=self.diff_z
         # Get the global position of the camera
-        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]]+self.diff_z)
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
         
         # Get the global rotation of the camera
         self.R_global_FC=self.T_global_FC[:3,:3]
