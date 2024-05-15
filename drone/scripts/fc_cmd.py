@@ -317,6 +317,9 @@ class FC_Commander(Node):
             self.get_logger().fatal("Failed arm. Trying to reboot the drone...")
             self.drone_reboot()
 
+        # reset cmd
+        self.reset_cmd()
+
     def auto_drone_arm(self):
         """
         Auto arm the drone. Set mode to stabilize and arm the drone
@@ -617,6 +620,7 @@ class FC_Commander(Node):
         """
         Safe mode. The drone will land and disarm if the mode is set to safe mode
         """
+        self.get_logger().info("Safe mode engaged. Landing the drone")
 
         self.fc_command.cmd_roll = int(0)
         self.fc_command.cmd_pitch = int(0)
