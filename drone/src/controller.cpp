@@ -105,6 +105,8 @@ private:
     bool new_msg = false;
 
     // Defines time variables
+    std::chrono::system_clock::time_point disarm_start;
+    std::chrono::system_clock::time_point disarm_stop;
     std::chrono::system_clock::time_point time_start;
     std::chrono::system_clock::time_point time_stop;
     std::chrono::system_clock::time_point timestamp;
@@ -127,8 +129,10 @@ private:
     void ControlLoop(){
         while(rclcpp::ok()){
             if(cmd_auto_land == 1){
-                ghetto_ur++;
-                if(ghetto_ur > 1000){ //Waits for 10 seconds before sending the arm command
+                disarm_stop = std::chrono::system_clock::now();
+                auto disarm_duration = std::chrono::duration_cast<std::chrono::milliseconds>(disarm_stop - disarm_start).count();
+                std::cout<< "Auto land: 1"<< std::endl;
+                if(disarm_duration > 10000){ //Waits for 10 seconds before sending the arm command
                     cmd_auto_land = 0;
                     ghetto_ur = 0;
                 }
@@ -236,7 +240,9 @@ private:
                 if(z_ref == 0){
                     std::cout << "total_error: " << total_error << std::endl;
                 }
-                
+                if(cmd_auto_land == 1){
+                    disarm_start = std::chrono::system_clock::now();
+                }
                 Control_publisher_->publish(control_msg);
             }
         }
