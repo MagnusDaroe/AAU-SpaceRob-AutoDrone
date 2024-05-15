@@ -105,6 +105,20 @@ class T265(Node):
                             [0,0,0,1]])
             
             self.update_start_frame(T_global)
+            
+            self.frames = self.pipe.wait_for_frames()
+            left_frame = self.frames.get_fisheye_frame(1)
+
+            # If the frame is available, get the image from the left camera and show it undistorted in a window
+            if left_frame:          
+                self.image_left = np.asanyarray(left_frame.get_data())
+                self.get_T265_pose_data(self.frames)
+
+
+                self.q_to_RPY()
+                self.get_global_pose()
+
+
         else:
             P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
             self.vicon_x=msg.vicon_x
