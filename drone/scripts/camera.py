@@ -63,6 +63,14 @@ class T265(Node):
 
         self.dist=np.array([[-0.22814816,0.04330513,-0.00027584,0.00057192,-0.00322855]])
         self.mtx=np.array( [[289.17101938,0.,426.23687843],[0.,289.14205298,401.22256516],[0.,0.,1.]])
+        self.diff_x=0.0
+        self.diff_y=0.0
+        self.diff_z=0.0
+
+        self.vicon_x=0
+        self.vicon_y=0
+        self.vicon_z=0
+
 
     def camera_init(self):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
@@ -94,8 +102,11 @@ class T265(Node):
             self.update_start_frame(T_global)
         else:
             P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            self.vicon_x=msg.vicon_x
+            self.vicon_y=msg.vicon_y
+            self.vicon_z=msg.vicon_z
             self.update_position(P_global)
-
+            
         self.global_frame_updated = True
 
     def get_pose_data(self,frames):
@@ -185,9 +196,12 @@ class T265(Node):
         self.T_ref_pose=self.RPY_and_pos_to_T()
         # Compute the transformation from global frame to FC frame
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
-
+        self.T_global_FC_NO_update=self.T_global_FC
+        #self.T_global_FC[0,3]+=self.diff_x
+        #self.T_global_FC[1,3]+=self.diff_y
+        #self.T_global_FC[2,3]+=self.diff_z
         # Get the global position of the camera
-        self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
         
         # Get the global rotation of the camera
         self.R_global_FC=self.T_global_FC[:3,:3]
@@ -208,26 +222,59 @@ class T265(Node):
             x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1]) #atan2(-R23,R22)
             y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
             z = 0
-        self.euler_xyz=[x,y,z]       
+        
+        ################new stuff:################
+                # Adjust angles to be between -2*pi and 2*pi
+        x = x % (2 * math.pi)
+        y = y % (2 * math.pi)
+        z = z % (2 * math.pi)
+
+        # Convert angles < -pi to positive equivalents
+        if x < -math.pi:
+            x += 2 * math.pi
+        if y < -math.pi:
+            y += 2 * math.pi
+        if z < -math.pi:
+            z += 2 * math.pi
+
+        ##############################
+        self.euler_xyz=[x,y,z]
+        
+        
+        
 
     def update_start_frame(self,T_vicon_start):
         """Update the start frame of the camera
         """
         self.T_global_start=self.T_global_vicon@T_vicon_start@self.T_Vicon_drone_start
         self.T_global_ref=self.T_global_start@self.T_start_ref
+        self.P_vicon_start=np.array([T_vicon_start[0,3],T_vicon_start[1,3],T_vicon_start[2,3]])
 
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        diff_x=-1*P_vicon_FC[0]-self.t_vec_global_FC[0] #mm
-        diff_y=-1*P_vicon_FC[1]-self.t_vec_global_FC[1] #mm
-        diff_z=P_vicon_FC[2]-self.t_vec_global_FC[2] #mm
+        """
+        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
+        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
+        self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
+        """
+        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
+        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
+        self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
         
+        """
+        self.get_pose_data(self.frames)
+        self.q_to_RPY()
+        self.get_global_pose()
+        self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
+        self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
+        self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
+        """
         #Update T_global_start with the position difference
-        self.T_global_start[0,3]+=diff_x
-        self.T_global_start[1,3]+=diff_y
-        self.T_global_start[2,3]+=diff_z
-
+        #self.T_global_start[0,3]-=diff_x
+        #self.T_global_start[1,3]-=diff_y
+        #self.T_global_start[2,3]-=diff_z
+        #self.T_global_start=self.T_global_vicon@self.T_Vicon_drone_start
         #Update T_global_ref
         self.T_global_ref=self.T_global_start@self.T_start_ref
 
@@ -267,6 +314,11 @@ class T265(Node):
 
                 self.q_to_RPY()
                 self.get_global_pose()
+                self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
+                #log the diff_x, diff_y and diff_z
+                self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
+
+                self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
 

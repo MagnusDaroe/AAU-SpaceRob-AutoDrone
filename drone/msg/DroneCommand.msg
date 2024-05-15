@@ -8,14 +8,15 @@ uint8 identifier
 uint8 cmd_arm
 int32 cmd_mode 
 
-float32 cmd_roll
-float32 cmd_pitch
-float32 cmd_yaw
-float32 cmd_thrust
+int32 cmd_roll
+int32 cmd_pitch
+int32 cmd_yaw
+int32 cmd_thrust
 
 # autonomous commands
-float32 cmd_auto_roll
-float32 cmd_auto_pitch
-float32 cmd_auto_yaw
-float32 cmd_auto_thrust
+int32 cmd_auto_roll
+int32 cmd_auto_pitch
+int32 cmd_auto_yaw
+int32 cmd_auto_thrust
+uint8 cmd_auto_disarm
 
