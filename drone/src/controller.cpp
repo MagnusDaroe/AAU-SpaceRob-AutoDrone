@@ -200,7 +200,7 @@ private:
                 std::cout<<"total_error: "<< total_error << std::endl;
                 std::cout<<"z_ref: "<< z_ref << std::endl;
                 
-                if (z_ref == 0 && total_error < 50){
+                if (z_ref == 0 && total_error < 40){
                     ghetto_ur++;
                     std::cout<< "Ghetto ur"<< std::endl;
                     if (ghetto_ur > 200){
