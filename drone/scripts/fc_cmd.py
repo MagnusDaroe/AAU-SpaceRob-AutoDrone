@@ -334,7 +334,7 @@ class FC_Commander(Node):
             self.drone_reboot()
 
         self.auto_arm_failed = True
-        while not self.auto_arm_failed:
+        while self.auto_arm_failed:
             # Arm the drone. It must be done two times for some reason.
             self.get_logger().info("Arming the drone...")
             # Arm the vehicle - run it two times
