@@ -63,6 +63,7 @@ class FC_Commander(Node):
         
         # Auto variables
         self.auto_disarm = False
+        self.auto_arm_failed = False
 
         #Reboot
         self.last_reboot = self.get_time()
@@ -316,6 +317,42 @@ class FC_Commander(Node):
             self.get_logger().fatal("Failed arm. Trying to reboot the drone...")
             self.drone_reboot()
 
+    def auto_drone_arm(self):
+        """
+        Auto arm the drone. Set mode to stabilize and arm the drone
+        """
+        # Set mode stabilize
+        self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                                    0, 1, 0, 0, 0, 0, 0, 0)
+        Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+        
+        # Check if the mode is set
+        if Ack.result == 0:
+            self.get_logger().info("Mode set to stabilize")
+        else:
+            self.get_logger().fatal("Failed to set mode. Trying to reboot the drone...")
+            self.drone_reboot()
+
+        self.auto_arm_failed = True
+        while not self.auto_arm_failed:
+            # Arm the drone. It must be done two times for some reason.
+            self.get_logger().info("Arming the drone...")
+            # Arm the vehicle - run it two times
+            for _ in range(2):
+                self.the_connection.mav.command_long_send(self.the_connection.target_system, self.the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                                            0, 1, 0, 0, 0, 0, 0, 0)
+                time.sleep(1)
+
+            Ack = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True)
+            if Ack.result == 0:
+                self.get_logger().info("Auto armed the drone")
+                self.auto_arm_failed = False
+            else:
+                self.get_logger().fatal("Failed to auto arm. Trying to reboot the drone, and then arm...")
+                self.drone_reboot()
+                self.auto_arm_failed = True
+
+
     def drone_disarm_auto(self):
         """
         Disarm the drone. Disarm the drone automatically
@@ -337,7 +374,7 @@ class FC_Commander(Node):
             if Ack.result == 0:
                 self.get_logger().info("Disarmed the drone")
             else:
-                self.get_logger().fatal("Failed to disarm. Trying again drone...")
+                self.get_logger().fatal("Failed to disarm. Trying again to disarm...")
                 self.auto_disarm = False
 
     def drone_reboot(self):
@@ -401,7 +438,6 @@ class FC_Commander(Node):
                 # Sleep to keep the update rate
                 continue
             if self.fc_command.cmd_auto_disarm:
-                self.get_logger().info("Auto disarm activated") 
                 self.drone_disarm_auto()
 
 
@@ -411,7 +447,7 @@ class FC_Commander(Node):
                 # Sleep to keep the update rate
             elif self.auto_disarm and not self.fc_command.cmd_auto_disarm:
                 # Arm the drone again   
-                self.drone_arm()
+                self.auto_drone_arm()
                 self.auto_disarm = False
             elif self.auto_disarm:  
                 # Sleep to keep the update rate
