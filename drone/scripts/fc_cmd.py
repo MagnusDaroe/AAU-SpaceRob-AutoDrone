@@ -515,7 +515,7 @@ class FC_Commander(Node):
         """
         Emergency stop mode. Disarms the drone and waits for the arm and estop commands to be released
         """
-        self.get_logger().warn("Emergency stop mode activted. Release Arm, Estop/Eland and set throttle to 0, to regain control")
+        self.get_logger().warn("Emergency stop mode activated. Release Arm, Estop/Eland and set throttle to 0, to regain control")
         
         
         # Disarm the drone
