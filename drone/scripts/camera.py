@@ -300,11 +300,12 @@ class T265(Node):
         while rclpy.ok():
             if self.global_frame_updated:
                 # Get the frames from the T265 camera, when the data is available
-                #taketime=time.time()
+                
                 self.frames = self.pipe.wait_for_frames()
-                #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+               
                 left_frame = self.frames.get_fisheye_frame(1)
 
+                taketime=time.time()
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
                 if left_frame:          
                     self.image_left = np.asanyarray(left_frame.get_data())
@@ -323,7 +324,7 @@ class T265(Node):
                     #self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-
+                self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                 msg = DroneControlData()
                 msg.timestamp = time.time()
                 msg.camera_x = float(self.t_vec_global_FC[0]) # mm
