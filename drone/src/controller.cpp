@@ -145,12 +145,13 @@ private:
 
                     time_start = std::chrono::system_clock::now(); // Timer is reset
                     data_request = false;                          // Reset data request
-                    std::cout<< "array_counter: " << array_counter-1 << std::endl;
+                    
                     // Only increment if there are more waypoints
                     if(array_counter < array_size-1){
                         array_counter++;
                     }
                 }
+                std::cout<< "array_counter: " << array_counter-1 << std::endl;
                 // Check time now and calculate time duration
                 time_stop = std::chrono::system_clock::now();
                 auto time_duration = std::chrono::duration_cast<std::chrono::milliseconds>(time_stop - time_start).count();
