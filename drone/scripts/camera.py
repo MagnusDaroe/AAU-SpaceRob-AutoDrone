@@ -105,7 +105,7 @@ class T265(Node):
             
         self.global_frame_updated = True
 
-    def get_pose_data(self,frames):
+    def get_T265_pose_data(self,frames):
         """Get the pose data from the T265 camera
         """
         # Get the data from the latest frame in the pipeline
@@ -282,7 +282,7 @@ class T265(Node):
             # If the frame is available, get the image from the left camera and show it undistorted in a window
             if left_frame:          
                 self.image_left = np.asanyarray(left_frame.get_data())
-                self.get_pose_data(self.frames)
+                self.get_T265_pose_data(self.frames)
 
 
                 self.q_to_RPY()
@@ -294,7 +294,6 @@ class T265(Node):
                 #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                 self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                 self.R_to_euler_angles()
-                t=time.time()
 
                 #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                 self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
