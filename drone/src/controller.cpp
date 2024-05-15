@@ -192,7 +192,8 @@ private:
                 // Generates controller value for yaw 
                 yaw_controller(yaw_signal, current_yaw); //KAMERA
 
-                // Shitty way to calculate the distance to the point but square roots and shit aint worth it
+                std::cout<<"total_error: "<< total_error << std::endl;
+                std::cout<<"z_ref: "<< z_ref << std::endl;
                 
                 if (z_ref == 0 && total_error < 100){
                     ghetto_ur++;
@@ -203,7 +204,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 50 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 100 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         data_request = true;    // Reset data request if close to waypoint
