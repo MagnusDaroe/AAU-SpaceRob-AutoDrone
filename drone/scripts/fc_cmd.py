@@ -466,11 +466,11 @@ class FC_Commander(Node):
                 x = 400
                 if self.fc_command.cmd_roll:
                     if self.fc_command.cmd_roll > 0:
-                        self.fc_command.cmd_roll = float(x)
+                        self.fc_command.cmd_roll = int(x)
                     elif self.fc_command.cmd_roll < 0:
-                        self.fc_command.cmd_roll = float(-x)
+                        self.fc_command.cmd_roll = int(-x)
                     else:
-                        self.fc_command.cmd_roll = float(0)
+                        self.fc_command.cmd_roll = int(0)
              
             # Update command variables - if no new command is received, the previous command is sent
             timestamp = self.fc_command.timestamp
@@ -579,17 +579,17 @@ class FC_Commander(Node):
         Safe mode. The drone will land and disarm if the mode is set to safe mode
         """
 
-        self.fc_command.cmd_roll = float(0)
-        self.fc_command.cmd_pitch = float(0)
-        self.fc_command.cmd_yaw = float(0)
+        self.fc_command.cmd_roll = int(0)
+        self.fc_command.cmd_pitch = int(0)
+        self.fc_command.cmd_yaw = int(0)
         self.decremented_thrust = self.decremented_thrust - self.SAFE_DECREMENT
 
         if self.decremented_thrust < self.LAND_THRUST:
-            self.fc_command.cmd_thrust  = float(0)
+            self.fc_command.cmd_thrust  = int(0)
             # Go into emergency stop mode, to complete the emergency landing
             self.emergency_stop()
         else:
-            self.fc_command.cmd_thrust = float(self.decremented_thrust)
+            self.fc_command.cmd_thrust = int(self.decremented_thrust)
             # Send command.    
             self.flight_cmd()
 
@@ -599,10 +599,10 @@ class FC_Commander(Node):
         """
 
         # Reset the command variables to 0
-        self.fc_command.cmd_thrust = float(0)
-        self.fc_command.cmd_roll = float(0)
-        self.fc_command.cmd_pitch = float(0)
-        self.fc_command.cmd_yaw = float(0)
+        self.fc_command.cmd_thrust = int(0)
+        self.fc_command.cmd_roll = int(0)
+        self.fc_command.cmd_pitch = int(0)
+        self.fc_command.cmd_yaw = int(0)
             
 def main(args=None):
     # Initialize the node

@@ -64,22 +64,22 @@ def control_loop(node):
 
         if Drone_cmd.cmd_mode == 1:
             # Send nan values to the drone
-            Drone_cmd.cmd_pitch = float('nan')
-            Drone_cmd.cmd_roll = float('nan')
-            Drone_cmd.cmd_thrust = float('nan')
-            Drone_cmd.cmd_yaw = float('nan')
+            Drone_cmd.cmd_pitch = int('nan')
+            Drone_cmd.cmd_roll = int('nan')
+            Drone_cmd.cmd_thrust = int('nan')
+            Drone_cmd.cmd_yaw = int('nan')
             time.sleep(0.2)
         elif Drone_cmd.cmd_mode == 0:
             # Map values.   
-            Drone_cmd.cmd_pitch = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
-            Drone_cmd.cmd_roll = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
-            Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
-            Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
+            Drone_cmd.cmd_pitch = int(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
+            Drone_cmd.cmd_roll = int(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
+            Drone_cmd.cmd_thrust = int(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
+            Drone_cmd.cmd_yaw = int(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
         elif Drone_cmd.cmd_mode == 2:
-            Drone_cmd.cmd_pitch = float(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
-            Drone_cmd.cmd_roll = float(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
-            Drone_cmd.cmd_thrust = float(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
-            Drone_cmd.cmd_yaw = float(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
+            Drone_cmd.cmd_pitch = int(np.interp(ax2, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Roll
+            Drone_cmd.cmd_roll = int(np.interp(ax1, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))   # Pitch
+            Drone_cmd.cmd_thrust = int(np.interp(ax0, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Throttle
+            Drone_cmd.cmd_yaw = int(np.interp(ax3, (-1, -0.1, 0.1, 1), (-1000, 0, 0, 1000)))  # Yaw  
         
         node.send_control_command(Drone_cmd)
 
