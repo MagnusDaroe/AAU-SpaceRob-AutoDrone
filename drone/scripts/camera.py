@@ -300,9 +300,9 @@ class T265(Node):
         while rclpy.ok():
             if self.global_frame_updated:
                 # Get the frames from the T265 camera, when the data is available
-                taketime=time.time()
+                #taketime=time.time()
                 self.frames = self.pipe.wait_for_frames()
-                self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                 left_frame = self.frames.get_fisheye_frame(1)
 
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
