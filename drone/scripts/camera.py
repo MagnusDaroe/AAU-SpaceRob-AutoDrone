@@ -71,6 +71,7 @@ class T265(Node):
         self.vicon_y=0
         self.vicon_z=0
 
+
     def camera_init(self):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         self.pipe = rs.pipeline()
@@ -238,23 +239,9 @@ class T265(Node):
 
         ##############################
         self.euler_xyz=[x,y,z]
-    
-    def quaternion_to_yaw(self,quat):
-        # Normalize quaternion
-        quat = np.array(quat) / np.linalg.norm(quat)
-
-        # Extract components
-        x, y, z, w = quat
-
-        # Compute pitch
-        pitch = np.arcsin(2.0 * (w * y - x * z))
-
-        # Convert pitch from radians to degrees
-        pitch_degrees = np.degrees(pitch)
-        pitch_degrees = (pitch_degrees + 360) % 360
-
-        return pitch_degrees
-
+        
+        
+        
 
     def update_start_frame(self,T_vicon_start):
         """Update the start frame of the camera
@@ -337,7 +324,6 @@ class T265(Node):
 
                 self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                 self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-                self.get_logger().info(f"Yaw deg: {self.quaternion_to_yaw(self.rotation_xyzw)}")
             #time.sleep(0.1)
 
             msg = DroneControlData()
