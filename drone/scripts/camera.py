@@ -201,7 +201,6 @@ class T265(Node):
         self.T_ref_pose=self.RPY_and_pos_to_T()
         # Compute the transformation from global frame to FC frame
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
-        self.T_global_FC_NO_update=self.T_global_FC
      
         # Get the global position of the camera
         self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
