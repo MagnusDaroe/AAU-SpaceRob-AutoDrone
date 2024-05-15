@@ -443,6 +443,7 @@ class FC_Commander(Node):
             if self.fc_command.cmd_auto_disarm:
                 self.drone_disarm_auto()
 
+            self.get_logger().info(f"landingflag: {self.emergency_landing_flag}")
 
             if self.emergency_landing_flag:
                 # Safe mode
