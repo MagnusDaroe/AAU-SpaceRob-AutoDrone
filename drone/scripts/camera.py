@@ -241,18 +241,18 @@ class T265(Node):
     
     def quaternion_to_yaw(self,quat):
         # Normalize quaternion
-        quat /= np.linalg.norm(quat)
+        quat = np.array(quat) / np.linalg.norm(quat)
 
         # Extract components
-        w, x, y, z = quat
+        x, y, z, w = quat
 
-        # Compute yaw
-        yaw = np.arctan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y**2 + z**2))
+        # Compute pitch
+        pitch = np.arcsin(2.0 * (w * y - x * z))
 
-        # Convert yaw from radians to degrees
-        yaw_degrees = np.degrees(yaw)
+        # Convert pitch from radians to degrees
+        pitch_degrees = np.degrees(pitch)
 
-        return yaw_degrees
+        return pitch_degrees
 
 
     def update_start_frame(self,T_vicon_start):
