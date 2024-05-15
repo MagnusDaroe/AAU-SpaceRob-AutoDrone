@@ -194,7 +194,7 @@ private:
 
                 // Shitty way to calculate the distance to the point but square roots and shit aint worth it
                 
-                if (z_ref == 0 && total_error < 50){
+                if (z_ref == 0 && total_error < 100){
                     ghetto_ur++;
                     if (ghetto_ur > 200){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
