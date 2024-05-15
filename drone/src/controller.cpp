@@ -145,7 +145,7 @@ private:
 
                     time_start = std::chrono::system_clock::now(); // Timer is reset
                     data_request = false;                          // Reset data request
-
+                    std::cout<< "array_counter: " << array_counter-1 << std::endl;
                     // Only increment if there are more waypoints
                     if(array_counter < array_size-1){
                         array_counter++;
