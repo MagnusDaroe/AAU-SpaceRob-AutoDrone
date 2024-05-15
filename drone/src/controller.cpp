@@ -7,7 +7,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "drone/msg/vicon_data.hpp"
-#include "drone/msg/drone_control_data.hpp"
+// #include "drone/msg/drone_control_data.hpp"
 #include "drone/msg/drone_command.hpp"
 
 using namespace std::chrono_literals;
@@ -18,7 +18,7 @@ public:
     ControllerNode() : Node("controller_node")
     {
         // Subscribe to altitude reference and measurement topics
-        Data_subscription_ = this->create_subscription<drone::msg::DroneControlData>("/DroneControlData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1)); //KAMERA
+        Data_subscription_ = this->create_subscription<drone::msg::ViconData>("/ViconData", 10, std::bind(&ControllerNode::DataCallback, this, std::placeholders::_1)); //KAMERA
 
         // Publish regulated altitude control value
         Control_publisher_ = this->create_publisher<drone::msg::DroneCommand>("/cmd_fc", 10);
@@ -57,20 +57,20 @@ private:
     bool data_request = true;
 
 
-    //Defining waypoints
+    // Defining waypoints
     //*test1 waypoints
-    const static int array_size = 5;            // size of array
-    float x_ref_list[array_size] = {-500, -450, -290, -1500, -1500};
-    float y_ref_list[array_size] = {0, -600, 250, 420, 420};
-    float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
-    float yaw_ref_list[array_size] = {M_PI, M_PI, M_PI, M_PI, M_PI}; //Ref is in radians
+    //const static int array_size = 5;            // size of array
+    //float x_ref_list[array_size] = {-500, -450, -290, -1500, -1500};
+    //float y_ref_list[array_size] = {0, -600, 250, 420, 420};
+    //float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
+    //float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
 
-    // //*test2 landing waypoints
-    // const static int array_size = 4;            // size of array
-    // float x_ref_list[array_size] = {-500, -1500, -1500, -1500};
-    // float y_ref_list[array_size] = {0, 420, 420, 420};
-    // float z_ref_list[array_size] = {500, 500, 0, 500};
-    // float yaw_ref_list[array_size] = {M_PI, M_PI, M_PI, M_PI}; //Ref is in radians
+    //*test2 landing waypoints
+    const static int array_size = 4;            // size of array
+    float x_ref_list[array_size] = {522, -1991, -500, -500};
+    float y_ref_list[array_size] = {-1815, 740, 0, 0};
+    float z_ref_list[array_size] = {500, 1000, 500, 0};
+    float yaw_ref_list[array_size] = {0, 0, 0, 0}; //Ref is in radians
 
 
     int array_counter = 0;                     // counter for array
@@ -113,16 +113,16 @@ private:
     std::chrono::system_clock::duration time_since_epoch;
     int ghetto_ur = 0; 
     // Subscribers and publishers
-    rclcpp::Subscription<drone::msg::DroneControlData>::SharedPtr Data_subscription_; // KAMERA
+    rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
 
     //Controller functions
-    void DataCallback(const drone::msg::DroneControlData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
+    void DataCallback(const drone::msg::ViconData::SharedPtr msg) // skal ændres hvis vi vil køre på kamera data data
     { 
-        current_x = msg->camera_x; //KAMERA
-        current_y = msg->camera_y;
-        current_z = msg->camera_z;
-        current_yaw = msg->camera_yaw;
+        current_x = msg->vicon_x; //KAMERA
+        current_y = msg->vicon_y;
+        current_z = msg->vicon_z;
+        current_yaw = msg->vicon_yaw;
         new_msg = true;
     }
 
@@ -230,10 +230,10 @@ private:
 
                 auto control_msg = drone::msg::DroneCommand();
                 // Publish regulated pitch, roll, thrust, and yaw values
-                control_msg.cmd_auto_roll = static_cast<int>(-regulator_roll_value); //(minus)Because of Henriks ligninger //Kamera
+                control_msg.cmd_auto_roll = static_cast<int>(-regulator_roll_value); //(minus)Because of Henriks ligninger /Kamera
                 control_msg.cmd_auto_pitch = static_cast<int>(regulator_pitch_value);
                 control_msg.cmd_auto_thrust = static_cast<int>(regulator_altitude_value);
-                control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe              
+                control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
                 control_msg.cmd_auto_disarm = cmd_auto_land;
@@ -252,10 +252,10 @@ private:
     //XY_controller functions    
     void globalErrorToLocalError(float x_ref, float y_ref, float x_global_mes, float y_global_mes, float yaw_mes)
     {
-        float x_global_error = x_ref - x_global_mes; 
-        float y_global_error = y_ref - y_global_mes; 
-        // x_global_error = -x_global_error; //Kamera
-        // y_global_error = -y_global_error; //Kamera
+        float x_global_error = x_ref - x_global_mes; //x_global_mes negative because of Vicon //Kamera
+        float y_global_error = y_ref - y_global_mes; //y_global_mes negative because of Vicon //Kamera
+        x_global_error = -x_global_error; //Kamera
+        y_global_error = -y_global_error; //Kamera
         float roll = 0;
         float pitch = 0;
         float yaw = yaw_mes;
