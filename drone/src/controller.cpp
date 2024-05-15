@@ -223,10 +223,10 @@ private:
 
                 auto control_msg = drone::msg::DroneCommand();
                 // Publish regulated pitch, roll, thrust, and yaw values
-                control_msg.cmd_auto_roll = -regulator_roll_value; //(minus)Because of Henriks ligninger /Kamera
-                control_msg.cmd_auto_pitch = regulator_pitch_value;
-                control_msg.cmd_auto_thrust = regulator_altitude_value;
-                control_msg.cmd_auto_yaw = -regulator_yaw_value;  //Minus because fc coordinates system is downwards maybe                
+                control_msg.cmd_auto_roll = static_cast<int>(-regulator_roll_value); //(minus)Because of Henriks ligninger /Kamera
+                control_msg.cmd_auto_pitch = static_cast<int>(regulator_pitch_value);
+                control_msg.cmd_auto_thrust = static_cast<int>(regulator_altitude_value);
+                control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
                 control_msg.cmd_auto_disarm = cmd_auto_land;
