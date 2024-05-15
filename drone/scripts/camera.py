@@ -196,11 +196,11 @@ class T265(Node):
         # Compute the transformation from global frame to FC frame
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
         self.T_global_FC_NO_update=self.T_global_FC
-        self.T_global_FC[0,3]+=self.diff_x
-        self.T_global_FC[1,3]+=self.diff_y
-        self.T_global_FC[2,3]+=self.diff_z
+        #self.T_global_FC[0,3]+=self.diff_x
+        #self.T_global_FC[1,3]+=self.diff_y
+        #self.T_global_FC[2,3]+=self.diff_z
         # Get the global position of the camera
-        self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]]+self.diff_z)
         
         # Get the global rotation of the camera
         self.R_global_FC=self.T_global_FC[:3,:3]
@@ -221,7 +221,23 @@ class T265(Node):
             x = math.atan2(-self.r_mtx_global[1,2], self.r_mtx_global[1,1]) #atan2(-R23,R22)
             y = math.atan2(-self.r_mtx_global[2,0], sy) #atan2(-R31,sqrt(R11^2+R21^2))
             z = 0
-        self.euler_xyz=[x,y,z]       
+        
+        ################new stuff:################
+                # Adjust angles to be between -2*pi and 2*pi
+        x = x % (2 * math.pi)
+        y = y % (2 * math.pi)
+        z = z % (2 * math.pi)
+
+        # Convert angles < -pi to positive equivalents
+        if x < -math.pi:
+            x += 2 * math.pi
+        if y < -math.pi:
+            y += 2 * math.pi
+        if z < -math.pi:
+            z += 2 * math.pi
+
+        ##############################
+        self.euler_xyz=[x,y,z]
 
     def update_start_frame(self,T_vicon_start):
         """Update the start frame of the camera
@@ -233,7 +249,7 @@ class T265(Node):
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
         """
-        """
+        
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC_NO_update[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC_NO_update[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC_NO_update[2,3] #mm
@@ -241,6 +257,7 @@ class T265(Node):
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
+        """
         """
         self.get_pose_data(self.frames)
         self.q_to_RPY()
