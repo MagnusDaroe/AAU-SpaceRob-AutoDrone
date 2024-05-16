@@ -304,7 +304,7 @@ class T265(Node):
         rate_controller = RateController(100)
         msg = DroneControlData()
         taketime=time.time()
-        while True:#rclpy.ok():
+        while rclpy.ok():
             if self.global_frame_updated:
                 
                 # Get the frames from the T265 camera, when the data is available
@@ -331,7 +331,7 @@ class T265(Node):
                     self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     taketime=time.time()
                     
                     msg.timestamp = time.time()
