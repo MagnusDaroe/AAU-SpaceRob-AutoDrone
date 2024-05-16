@@ -342,7 +342,7 @@ class T265(Node):
                 self.publisher_.publish(msg)
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     #taketime=time.time()
-                rate_controller.sleep()
+                #rate_controller.sleep()
                     
                 
             else: 
