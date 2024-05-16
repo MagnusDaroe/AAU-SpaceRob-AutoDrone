@@ -332,7 +332,7 @@ class T265(Node):
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-                    taketime=time.time()
+                    #taketime=time.time()
                     
                     msg.timestamp = time.time()
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
