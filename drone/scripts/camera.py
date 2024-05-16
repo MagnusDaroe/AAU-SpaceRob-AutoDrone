@@ -108,7 +108,7 @@ class T265(Node):
                             [0,0,0,1]])
             
             self.update_start_frame(T_global)
-            
+            """
             self.frames = self.pipe.wait_for_frames()
             #left_frame = self.frames.get_fisheye_frame(1)
             self.get_T265_pose_data(self.frames)
@@ -116,15 +116,16 @@ class T265(Node):
             if self.new_data:         
                 self.q_to_RPY()
                 self.get_global_pose()
-            
+            """
             self.global_frame_updated = True
         else:
             
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
-            P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
-            self.update_position(P_global)
+
+            #P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            #self.update_position(P_global)
             
         
 
