@@ -331,9 +331,9 @@ class T265(Node):
                     self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    
                     taketime=time.time()
-                    """
+                    
                     msg.timestamp = time.time()
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
                     msg.camera_y = float(self.t_vec_global_FC[1]) # mm
@@ -341,7 +341,8 @@ class T265(Node):
                     #msg.camera_pitch = float(self.euler_xyz[0]) # rad
                     #msg.camera_roll = float(self.euler_xyz[1]) # rad
                     msg.camera_yaw = float(self.euler_xyz[2]) # rad
-                    self.publisher_.publish(msg)"""
+                    self.publisher_.publish(msg)
+                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     
                 
             else: 
