@@ -36,7 +36,7 @@ class T265(Node):
         # Create publisher and subscriber
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
 
-        self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
+        #self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
 
     def math_init(self):
         #self.R_FC_backside=np.array([[1,0,0],[0,1,0],[0,0,1]])
