@@ -298,6 +298,7 @@ class T265(Node):
         rate_controller = RateController(100)
 
         while rclpy.ok():
+            taketime=time.time()
             if self.global_frame_updated:
                 # Get the frames from the T265 camera, when the data is available
                 
@@ -305,7 +306,7 @@ class T265(Node):
                
                 left_frame = self.frames.get_fisheye_frame(1)
 
-                taketime=time.time()
+
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
                 if left_frame:          
                     self.image_left = np.asanyarray(left_frame.get_data())
@@ -338,10 +339,9 @@ class T265(Node):
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
             
-            #rate_controller.sleep()
+            #rate_controller.sleep()'
 
-
-
+            self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
 
 def main(args=None):
     rclpy.init(args=args)
