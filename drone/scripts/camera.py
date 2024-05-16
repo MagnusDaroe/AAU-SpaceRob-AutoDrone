@@ -81,8 +81,11 @@ class T265(Node):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         self.pipe = rs.pipeline()
 
+        cfg = rs.config()
+
+        cfg.enable_stream(rs.stream.pose)
         # Start streaming with requested configuration
-        self.pipe.start()
+        self.pipe.start(cfg)
 
         # variable to stop and start camera loop
         self.stop=False
