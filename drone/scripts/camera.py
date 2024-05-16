@@ -109,14 +109,10 @@ class T265(Node):
             
             self.update_start_frame(T_global)
             self.frames = self.pipe.wait_for_frames()
-            left_frame = self.frames.get_fisheye_frame(1)
-
+            #left_frame = self.frames.get_fisheye_frame(1)
+            self.get_T265_pose_data(self.frames)
             # If the frame is available, get the image from the left camera and show it undistorted in a window
-            if left_frame:          
-                self.image_left = np.asanyarray(left_frame.get_data())
-                self.get_T265_pose_data(self.frames)
-
-
+            if self.new_data:         
                 self.q_to_RPY()
                 self.get_global_pose()
 
@@ -333,7 +329,7 @@ class T265(Node):
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
                     
                     
-                    rate_controller.sleep()
+                    
                     
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
                     msg.camera_y = float(self.t_vec_global_FC[1]) # mm
@@ -342,15 +338,15 @@ class T265(Node):
                     #msg.camera_roll = float(self.euler_xyz[1]) # rad
                     msg.camera_yaw = float(self.euler_xyz[2]) # rad
                     self.publisher_.publish(msg)
-                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-                    taketime=time.time()
+                    #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    #taketime=time.time()
                     
                 
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
             
-            #
+            #rate_controller.sleep()
 
             
 
