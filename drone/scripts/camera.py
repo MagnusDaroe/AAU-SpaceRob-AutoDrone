@@ -303,7 +303,7 @@ class T265(Node):
         #Create rate controller
         rate_controller = RateController(100)
         msg = DroneControlData()
-        #taketime=time.time()
+        taketime=time.time()
         while rclpy.ok():
             if self.global_frame_updated:
                 
@@ -319,7 +319,6 @@ class T265(Node):
                     #self.image_left = np.asanyarray(left_frame.get_data())
                     
 
-
                     self.q_to_RPY()
                     self.get_global_pose()
                     #self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
@@ -332,7 +331,8 @@ class T265(Node):
                     self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
-                
+                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    taketime=time.time()
                     
                     msg.timestamp = time.time()
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
@@ -347,8 +347,7 @@ class T265(Node):
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
-            #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-            #taketime=time.time()
+            
             #rate_controller.sleep()'
 
             
