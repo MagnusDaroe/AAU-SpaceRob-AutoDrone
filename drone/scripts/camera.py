@@ -119,11 +119,12 @@ class T265(Node):
             """
             self.global_frame_updated = True
         else:
-            #P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
-            #self.update_position(P_global)
+            P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            self.update_position(P_global)
             
         
 
