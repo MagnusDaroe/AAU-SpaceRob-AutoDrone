@@ -108,7 +108,6 @@ class T265(Node):
                             [0,0,0,1]])
             
             self.update_start_frame(T_global)
-            self.t_vec_global_FC=np.array([-x,-y,z])
             self.frames = self.pipe.wait_for_frames()
             left_frame = self.frames.get_fisheye_frame(1)
 
@@ -333,14 +332,14 @@ class T265(Node):
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
                 
                     self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-                msg.timestamp = time.time()
-                msg.camera_x = float(self.t_vec_global_FC[0]) # mm
-                msg.camera_y = float(self.t_vec_global_FC[1]) # mm
-                msg.camera_z = float(self.t_vec_global_FC[2]) # mm
-                #msg.camera_pitch = float(self.euler_xyz[0]) # rad
-                #msg.camera_roll = float(self.euler_xyz[1]) # rad
-                msg.camera_yaw = float(self.euler_xyz[2]) # rad
-                self.publisher_.publish(msg)
+                    msg.timestamp = time.time()
+                    msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+                    msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+                    msg.camera_z = float(self.t_vec_global_FC[2]) # mm
+                    #msg.camera_pitch = float(self.euler_xyz[0]) # rad
+                    #msg.camera_roll = float(self.euler_xyz[1]) # rad
+                    msg.camera_yaw = float(self.euler_xyz[2]) # rad
+                    self.publisher_.publish(msg)
                 
             else: 
                 self.get_logger().warning('No global frame data available')
