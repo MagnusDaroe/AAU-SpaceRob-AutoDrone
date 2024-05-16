@@ -301,10 +301,10 @@ class T265(Node):
         #Create rate controller
         rate_controller = RateController(100)
         msg = DroneControlData()
-
+        taketime=time.time()
         while rclpy.ok():
             if self.global_frame_updated:
-                taketime=time.time()
+                
                 # Get the frames from the T265 camera, when the data is available
                 
                 self.frames = self.pipe.wait_for_frames()
@@ -340,12 +340,13 @@ class T265(Node):
                     #msg.camera_roll = float(self.euler_xyz[1]) # rad
                     msg.camera_yaw = float(self.euler_xyz[2]) # rad
                     self.publisher_.publish(msg)
-                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    
                 
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
-            
+            self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+            taketime=time.time()
             #rate_controller.sleep()'
 
             
