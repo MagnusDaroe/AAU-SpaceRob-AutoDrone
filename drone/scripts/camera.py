@@ -123,8 +123,8 @@ class T265(Node):
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
-            P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
-            self.update_position(P_global)
+            #P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            #self.update_position(P_global)
             
         
 
@@ -343,7 +343,7 @@ class T265(Node):
                     self.publisher_.publish(msg)
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     #taketime=time.time()
-                #rate_controller.sleep()
+                rate_controller.sleep()
                     
                 
             else: 
