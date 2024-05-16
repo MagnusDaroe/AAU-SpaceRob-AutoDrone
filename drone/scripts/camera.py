@@ -133,6 +133,7 @@ class T265(Node):
     def get_T265_pose_data(self,frames):
         """Get the pose data from the T265 camera
         """
+        self.new_data=False
         # Get the data from the latest frame in the pipeline
         pose = frames.get_pose_frame()
         data = pose.get_pose_data()
@@ -141,6 +142,7 @@ class T265(Node):
             self.translation_xyz_mm = [data.translation.x*1000, data.translation.y*1000, data.translation.z*1000] #mm
             self.rotation_xyzw = [data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w]
             #self.pose_confidence = data.tracker_confidence
+            self.new_data=True
 
     def q_to_RPY(self):
         """
@@ -310,12 +312,12 @@ class T265(Node):
                 self.frames = self.pipe.wait_for_frames()
                
                 #left_frame = self.frames.get_fisheye_frame(1)
-
+                self.get_T265_pose_data(self.frames)
 
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
-                if True:#self.frames:          
+                if self.new_data:#self.frames:          
                     #self.image_left = np.asanyarray(left_frame.get_data())
-                    self.get_T265_pose_data(self.frames)
+                    
 
 
                     self.q_to_RPY()
