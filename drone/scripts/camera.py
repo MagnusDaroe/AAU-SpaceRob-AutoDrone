@@ -301,7 +301,7 @@ class T265(Node):
         rate_controller = RateController(100)
         msg = DroneControlData()
         taketime=time.time()
-        while True:#rclpy.ok():
+        while rclpy.ok():
             if self.global_frame_updated:
                 
                 # Get the frames from the T265 camera, when the data is available
