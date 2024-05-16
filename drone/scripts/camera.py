@@ -342,13 +342,14 @@ class T265(Node):
                 self.publisher_.publish(msg)
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     #taketime=time.time()
+                rate_controller.sleep()
                     
                 
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
             
-            rate_controller.sleep()
+            
 
             
 
