@@ -338,15 +338,15 @@ class T265(Node):
                     #msg.camera_roll = float(self.euler_xyz[1]) # rad
                     msg.camera_yaw = float(self.euler_xyz[2]) # rad
                     self.publisher_.publish(msg)
-                    #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-                    #taketime=time.time()
+                    self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+                    taketime=time.time()
                     
                 
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
             
-            rate_controller.sleep()
+            #rate_controller.sleep()
 
             
 
