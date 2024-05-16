@@ -108,7 +108,7 @@ class T265(Node):
                             [0,0,0,1]])
             
             self.update_start_frame(T_global)
-            
+            self.t_vec_global_FC=np.array([-x,-y,z])
             self.frames = self.pipe.wait_for_frames()
             left_frame = self.frames.get_fisheye_frame(1)
 
@@ -267,6 +267,8 @@ class T265(Node):
         self.T_global_start=self.T_global_vicon@T_vicon_start@self.T_Vicon_drone_start
         self.T_global_ref=self.T_global_start@self.T_start_ref
         self.P_vicon_start=np.array([T_vicon_start[0,3],T_vicon_start[1,3],T_vicon_start[2,3]])
+        
+
 
     def update_position(self,P_vicon_FC):
         """Update the global position of the drone
