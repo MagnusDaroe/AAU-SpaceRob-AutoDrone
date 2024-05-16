@@ -119,7 +119,7 @@ class T265(Node):
             """
             self.global_frame_updated = True
         else:
-            P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
+            #P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
@@ -326,20 +326,20 @@ class T265(Node):
                     #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                     ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                     self.R_to_euler_angles()
-                    self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
+                    #self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
                     
                     
                     
                     
-                msg.camera_x = float(self.t_vec_global_FC[0]) # mm
-                msg.camera_y = float(self.t_vec_global_FC[1]) # mm
-                msg.camera_z = float(self.t_vec_global_FC[2]) # mm
-                #msg.camera_pitch = float(self.euler_xyz[0]) # rad
-                #msg.camera_roll = float(self.euler_xyz[1]) # rad
-                msg.camera_yaw = float(self.euler_xyz[2]) # rad
-                self.publisher_.publish(msg)
+                    msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+                    msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+                    msg.camera_z = float(self.t_vec_global_FC[2]) # mm
+                    #msg.camera_pitch = float(self.euler_xyz[0]) # rad
+                    #msg.camera_roll = float(self.euler_xyz[1]) # rad
+                    msg.camera_yaw = float(self.euler_xyz[2]) # rad
+                    self.publisher_.publish(msg)
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     #taketime=time.time()
                 #rate_controller.sleep()
