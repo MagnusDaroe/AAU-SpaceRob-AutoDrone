@@ -305,10 +305,10 @@ class T265(Node):
             if self.global_frame_updated:
                 
                 # Get the frames from the T265 camera, when the data is available
-                self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-
-                self.frames = self.pipe.wait_for_frames()
+                
                 taketime=time.time()
+                self.frames = self.pipe.wait_for_frames()
+                self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                 #left_frame = self.frames.get_fisheye_frame(1)
                 self.get_T265_pose_data(self.frames)
 
@@ -333,13 +333,13 @@ class T265(Node):
                     
                     
                     
-                    msg.camera_x = float(self.t_vec_global_FC[0]) # mm
-                    msg.camera_y = float(self.t_vec_global_FC[1]) # mm
-                    msg.camera_z = float(self.t_vec_global_FC[2]) # mm
-                    #msg.camera_pitch = float(self.euler_xyz[0]) # rad
-                    #msg.camera_roll = float(self.euler_xyz[1]) # rad
-                    msg.camera_yaw = float(self.euler_xyz[2]) # rad
-                    self.publisher_.publish(msg)
+                msg.camera_x = float(self.t_vec_global_FC[0]) # mm
+                msg.camera_y = float(self.t_vec_global_FC[1]) # mm
+                msg.camera_z = float(self.t_vec_global_FC[2]) # mm
+                #msg.camera_pitch = float(self.euler_xyz[0]) # rad
+                #msg.camera_roll = float(self.euler_xyz[1]) # rad
+                msg.camera_yaw = float(self.euler_xyz[2]) # rad
+                self.publisher_.publish(msg)
                     #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
                     #taketime=time.time()
                     
