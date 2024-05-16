@@ -309,12 +309,12 @@ class T265(Node):
                 
                 self.frames = self.pipe.wait_for_frames()
                
-                left_frame = self.frames.get_fisheye_frame(1)
+                #left_frame = self.frames.get_fisheye_frame(1)
 
 
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
-                if left_frame:          
-                    self.image_left = np.asanyarray(left_frame.get_data())
+                if self.frames:          
+                    #self.image_left = np.asanyarray(left_frame.get_data())
                     self.get_T265_pose_data(self.frames)
 
 
