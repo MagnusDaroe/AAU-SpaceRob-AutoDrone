@@ -25,7 +25,7 @@ class T265(Node):
     def __init__(self):
         super().__init__('camera_node')
         # Flag to indicate if the global frame has been updated
-        self.global_frame_updated = False
+        self.global_frame_updated = True#self.global_frame_updated = False
 
         # Initialize the needed math
         self.math_init()
