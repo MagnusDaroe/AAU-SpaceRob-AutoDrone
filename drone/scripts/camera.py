@@ -348,7 +348,7 @@ class T265(Node):
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
             
-            #rate_controller.sleep()'
+            rate_controller.sleep()
 
             
 
