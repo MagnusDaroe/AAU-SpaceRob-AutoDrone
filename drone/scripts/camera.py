@@ -305,9 +305,10 @@ class T265(Node):
             if self.global_frame_updated:
                 
                 # Get the frames from the T265 camera, when the data is available
-                
+                self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+
                 self.frames = self.pipe.wait_for_frames()
-               
+                taketime=time.time()
                 #left_frame = self.frames.get_fisheye_frame(1)
                 self.get_T265_pose_data(self.frames)
 
