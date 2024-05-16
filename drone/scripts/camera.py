@@ -301,7 +301,7 @@ class T265(Node):
         #Create rate controller
         rate_controller = RateController(100)
         msg = DroneControlData()
-        taketime=time.time()
+        #taketime=time.time()
         while rclpy.ok():
             if self.global_frame_updated:
                 
@@ -313,7 +313,7 @@ class T265(Node):
 
 
                 # If the frame is available, get the image from the left camera and show it undistorted in a window
-                if self.frames:          
+                if True:#self.frames:          
                     #self.image_left = np.asanyarray(left_frame.get_data())
                     self.get_T265_pose_data(self.frames)
 
@@ -345,8 +345,8 @@ class T265(Node):
             else: 
                 self.get_logger().warning('No global frame data available')
                 time.sleep(0.2)
-            self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
-            taketime=time.time()
+            #self.get_logger().info(f"Time to get frame: {time.time()-taketime}")
+            #taketime=time.time()
             #rate_controller.sleep()'
 
             
