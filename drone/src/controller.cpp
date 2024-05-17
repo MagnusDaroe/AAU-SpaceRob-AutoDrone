@@ -67,7 +67,7 @@ private:
     // float ghetto_wait[array_size] = {200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     //*test2 landing waypoints
-    const static int array_size = 8;            // size of array
+    const static int array_size = 8;                           // size of array
     float x_ref_list[array_size] = {522, -1991, 544, 544, 544, -2090, 522, 522};
     float y_ref_list[array_size] = {-1815, 740, 707, 707, 707, -1670, -1815, -1815};
     float z_ref_list[array_size] = {500, 1000, 500, 0, 500, 1000, 500, 0};
@@ -75,7 +75,7 @@ private:
     float ghetto_wait[array_size] = {200, 200, 200, 200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
 
-    int array_counter = 0;                     // counter for array
+    int array_counter = 0;        // counter for array
 
     // Variables that hold individual reference points while running the controller
     float x_ref;
