@@ -64,6 +64,7 @@ private:
     //float y_ref_list[array_size] = {0, -600, 250, 420, 420};
     //float z_ref_list[array_size] = {500, 700, 500, 600, 180}; 
     //float yaw_ref_list[array_size] = {0, 0, 0, 0, 0}; //Ref is in radians
+    // float ghetto_wait[array_size] = {200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     //*test2 landing waypoints
     const static int array_size = 8;            // size of array
@@ -71,6 +72,7 @@ private:
     float y_ref_list[array_size] = {-1815, 740, 707, 707, 707, -1670, -1815, -1815};
     float z_ref_list[array_size] = {500, 1000, 500, 0, 500, 1000, 500, 0};
     float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
+    float ghetto_wait[array_size] = {200, 200, 200, 200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
 
     int array_counter = 0;                     // counter for array
@@ -112,6 +114,7 @@ private:
     std::chrono::system_clock::time_point timestamp;
     std::chrono::system_clock::duration time_since_epoch;
     int ghetto_ur = 0; 
+    int ghetto_ref;
     // Subscribers and publishers
     rclcpp::Subscription<drone::msg::ViconData>::SharedPtr Data_subscription_; // KAMERA
     rclcpp::Publisher<drone::msg::DroneCommand>::SharedPtr Control_publisher_;
@@ -134,7 +137,6 @@ private:
                 std::cout<< "Auto land: 1"<< std::endl;
                 if(disarm_duration > 10000){ //Waits for 10 seconds before sending the arm command
                     cmd_auto_land = 0;
-                    ghetto_ur = 0;
                 }
             }
             else if(new_msg == true){
@@ -146,6 +148,7 @@ private:
                     y_ref = y_ref_list[array_counter];
                     z_ref = z_ref_list[array_counter]; 
                     yaw_ref = yaw_ref_list[array_counter];
+                    ghetto_ref = ghetto_wait[array_counter]; // Set time to wait in point
 
                     time_start = std::chrono::system_clock::now(); // Timer is reset
                     data_request = false;                          // Reset data request
@@ -203,15 +206,16 @@ private:
                 if (z_ref == 0 && total_error < 40){
                     ghetto_ur++;
                     std::cout<< "Ghetto ur"<< std::endl;
-                    if (ghetto_ur > 200){
+                    if (ghetto_ur > ghetto_ref){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
                         data_request = true;
+                        ghetto_ur = 0;
                     }
                 }
                 // Check if error is under threshold to request new data
                 else if (total_error < 80 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
-                    if (ghetto_ur > 200){
+                    if (ghetto_ur > ghetto_ref){
                         data_request = true;    // Reset data request if close to waypoint
                         ghetto_ur = 0;
                         x_ref_old = x_ref;
