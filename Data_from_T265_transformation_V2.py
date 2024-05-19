@@ -175,6 +175,7 @@ try:
         T_mtx=T_cam_pose
         R_new=inv(T_ref_cam[:3,:3]@inv(R_mtx))
         print("R_new: \n",R_new)
+        
         #P_center 
         #backside center of T265 [01.54,09.10,-05.75,1] 
         #FC to backside [153.223,0,-86.6070,1]

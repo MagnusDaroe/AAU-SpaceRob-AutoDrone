@@ -222,12 +222,12 @@ class T265(Node):
         diff_x=-1*P_vicon_FC[0]-self.t_vec_global_FC[0] #mm
         diff_y=-1*P_vicon_FC[1]-self.t_vec_global_FC[1] #mm
         diff_z=P_vicon_FC[2]-self.t_vec_global_FC[2] #mm
-
+        
         #Update T_global_start with the position difference
         self.T_global_start[0,3]+=diff_x
         self.T_global_start[1,3]+=diff_y
         self.T_global_start[2,3]+=diff_z
-
+        #self.T_global_start=self.T_global_vicon@self.T_Vicon_drone_start
         #Update T_global_ref
         self.T_global_ref=self.T_global_start@self.T_start_ref
 

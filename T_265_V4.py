@@ -109,7 +109,6 @@ class T265():
         
         self.t_vec_global=self.T_global_cam@np.array([[self.translation_xyz[0]*100],[self.translation_xyz[1]*100],[self.translation_xyz[2]*100],[1]])
         self.r_mtx_global=self.R_global_cam@R_rot
-        print(self.r_mtx_global)
         
 
     def update_start_frame(self,T_global_UAV):

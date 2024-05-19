@@ -57,3 +57,26 @@ T_ref_cam=np.array([[np.cos(np.deg2rad(angle)),0,np.sin(np.deg2rad(angle)),0],
                             [0,0,0,1]])
 
 print("T_ref_cam +75: \n",T_ref_cam)
+
+
+T_FC_backside=np.array([[1,0,0,153.223],[0,1,0,0],[0,0,1,86.6070],[0,0,0,1]]) #mm
+
+# Transformation from backside center of T265 to cam frame center in T265:
+T_backside_center=np.array([[1,0,0,1.54],[0,1,0,-9.10],[0,0,1,05.75],[0,0,0,1]]) #mm
+
+# Transformation from pose frame to the FC:
+T_pose_FC=inv(T_FC_backside@T_backside_center)
+
+print("T_pose_FC: \n",T_pose_FC)
+
+T_FC_pose=T_FC_backside@T_backside_center
+print("T_FC_pose: \n",T_FC_pose)
+
+t_vec_flat_meter=np.array([0.0862,0.0645,0.0])
+
+P_Cam_marker=np.array([[t_vec_flat_meter[0]*1000],[t_vec_flat_meter[1]*1000],[t_vec_flat_meter[2]*1000]])
+theta=np.deg2rad(75)
+rotz_75=np.array([[np.cos(theta),-np.sin(theta),0],[np.sin(theta),np.cos(theta),0],[0,0,1]])
+P_CamFlat_marker=rotz_75@P_Cam_marker
+
+print("P_CamFlat_marker: ",P_CamFlat_marker)
