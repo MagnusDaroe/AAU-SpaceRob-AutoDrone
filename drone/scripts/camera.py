@@ -274,7 +274,7 @@ class T265(Node):
         self.T_global_start=self.T_global_vicon@T_vicon_start@self.T_Vicon_drone_start
         self.T_global_ref=self.T_global_start@self.T_start_ref
         self.P_vicon_start=np.array([T_vicon_start[0,3],T_vicon_start[1,3],T_vicon_start[2,3]])
-        print("T_global:\n",self.T_global_start)
+        self.get_logger().info(f"T_global:\n",self.T_global_start)
         
 
 
