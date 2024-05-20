@@ -52,6 +52,7 @@ class FC_Commander(Node):
         self.LAND_THRUST = 400
         self.START_LAND_THRUST = 560
         self.SAFE_DECREMENT = 0.1
+        self.start_drone = True
 
         self.TIMEOUT = 0.5
         self.timestamp_auto = 0
@@ -499,6 +500,11 @@ class FC_Commander(Node):
         """
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
+            if self.start_drone:
+                self.timestamp_manual = self.get_time()
+                self.start_drone = False
+
+
             if self.fc_command.cmd_mode not in [0,1,2]:
                 self.get_logger().fatal("Drone mode not recognized")
                 # Shut down
