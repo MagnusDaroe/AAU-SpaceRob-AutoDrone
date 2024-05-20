@@ -530,10 +530,7 @@ class FC_Commander(Node):
             auto_updated = (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT)
             manual_commander = self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0
             auto_commander = self.fc_command.identifier == 1 and self.fc_command.cmd_mode == 1
-
-
-            self.get_logger().info(f"first loop: {self.fc_command.identifier == 0 and (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT)}, second loop : {self.fc_command.identifier == 1 and (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT)} ")
-                    
+        
             if manual_commander and manual_updated:
                 # Send the command to the flight controller
                 self.flight_cmd()
@@ -545,10 +542,9 @@ class FC_Commander(Node):
                 # Send the command to the flight controller
                 self.flight_cmd()
 
-                self.get_logger().info(f"previous timestamp auto: {self.previous_timestamp_auto}, timestamp auto: {self.timestamp_auto}, last command time auto: {self.last_command_time_auto}, current time: {self.current_time}")
                 if self.previous_timestamp_auto != self.timestamp_auto:
                     self.last_command_time_auto = self.current_time
-            elif manual_commander and not manual_updated or auto_commander and not auto_updated:
+            elif not manual_updated or not auto_updated:
                 if not (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                     self.get_logger().warn("No new manual command received. Going into safe mode.")
                 else: 
