@@ -101,6 +101,9 @@ class T265(Node):
             x=msg.vicon_x
             y=msg.vicon_y
             z=msg.vicon_z
+            self.start_x=x
+            self.start_y=y
+            self.start_z=z
             #Extrinsic rotation matrix from roll, pitch and yaw
             T_global=np.array([[np.cos(yaw)*np.cos(pitch),np.cos(yaw)*np.sin(pitch)*np.sin(roll)-np.sin(yaw)*np.cos(roll),np.cos(yaw)*np.sin(pitch)*np.cos(roll)+np.sin(yaw)*np.sin(roll),x],
                             [np.sin(yaw)*np.cos(pitch),np.sin(yaw)*np.sin(pitch)*np.sin(roll)+np.cos(yaw)*np.cos(roll),np.sin(yaw)*np.sin(pitch)*np.cos(roll)-np.cos(yaw)*np.sin(roll),y],
@@ -300,7 +303,7 @@ class T265(Node):
         """Log the timestamp, diff_x, diff_y, diff_z, self.euler_xyz[0], self.euler_xyz[1], self.euler_xyz[2], msg.vicon_roll, msg.vicon_pitch, msg.vicon_yaw to a csv document
         """
         with open('camera_data.csv', 'a') as file:
-            file.write(f"{self.time_stamp},{self.diff_x},{self.diff_y},{self.diff_z},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
+            file.write(f"{self.time_stamp},{self.diff_x-self.start_x},{self.diff_y-self.start_y},{self.diff_z-self.start_y},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
     
     def run(self):
         
@@ -328,7 +331,7 @@ class T265(Node):
                     self.get_global_pose()
                     #self.get_logger().info(f"cam pose: x: {round(self.translation_xyz_mm[0],2)}, y: {round(self.translation_xyz_mm[1],2)}, z: {round(self.translation_xyz_mm[2],2)}")
                     #log the diff_x, diff_y and diff_z
-                    self.get_logger().info(f"diff_x: {round(self.diff_x,2)}, diff_y: {round(self.diff_y,2)}, diff_z: {round(self.diff_z,2)}")
+                    self.get_logger().info(f"diff_x: {round(self.diff_x-self.start_x,2)}, diff_y: {round(self.diff_y-self.start_y,2)}, diff_z: {round(self.diff_z-self.start_z,2)}")
 
                     #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                     ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
