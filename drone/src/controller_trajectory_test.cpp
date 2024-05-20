@@ -59,10 +59,10 @@ private:
 
     
     //*Trajectory test
-    const static int array_size = 10;                           // size of array
-    float x_ref_list[array_size] = {1016, 1420, 358, -1082, -1780, -1362, -87, -110, -528, 1211};
-    float y_ref_list[array_size] = {-970, 370, 1439, 1158, 488, -997, -1494, 33, 1031, -92};
-    float z_ref_list[array_size] = {500, 1000, 1200, 900, 600, 1100, 1500, 1800, 1300, 900};
+    const static int array_size = 11;                           // size of array
+    float x_ref_list[array_size] = {1016, 1420, 358, -1082, -1780, -1362, -87, -110, -528, 1211, 1211};
+    float y_ref_list[array_size] = {-970, 370, 1439, 1158, 488, -997, -1494, 33, 1031, -92, -92};
+    float z_ref_list[array_size] = {500, 1000, 1200, 900, 600, 1100, 1500, 1800, 1300, 900, 0};
     float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
     int ghetto_wait[array_size] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
