@@ -226,7 +226,8 @@ class T265(Node):
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
      
         # Get the global position of the camera
-        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
+        #self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
         
         # Get the global rotation of the camera
         self.r_mtx_global=self.T_global_FC[:3,:3]
@@ -341,8 +342,8 @@ class T265(Node):
                     #log the diff_x, diff_y and diff_z
                     self.get_logger().info(f"diff_x: {round(self.diff_x-self.start_x,2)}, diff_y: {round(self.diff_y-self.start_y,2)}, diff_z: {round(self.diff_z-self.start_z,2)}")
 
-                    #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
-                    ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
+                    self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
+                    self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                     self.R_to_euler_angles()
                     self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
