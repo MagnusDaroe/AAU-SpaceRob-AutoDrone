@@ -192,7 +192,7 @@ private:
                 // Generates controller value for yaw 
                 yaw_controller(yaw_signal, current_yaw);
                 
-                if (z_ref == 0 && total_error < 40){
+                if (z_ref == 0 && total_error < 60){
                     ghetto_ur++;
                     if (ghetto_ur > ghetto_ref){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
@@ -201,7 +201,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 80 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 100 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > ghetto_ref){
                         data_request = true;    // Reset data request if close to waypoint
