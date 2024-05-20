@@ -564,9 +564,7 @@ class FC_Commander(Node):
                 if self.previous_timestamp_auto != self.timestamp_auto:
                     self.last_command_time_auto = self.current_time
 
-
-            
-            if not self.mode_switch and (self.fc_command.cmd_mode == 0 and not manual_updated or self.fc_command.cmd_mode == 1 and not auto_updated):
+            if not self.mode_switch and ( not manual_updated or self.fc_command.cmd_mode == 1 and not auto_updated):
                 if not (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                     self.get_logger().warn("No new manual command received. Going into safe mode.")
                 else: 
