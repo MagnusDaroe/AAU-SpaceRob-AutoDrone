@@ -522,7 +522,6 @@ class FC_Commander(Node):
                         self.fc_command.cmd_roll = int(0)
              
             # Update command variables - if no new command is received, the previous command is sent
-            self.get_logger().info(f"identifier:{self.fc_command.identifier}")
             if self.fc_command.identifier == 0:
                 self.timestamp_manual = self.fc_command.timestamp
             elif self.fc_command.identifier == 1:
@@ -532,14 +531,14 @@ class FC_Commander(Node):
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
 
-            self.get_logger().info(f"previous manual:{self.previous_timestamp_manual}, current manual:{self.timestamp_manual}, timout manual: {self.current_time - self.last_command_time_manual}")
+            #self.get_logger().info(f"previous manual:{self.previous_timestamp_manual}, current manual:{self.timestamp_manual}, timout manual: {self.current_time - self.last_command_time_manual}")
 
             manual_updated = (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT)
             auto_updated = (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT)
             manual_commander = self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0
             auto_commander = self.fc_command.identifier == 1 and self.fc_command.cmd_mode == 1
         
-            self.get_logger().info(f"manual_updated: {manual_updated}, manual commander: {manual_commander}, auto_updated: {auto_updated}, auto commander: {auto_commander}")
+            #self.get_logger().info(f"manual_updated: {manual_updated}, manual commander: {manual_commander}, auto_updated: {auto_updated}, auto commander: {auto_commander}")
 
             if manual_commander and manual_updated:
                 # Send the command to the flight controller
