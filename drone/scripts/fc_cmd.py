@@ -516,6 +516,7 @@ class FC_Commander(Node):
                         self.fc_command.cmd_roll = int(0)
              
             # Update command variables - if no new command is received, the previous command is sent
+            self.get_logger().info(f"identifier:{self.fc_command.identifier}")
             if self.fc_command.identifier == 0:
                 self.timestamp_manual = self.fc_command.timestamp
             elif self.fc_command.identifier == 1:
