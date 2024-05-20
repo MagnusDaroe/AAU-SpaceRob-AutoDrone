@@ -661,10 +661,7 @@ class FC_Commander(Node):
         Safe mode engaged. Set the drone to safe mode by adjusting the flag
         """
         self.emergency_landing_flag = True
-        if self.fc_command.cmd_thrust < self.START_LAND_THRUST:
-            self.decremented_thrust = self.START_LAND_THRUST
-        else:
-            self.decremented_thrust = self.fc_command.cmd_thrust
+        self.decremented_thrust = self.START_LAND_THRUST
 
     def safe_mode(self):
         """
