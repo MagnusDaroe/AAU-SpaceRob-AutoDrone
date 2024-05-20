@@ -80,7 +80,7 @@ private:
     float y_ref_list[array_size] = {0, 0};
     float z_ref_list[array_size] = {500, 0};
     float yaw_ref_list[array_size] = {0, 0}; //Ref is in radians
-    int ghetto_wait[array_size] = {1500, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    int ghetto_wait[array_size] = {20000, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     int array_counter = 0;        // counter for array
 
