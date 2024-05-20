@@ -67,13 +67,22 @@ private:
     // float ghetto_wait[array_size] = {200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     //*test2 landing waypoints
-    const static int array_size = 8;                           // size of array
-    float x_ref_list[array_size] = {522, -1991, 544, 544, 544, -2090, 522, 522};
-    float y_ref_list[array_size] = {-1815, 740, 707, 707, 707, -1670, -1815, -1815};
-    float z_ref_list[array_size] = {500, 1000, 500, 0, 500, 1000, 500, 0};
-    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
-    float ghetto_wait[array_size] = {200, 200, 200, 200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    // const static int array_size = 8;                           // size of array
+    // float x_ref_list[array_size] = {522, -1991, 544, 544, 544, -2090, 522, 522};
+    // float y_ref_list[array_size] = {-1815, 740, 707, 707, 707, -1670, -1815, -1815};
+    // float z_ref_list[array_size] = {500, 1000, 500, 0, 500, 1000, 500, 0};
+    // float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
+    // float ghetto_wait[array_size] = {200, 200, 200, 200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
+    //*test3 yaw step
+    const static int array_size = 2;                           // size of array
+    float x_ref_list[array_size] = {0, 0};
+    float y_ref_list[array_size] = {0, 0};
+    float z_ref_list[array_size] = {500, 500};
+    float yaw_ref_list[array_size] = {0, 0}; //Ref is in radians
+    float ghetto_wait[array_size] = {300, 100000}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    float spinThatShit[array_size] = {0, 1}; // 1 to spin, 0 to not spin
+    float spinThat_ref = 0;
 
     int array_counter = 0;        // counter for array
 
@@ -149,6 +158,7 @@ private:
                     z_ref = z_ref_list[array_counter]; 
                     yaw_ref = yaw_ref_list[array_counter];
                     ghetto_ref = ghetto_wait[array_counter]; // Set time to wait in point
+                    spinThat_ref = spinThatShit[array_counter];
 
                     time_start = std::chrono::system_clock::now(); // Timer is reset
                     data_request = false;                          // Reset data request
@@ -170,7 +180,7 @@ private:
                 float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds
                 float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 1); // time duration is converted to seconds
 
-                // // Denoise the recieved position variables
+                // Denoise the recieved position variables
                 // float denoised_vicon_x = low_pass(msg->vicon_x, 10);
                 // float denoised_vicon_y = low_pass(msg->vicon_y, 10);
                 // float denoised_vicon_z = low_pass(msg->vicon_z, 10);
@@ -237,7 +247,14 @@ private:
                 control_msg.cmd_auto_roll = static_cast<int>(-regulator_roll_value); //(minus)Because of Henriks ligninger /Kamera
                 control_msg.cmd_auto_pitch = static_cast<int>(regulator_pitch_value);
                 control_msg.cmd_auto_thrust = static_cast<int>(regulator_altitude_value);
-                control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
+
+                if(spinThat_ref == 0){
+                    control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
+                }
+                else{
+                    control_msg.cmd_auto_yaw = -300;
+                }
+                // control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
                 control_msg.cmd_auto_disarm = cmd_auto_land;
