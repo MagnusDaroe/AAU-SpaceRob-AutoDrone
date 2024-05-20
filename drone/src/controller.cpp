@@ -202,6 +202,7 @@ private:
                     z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //100 because it is 3 cm below floor height
                     total_error = abs((current_z) - (130));
                 }
+                std::cout << "total_error: " << total_error << std::endl;
                 // Generates controller value for altitude
                 Z_controller(z_ref_signal, current_z);
                 // Yaw controller
@@ -251,6 +252,7 @@ private:
                 else{
                     control_msg.cmd_auto_yaw = -300;
                 }
+                std::cout << "regulator_yaw_value: " << regulator_yaw_value << std::endl;
                 // control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
