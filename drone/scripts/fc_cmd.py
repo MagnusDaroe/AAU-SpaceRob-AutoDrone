@@ -525,7 +525,7 @@ class FC_Commander(Node):
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
 
-            self.get_logger().info(f"different manual timestamp?: {self.previous_timestamp_manual != self.timestamp_manual}, different auto timestamp?: {self.previous_timestamp_auto != self.timestamp_auto}, Last command time manual: {self.current_time - self.last_command_time_manual}, Last command time auto: {self.current_time - self.last_command_time_auto}")
+            self.get_logger().info(f"first loop: {self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0 and (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT)}, second loop : {self.fc_command.identifier == 1 and self.fc_command.cmd_mode == 1 and (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT)} ")
                     
             if self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0 and (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                 # Send the command to the flight controller
