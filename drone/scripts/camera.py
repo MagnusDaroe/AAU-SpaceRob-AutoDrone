@@ -80,7 +80,8 @@ class T265(Node):
         #self.start_y=0
         #self.start_z=0
         #self.start_diff_first=True
-        t_vec_global_FC=np.array([0,0,0])
+        self.t_vec_global_FC=np.array([0,0,0])
+        self.euler_xyz=[0,0,0]
 
 
     def camera_init(self):
