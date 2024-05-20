@@ -54,6 +54,8 @@ class FC_Commander(Node):
         self.SAFE_DECREMENT = 0.1
 
         self.TIMEOUT = 0.5
+        self.timestamp_auto = 0
+        self.timestamp_manual = 0
         self.previous_timestamp_manual = 0
         self.previous_timestamp_auto = 0
         self.last_command_time_manual = self.get_time()
@@ -514,25 +516,25 @@ class FC_Commander(Node):
              
             # Update command variables - if no new command is received, the previous command is sent
             if self.fc_command.cmd_mode == 1:
-                timestamp_auto = self.fc_command.timestamp
+                self.timestamp_auto = self.fc_command.timestamp
             else:
-                timestamp_manual = self.fc_command.timestamp
+                self.timestamp_manual = self.fc_command.timestamp
             
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
 
 
-            if self.previous_timestamp_manual != timestamp_manual or self.previous_timestamp_manual != timestamp_auto or self.current_time - self.last_command_time_manual <= self.TIMEOUT or self.current_time - self.last_command_time_auto <= self.TIMEOUT:
+            if self.previous_timestamp_manual != self.timestamp_manual or self.previous_timestamp_manual != self.timestamp_auto or self.current_time - self.last_command_time_manual <= self.TIMEOUT or self.current_time - self.last_command_time_auto <= self.TIMEOUT:
                 # Send the command to the flight controller
                 self.flight_cmd()
 
                 # Update last_command_time only when a new command is sent
-                if self.fc_command.cmd_mode == 0 and self.previous_timestamp_manual != timestamp_manual:
+                if self.fc_command.cmd_mode == 0 and self.previous_timestamp_manual != self.timestamp_manual:
                     self.last_command_time_manual = self.current_time
-                elif self.fc_command.cmd_mode == 1 and self.previous_timestamp_auto != timestamp_auto:
+                elif self.fc_command.cmd_mode == 1 and self.previous_timestamp_auto != self.timestamp_auto:
                     self.last_command_time_auto = self.current_time
             else:
-                if not (self.previous_timestamp_manual != timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
+                if not (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                     self.get_logger().warn("No new manual command received. Going into safe mode.")
                 else: 
                     self.get_logger().warn("No new autonomous command received. Going into safe mode.")
