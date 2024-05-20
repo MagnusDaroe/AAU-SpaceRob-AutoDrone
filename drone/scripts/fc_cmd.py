@@ -601,6 +601,7 @@ class FC_Commander(Node):
         """
         self.get_logger().warn("Emergency stop mode activated. Release Arm, Estop/Eland and set throttle to 0, to regain control")
         
+        self.start_drone = True
         
         # Disarm the drone
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_eland== 1 or self.fc_command.cmd_thrust != 0:
