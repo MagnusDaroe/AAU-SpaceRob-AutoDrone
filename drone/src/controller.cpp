@@ -75,13 +75,13 @@ private:
     // float ghetto_wait[array_size] = {200, 200, 200, 200, 200, 200, 200, 200}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     //*test3 yaw step
-    const static int array_size = 2;                           // size of array
-    float x_ref_list[array_size] = {0, 0};
-    float y_ref_list[array_size] = {0, 0};
-    float z_ref_list[array_size] = {500, 500};
-    float yaw_ref_list[array_size] = {0, 0}; //Ref is in radians
-    float ghetto_wait[array_size] = {30000, 100000}; //Time to wait in point. 100 = 1 second when sample time is 0.01
-    float spinThatShit[array_size] = {0, 1}; // 1 to spin, 0 to not spin
+    const static int array_size = 3;                           // size of array
+    float x_ref_list[array_size] = {0, 0, 0};
+    float y_ref_list[array_size] = {0, 0, 0};
+    float z_ref_list[array_size] = {500, 500, 500};
+    float yaw_ref_list[array_size] = {0, 0, 0}; //Ref is in radians
+    float ghetto_wait[array_size] = {300, 800, 1000000}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    float spinThatShit[array_size] = {0, 1, 0}; // 1 to spin, 0 to not spin
     float spinThat_ref = 0;
 
     int array_counter = 0;        // counter for array
