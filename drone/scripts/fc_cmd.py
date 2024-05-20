@@ -544,9 +544,9 @@ class FC_Commander(Node):
                 self.fc_command.cmd_estop = 1
         
         if self.fc_command.cmd_mode == 1:
-            previous_timestamp_auto = self.fc_command.timestamp
+            self.previous_timestamp_auto = self.fc_command.timestamp
         else:
-            previous_timestamp_manual = self.fc_command.timestamp
+            self.previous_timestamp_manual = self.fc_command.timestamp
             
 
         
