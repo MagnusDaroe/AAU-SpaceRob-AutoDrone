@@ -76,6 +76,10 @@ class T265(Node):
         self.vicon_y=0
         self.vicon_z=0
 
+        self.start_x=0
+        self.start_y=0
+        self.start_z=0
+
 
     def camera_init(self):
         # Declare RealSense pipeline, encapsulating the actual device and sensors
