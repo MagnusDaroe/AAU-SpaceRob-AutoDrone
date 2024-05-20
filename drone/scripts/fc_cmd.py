@@ -69,6 +69,9 @@ class FC_Commander(Node):
         # Auto variables
         self.auto_disarm = False
         self.auto_arm_failed = False
+        
+        #start mode
+        self.previous_mode = 0
 
         #Reboot
         self.last_reboot = self.get_time()
@@ -122,6 +125,7 @@ class FC_Commander(Node):
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
             # Assign commands only if they are not NaN
+             # Update command variables - if no new command is received, the previous command is sent
 
             #self.get_logger().info(f"{msg}")
             if msg.identifier == 0:
@@ -129,6 +133,10 @@ class FC_Commander(Node):
                 self.fc_command.cmd_eland = msg.cmd_eland
                 self.fc_command.cmd_arm = msg.cmd_arm
                 self.fc_command.cmd_mode = msg.cmd_mode
+                self.timestamp_manual = self.fc_command.timestamp
+            elif msg.identifier == 1:
+                self.timestamp_auto = self.fc_command.timestamp
+            
             if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
                 # Manual mode
                 self.fc_command.cmd_thrust = msg.cmd_thrust
@@ -152,6 +160,14 @@ class FC_Commander(Node):
             # Assign the rest of the commands
             self.fc_command.identifier = msg.identifier
             self.fc_command.timestamp = msg.timestamp
+
+            if self.previous_mode != self.fc_command.cmd_mode:
+                self.mode_switch = True
+                self.get_logger().info(f"Mode changed to {self.fc_command.cmd_mode}")
+            else:
+                self.mode_switch = False
+            self.previous_mode = self.fc_command.cmd_mode
+
                     
     def status_publisher(self):
         """
@@ -521,14 +537,7 @@ class FC_Commander(Node):
                         self.fc_command.cmd_roll = int(-x)
                     else:
                         self.fc_command.cmd_roll = int(0)
-             
-            # Update command variables - if no new command is received, the previous command is sent
-            if self.fc_command.identifier == 0:
-                self.timestamp_manual = self.fc_command.timestamp
-            elif self.fc_command.identifier == 1:
-                self.timestamp_auto = self.fc_command.timestamp
-            
-            
+              
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
 
@@ -557,7 +566,7 @@ class FC_Commander(Node):
 
 
             
-            if self.fc_command.cmd_mode == 0 and not manual_updated or self.fc_command.cmd_mode == 1 and not auto_updated:
+            if not self.mode_switch and (self.fc_command.cmd_mode == 0 and not manual_updated or self.fc_command.cmd_mode == 1 and not auto_updated):
                 if not (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                     self.get_logger().warn("No new manual command received. Going into safe mode.")
                 else: 
