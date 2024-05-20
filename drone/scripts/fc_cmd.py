@@ -149,6 +149,7 @@ class FC_Commander(Node):
                 self.fc_command.cmd_yaw = msg.cmd_yaw
         
             # Assign the rest of the commands
+            self.fc_command.identifier = msg.identifier
             self.fc_command.timestamp = msg.timestamp
                     
     def status_publisher(self):
