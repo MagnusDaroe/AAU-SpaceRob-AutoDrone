@@ -63,7 +63,7 @@ private:
     float y_ref_list[array_size] = {-851, 960, 1115, 1115, 1115, -1161, -851, -851};
     float z_ref_list[array_size] = {500, 1500, 500, 0, 500, 1500, 500, 0};
     float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
-    int ghetto_wait[array_size] = {100, 100, 100, 100, 100, 100, 100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    int ghetto_wait[array_size] = {100, 500, 100, 100, 100, 500, 100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     int array_counter = 0;        // counter for array
 
@@ -176,7 +176,7 @@ private:
                 // Generates reference signal
                 if (z_ref != 0){
                     z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 2); // time duration is converted to seconds
-                    total_error = abs((current_x + current_y + current_z/2) - (x_ref + y_ref + z_ref/2));
+                    total_error = abs((current_x + current_y + current_z) - (x_ref + y_ref + z_ref));
                 }
                 else{
                     z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //100 because it is 3 cm below floor height
@@ -200,7 +200,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 120 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 100 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > ghetto_ref){
                         data_request = true;    // Reset data request if close to waypoint
