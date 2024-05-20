@@ -537,6 +537,7 @@ class FC_Commander(Node):
                 # Send the command to the flight controller
                 self.flight_cmd()
 
+                self.get_logger().info(f"previous timestamp auto: {self.previous_timestamp_auto}, timestamp auto: {self.timestamp_auto}, last command time auto: {self.last_command_time_auto}, current time: {self.current_time}")
                 if self.previous_timestamp_auto != self.timestamp_auto:
                     self.last_command_time_auto = self.current_time
             else:
