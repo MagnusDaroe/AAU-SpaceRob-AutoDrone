@@ -50,17 +50,12 @@ class FC_Commander(Node):
         self.emergency_landing_flag = False
         self.decremented_thrust = 0
         self.LAND_THRUST = 400
-        self.START_LAND_THRUST = 560
+        self.START_LAND_THRUST = 600
         self.SAFE_DECREMENT = 0.1
-        self.start_drone = True
 
         self.TIMEOUT = 0.5
-        self.timestamp_auto = 0
-        self.timestamp_manual = 0
-        self.previous_timestamp_manual = 0
-        self.previous_timestamp_auto = 0
-        self.last_command_time_manual = self.get_time()
-        self.last_command_time_auto = self.get_time()
+        self.previous_timestamp = 0
+        self.last_command_time = self.get_time()
         self.current_time = 0
         
         # Connection variables
@@ -69,9 +64,6 @@ class FC_Commander(Node):
         # Auto variables
         self.auto_disarm = False
         self.auto_arm_failed = False
-        
-        #start mode
-        self.previous_mode = 0
 
         #Reboot
         self.last_reboot = self.get_time()
@@ -95,14 +87,14 @@ class FC_Commander(Node):
             DroneCommand,
             '/cmd_fc',
             self.command_callback,
-            50
+            10
         )
 
         # Define publisher
         self.publisher_status= self.create_publisher(
             DroneStatus,
             '/status_fc',
-            50
+            10
         )
         self.publish_timer = self.create_timer(5, self.status_publisher)
 
@@ -125,7 +117,6 @@ class FC_Commander(Node):
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
             # Assign commands only if they are not NaN
-             # Update command variables - if no new command is received, the previous command is sent
 
             #self.get_logger().info(f"{msg}")
             if msg.identifier == 0:
@@ -133,10 +124,6 @@ class FC_Commander(Node):
                 self.fc_command.cmd_eland = msg.cmd_eland
                 self.fc_command.cmd_arm = msg.cmd_arm
                 self.fc_command.cmd_mode = msg.cmd_mode
-                self.timestamp_manual = self.fc_command.timestamp
-            elif msg.identifier == 1:
-                self.timestamp_auto = self.fc_command.timestamp
-            
             if self.fc_command.cmd_mode == 0 and msg.identifier == 0 :
                 # Manual mode
                 self.fc_command.cmd_thrust = msg.cmd_thrust
@@ -158,17 +145,9 @@ class FC_Commander(Node):
                 self.fc_command.cmd_yaw = msg.cmd_yaw
         
             # Assign the rest of the commands
-            self.fc_command.identifier = msg.identifier
             self.fc_command.timestamp = msg.timestamp
-
-            if self.previous_mode != self.fc_command.cmd_mode:
-                self.mode_switch = True
-                self.get_logger().info(f"Mode changed to {self.fc_command.cmd_mode}")
-            else:
-                self.mode_switch = False
-            self.previous_mode = self.fc_command.cmd_mode
-
-                    
+            
+            
     def status_publisher(self):
         """
         Publish the system status\n
@@ -294,6 +273,7 @@ class FC_Commander(Node):
         """
         return time.time() + self.time_offset if self.time_offset else time.time()
 
+
     # Drone functions
     def drone_init(self):
         """
@@ -374,6 +354,7 @@ class FC_Commander(Node):
                 self.get_logger().fatal("Failed to auto arm. Trying to reboot the drone, and then arm...")
                 self.drone_reboot()
                 self.auto_arm_failed = True
+
 
     def drone_disarm_auto(self):
         """
@@ -516,12 +497,6 @@ class FC_Commander(Node):
         """
         # Use self.command_lock to make sure only one thread is accessing the command variables at a time
         with self.command_lock:
-            if self.start_drone:
-                self.timestamp_manual = self.get_time()
-                self.timestamp_auto = self.get_time()
-                self.start_drone = False
-
-
             if self.fc_command.cmd_mode not in [0,1,2]:
                 self.get_logger().fatal("Drone mode not recognized")
                 # Shut down
@@ -537,46 +512,26 @@ class FC_Commander(Node):
                         self.fc_command.cmd_roll = int(-x)
                     else:
                         self.fc_command.cmd_roll = int(0)
-              
+             
+            # Update command variables - if no new command is received, the previous command is sent
+            timestamp = self.fc_command.timestamp
+            
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
-
-            self.get_logger().info(f"previous manual:{self.previous_timestamp_manual}, current manual:{self.timestamp_manual}, timout manual: {self.current_time - self.last_command_time_manual}")
-
-            manual_updated = (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT)
-            auto_updated = (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT)
-            manual_commander = self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0
-            auto_commander = self.fc_command.identifier == 1 and self.fc_command.cmd_mode == 1
-        
-            #self.get_logger().info(f"manual_updated: {manual_updated}, manual commander: {manual_commander}, auto_updated: {auto_updated}, auto commander: {auto_commander}")
-
-            if manual_commander and manual_updated:
+            if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.TIMEOUT:
                 # Send the command to the flight controller
                 self.flight_cmd()
 
                 # Update last_command_time only when a new command is sent
-                if self.previous_timestamp_manual != self.timestamp_manual:
-                    self.last_command_time_manual = self.current_time
-            elif auto_commander and auto_updated:
-                # Send the command to the flight controller
-                self.flight_cmd()
-
-                if self.previous_timestamp_auto != self.timestamp_auto:
-                    self.last_command_time_auto = self.current_time
-
-            if not self.mode_switch and ( not manual_updated or self.fc_command.cmd_mode == 1 and not auto_updated):
-                self.get_logger().warn(f"Manual updated: {manual_updated}. Auto updated: {auto_updated}.")    
-                # If the timeout has expired, send a stop command.
+                if self.previous_timestamp != timestamp:
+                    self.last_command_time = self.current_time  
+            else:
+                # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
+                self.get_logger().warn("No new command received. Going into safe mode.")
                 self.begin_safe_mode()
+                self.fc_command.cmd_estop = 1
         
-        if self.fc_command.identifier == 1:
-            #self.get_logger().info("updated auto timestamp")
-            self.previous_timestamp_auto = self.timestamp_auto
-        else:
-            self.previous_timestamp_manual = self.timestamp_manual
-            
-
-        
+        self.previous_timestamp = timestamp
 
     def flight_cmd(self):
         """
@@ -603,7 +558,6 @@ class FC_Commander(Node):
         """
         self.get_logger().warn("Emergency stop mode activated. Release Arm, Estop/Eland and set throttle to 0, to regain control")
         
-        self.start_drone = True
         
         # Disarm the drone
         while self.fc_command.cmd_arm == 1 or self.fc_command.cmd_estop == 1 or self.fc_command.cmd_eland== 1 or self.fc_command.cmd_thrust != 0:
@@ -657,7 +611,10 @@ class FC_Commander(Node):
         Safe mode engaged. Set the drone to safe mode by adjusting the flag
         """
         self.emergency_landing_flag = True
-        self.decremented_thrust = self.START_LAND_THRUST
+        if self.fc_command.cmd_thrust < self.START_LAND_THRUST:
+            self.decremented_thrust = self.START_LAND_THRUST
+        else:
+            self.decremented_thrust = self.fc_command.cmd_thrust
 
     def safe_mode(self):
         """
