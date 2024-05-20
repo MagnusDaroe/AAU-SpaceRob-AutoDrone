@@ -79,6 +79,7 @@ class T265(Node):
         self.start_x=0
         self.start_y=0
         self.start_z=0
+        self.start_diff_first=True
 
 
     def camera_init(self):
@@ -105,9 +106,7 @@ class T265(Node):
             x=msg.vicon_x
             y=msg.vicon_y
             z=msg.vicon_z
-            self.start_x=x
-            self.start_y=y
-            self.start_z=z
+
             #Extrinsic rotation matrix from roll, pitch and yaw
             T_global=np.array([[np.cos(yaw)*np.cos(pitch),np.cos(yaw)*np.sin(pitch)*np.sin(roll)-np.sin(yaw)*np.cos(roll),np.cos(yaw)*np.sin(pitch)*np.cos(roll)+np.sin(yaw)*np.sin(roll),x],
                             [np.sin(yaw)*np.cos(pitch),np.sin(yaw)*np.sin(pitch)*np.sin(roll)+np.cos(yaw)*np.cos(roll),np.sin(yaw)*np.sin(pitch)*np.cos(roll)-np.cos(yaw)*np.sin(roll),y],
@@ -283,6 +282,11 @@ class T265(Node):
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
+        if self.start_diff_first:
+            self.start_x=self.diff_x
+            self.start_y=self.diff_y
+            self.start_z=self.diff_z
+            self.start_diff_first=False
         
 
     def show_image(self,undist=True):
