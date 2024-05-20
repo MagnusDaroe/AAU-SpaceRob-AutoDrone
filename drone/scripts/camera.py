@@ -36,7 +36,7 @@ class T265(Node):
         # Create publisher and subscriber
         self.publisher_ = self.create_publisher(DroneControlData, '/DroneControlData', 10)
 
-        #self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
+        self.subscriber_ = self.create_subscription(ViconData, '/ViconData', self.update_global_pos, 10)
 
     def math_init(self):
         #self.R_FC_backside=np.array([[1,0,0],[0,1,0],[0,0,1]])
@@ -137,7 +137,7 @@ class T265(Node):
         pose = frames.get_pose_frame()
         data = pose.get_pose_data()
         if pose:
-            #self.time_stamp=pose.timestamp
+            self.time_stamp=pose.timestamp
             self.translation_xyz_mm = [data.translation.x*1000, data.translation.y*1000, data.translation.z*1000] #mm
             self.rotation_xyzw = [data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w]
             #self.pose_confidence = data.tracker_confidence
@@ -295,7 +295,12 @@ class T265(Node):
         else:
             self.stop=False
             return False
-            
+    
+    def log_data(self):
+        """Log the timestamp, diff_x, diff_y, diff_z, self.euler_xyz[0], self.euler_xyz[1], self.euler_xyz[2], msg.vicon_roll, msg.vicon_pitch, msg.vicon_yaw to a csv document
+        """
+        with open('camera_data.csv', 'a') as file:
+            file.write(f"{self.time_stamp},{self.diff_x},{self.diff_y},{self.diff_z},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
     
     def run(self):
         
@@ -328,13 +333,13 @@ class T265(Node):
                     #self.get_logger().info(f"vicon pose: x: {round(self.vicon_x,2)}, y: {round(self.vicon_y,2)}, z: {round(self.vicon_z,2)}")
                     ##self.get_logger().info(f"Global pose: x: {round(self.t_vec_global_FC[0],2)}, y: {round(self.t_vec_global_FC[1],2)}, z: {round(self.t_vec_global_FC[2],2)}")
                     self.R_to_euler_angles()
-                    #self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
+                    self.update_position([self.vicon_x,self.vicon_y,self.vicon_z])
                     #self.get_logger().info(f"Euler angles xyz: {self.euler_xyz}")
                     ##self.get_logger().info(f"Euler angles xyz deg: x: {round(math.degrees(self.euler_xyz[0]),2)}, y: {round(math.degrees(self.euler_xyz[1]),2)}, z: {round(math.degrees(self.euler_xyz[2]),2)}")
                     
                     
                     
-                    
+                    self.log_data()
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
                     msg.camera_y = float(self.t_vec_global_FC[1]) # mm
                     msg.camera_z = float(self.t_vec_global_FC[2]) # mm
