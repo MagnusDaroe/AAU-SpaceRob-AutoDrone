@@ -502,6 +502,7 @@ class FC_Commander(Node):
         with self.command_lock:
             if self.start_drone:
                 self.timestamp_manual = self.get_time()
+                self.timestamp_auto = self.get_time()
                 self.start_drone = False
 
 
@@ -564,10 +565,9 @@ class FC_Commander(Node):
                 
                 # If the timeout has expired, send a stop command.
                 self.begin_safe_mode()
-                self.fc_command.cmd_estop = 1
         
         if self.fc_command.identifier == 1:
-            self.get_logger().info("updated auto timestamp")
+            #self.get_logger().info("updated auto timestamp")
             self.previous_timestamp_auto = self.timestamp_auto
         else:
             self.previous_timestamp_manual = self.timestamp_manual
