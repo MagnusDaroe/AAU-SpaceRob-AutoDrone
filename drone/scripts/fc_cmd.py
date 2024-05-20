@@ -50,12 +50,14 @@ class FC_Commander(Node):
         self.emergency_landing_flag = False
         self.decremented_thrust = 0
         self.LAND_THRUST = 400
-        self.START_LAND_THRUST = 600
+        self.START_LAND_THRUST = 560
         self.SAFE_DECREMENT = 0.1
 
         self.TIMEOUT = 0.5
-        self.previous_timestamp = 0
-        self.last_command_time = self.get_time()
+        self.previous_timestamp_manual = 0
+        self.previous_timestamp_auto = 0
+        self.last_command_time_manual = self.get_time()
+        self.last_command_time_auto = self.get_time()
         self.current_time = 0
         
         # Connection variables
@@ -146,8 +148,7 @@ class FC_Commander(Node):
         
             # Assign the rest of the commands
             self.fc_command.timestamp = msg.timestamp
-            
-            
+                    
     def status_publisher(self):
         """
         Publish the system status\n
@@ -273,7 +274,6 @@ class FC_Commander(Node):
         """
         return time.time() + self.time_offset if self.time_offset else time.time()
 
-
     # Drone functions
     def drone_init(self):
         """
@@ -354,7 +354,6 @@ class FC_Commander(Node):
                 self.get_logger().fatal("Failed to auto arm. Trying to reboot the drone, and then arm...")
                 self.drone_reboot()
                 self.auto_arm_failed = True
-
 
     def drone_disarm_auto(self):
         """
@@ -514,24 +513,41 @@ class FC_Commander(Node):
                         self.fc_command.cmd_roll = int(0)
              
             # Update command variables - if no new command is received, the previous command is sent
-            timestamp = self.fc_command.timestamp
+            if self.fc_command.cmd_mode == 1:
+                timestamp_auto = self.fc_command.timestamp
+            else:
+                timestamp_manual = self.fc_command.timestamp
             
             # Check if the command is new or if the timeout has expired
             self.current_time = self.get_time()
-            if self.previous_timestamp != timestamp or self.current_time - self.last_command_time <= self.TIMEOUT:
+
+
+            if self.previous_timestamp_manual != timestamp_manual or self.previous_timestamp_manual != timestamp_auto or self.current_time - self.last_command_time_manual <= self.TIMEOUT or self.current_time - self.last_command_time_auto <= self.TIMEOUT:
                 # Send the command to the flight controller
                 self.flight_cmd()
 
                 # Update last_command_time only when a new command is sent
-                if self.previous_timestamp != timestamp:
-                    self.last_command_time = self.current_time  
+                if self.fc_command.cmd_mode == 0 and self.previous_timestamp_manual != timestamp_manual:
+                    self.last_command_time_manual = self.current_time
+                elif self.fc_command.cmd_mode == 1 and self.previous_timestamp_auto != timestamp_auto:
+                    self.last_command_time_auto = self.current_time
             else:
-                # If the timeout has expired, send a stop command. Maybe implement a safemode in the future
-                self.get_logger().warn("No new command received. Going into safe mode.")
+                if not (self.previous_timestamp_manual != timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
+                    self.get_logger().warn("No new manual command received. Going into safe mode.")
+                else: 
+                    self.get_logger().warn("No new autonomous command received. Going into safe mode.")
+                
+                # If the timeout has expired, send a stop command.
                 self.begin_safe_mode()
                 self.fc_command.cmd_estop = 1
         
-        self.previous_timestamp = timestamp
+        if self.fc_command.cmd_mode == 1:
+            previous_timestamp_auto = self.fc_command.timestamp
+        else:
+            previous_timestamp_manual = self.fc_command.timestamp
+            
+
+        
 
     def flight_cmd(self):
         """
