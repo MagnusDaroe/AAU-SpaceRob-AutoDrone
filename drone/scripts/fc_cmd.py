@@ -50,7 +50,7 @@ class FC_Commander(Node):
         self.emergency_landing_flag = False
         self.decremented_thrust = 0
         self.LAND_THRUST = 400
-        self.START_LAND_THRUST = 600
+        self.START_LAND_THRUST = 530
         self.SAFE_DECREMENT = 0.1
 
         self.TIMEOUT = 0.5
