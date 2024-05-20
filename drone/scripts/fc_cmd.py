@@ -526,14 +526,18 @@ class FC_Commander(Node):
 
             self.get_logger().info(f"different manual timestamp?: {self.previous_timestamp_manual != self.timestamp_manual}, different manual timestamp?: {self.previous_timestamp_auto != self.timestamp_auto}, Last command time manual: {self.current_time - self.last_command_time_manual}, Last command time auto: {self.current_time - self.last_command_time_auto}")
 
-            if self.previous_timestamp_manual != self.timestamp_manual or self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_manual <= self.TIMEOUT or self.current_time - self.last_command_time_auto <= self.TIMEOUT:
+            if self.fc_command.cmd_mode == 0 and (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
                 # Send the command to the flight controller
                 self.flight_cmd()
 
                 # Update last_command_time only when a new command is sent
-                if self.fc_command.cmd_mode == 0 and self.previous_timestamp_manual != self.timestamp_manual:
+                if self.previous_timestamp_manual != self.timestamp_manual:
                     self.last_command_time_manual = self.current_time
-                elif self.fc_command.cmd_mode == 1 and self.previous_timestamp_auto != self.timestamp_auto:
+            elif self.fc_command.cmd_mode == 1 and (self.previous_timestamp_auto != self.timestamp_auto or self.current_time - self.last_command_time_auto <= self.TIMEOUT):
+                # Send the command to the flight controller
+                self.flight_cmd()
+
+                if self.previous_timestamp_auto != self.timestamp_auto:
                     self.last_command_time_auto = self.current_time
             else:
                 if not (self.previous_timestamp_manual != self.timestamp_manual or self.current_time - self.last_command_time_manual <= self.TIMEOUT):
