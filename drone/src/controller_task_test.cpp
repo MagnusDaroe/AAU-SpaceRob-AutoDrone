@@ -191,7 +191,7 @@ private:
                 // Generates controller value for yaw 
                 yaw_controller(yaw_signal, current_yaw);
                 
-                if (z_ref == 0 && total_error < 40){
+                if (z_ref == 0 && total_error < 60){
                     ghetto_ur++;
                     if (ghetto_ur > ghetto_ref){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
