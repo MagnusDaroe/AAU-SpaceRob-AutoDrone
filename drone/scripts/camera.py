@@ -76,10 +76,10 @@ class T265(Node):
         self.vicon_y=0
         self.vicon_z=0
 
-        self.start_x=0
-        self.start_y=0
-        self.start_z=0
-        self.start_diff_first=True
+        #self.start_x=0
+        #self.start_y=0
+        #self.start_z=0
+        #self.start_diff_first=True
 
 
     def camera_init(self):
@@ -129,6 +129,19 @@ class T265(Node):
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
+            diff_x=self.diff_x
+            diff_y=self.diff_y
+            diff_z=self.diff_z
+
+            self.diff_x=(-1*self.vicon_x)-self.t_vec_global_FC[0] #mm
+            self.diff_y=(-1*self.vicon_y)-self.t_vec_global_FC[1] #mm
+            self.diff_z=self.vicon_z-self.T_global_FC[2] #mm
+            self.get_logger().info(f"vicon-t_vec_global_FC: x: {round(self.diff_x,2)}, y: {round(self.diff_y,2)}, z: {round(self.diff_z,2)}")
+            self.log_data()
+
+            self.diff_x=diff_x
+            self.diff_y=diff_y
+            self.diff_z=diff_z
 
             #P_global=[msg.vicon_x,msg.vicon_y,msg.vicon_z]
             #self.update_position(P_global)
@@ -226,8 +239,8 @@ class T265(Node):
         self.T_global_FC=self.T_global_ref@self.T_ref_pose@self.T_pose_FC
      
         # Get the global position of the camera
-        #self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
-        self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
+        self.t_vec_global_FC=np.array([self.T_global_FC[0][3]+self.diff_x,self.T_global_FC[1][3]+self.diff_y,self.T_global_FC[2][3]+self.diff_z])
+        #self.t_vec_global_FC=np.array([self.T_global_FC[0][3],self.T_global_FC[1][3],self.T_global_FC[2][3]])
         
         # Get the global rotation of the camera
         self.r_mtx_global=self.T_global_FC[:3,:3]
@@ -284,12 +297,13 @@ class T265(Node):
         self.diff_x=(-1*P_vicon_FC[0])-self.T_global_FC[0,3] #mm
         self.diff_y=(-1*P_vicon_FC[1])-self.T_global_FC[1,3] #mm
         self.diff_z=P_vicon_FC[2]-self.T_global_FC[2,3] #mm
+        """
         if self.start_diff_first:
             self.start_x=self.diff_x
             self.start_y=self.diff_y
             self.start_z=self.diff_z
             self.start_diff_first=False
-        
+        """
 
     def show_image(self,undist=True):
         """
@@ -313,7 +327,7 @@ class T265(Node):
         """Log the timestamp, diff_x, diff_y, diff_z, self.euler_xyz[0], self.euler_xyz[1], self.euler_xyz[2], msg.vicon_roll, msg.vicon_pitch, msg.vicon_yaw to a csv document
         """
         with open('camera_data.csv', 'a') as file:
-            file.write(f"{self.time_stamp},{self.diff_x-self.start_x},{self.diff_y-self.start_y},{self.diff_z-self.start_y},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
+            file.write(f"{self.time_stamp},{self.diff_x},{self.diff_y},{self.diff_z},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
     
     def run(self):
         
@@ -352,7 +366,7 @@ class T265(Node):
                     
                     
                     
-                    self.log_data()
+                    #self.log_data()
                     msg.camera_x = float(self.t_vec_global_FC[0]) # mm
                     msg.camera_y = float(self.t_vec_global_FC[1]) # mm
                     msg.camera_z = float(self.t_vec_global_FC[2]) # mm
