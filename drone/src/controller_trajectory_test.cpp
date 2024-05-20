@@ -177,7 +177,7 @@ private:
                 // Generates reference signal
                 if (z_ref != 0){
                     z_ref_signal = ref_signal(time_duration/1000, z_ref, z_ref_old, 2); // time duration is converted to seconds
-                    total_error = abs((current_x + current_y + current_z) - (x_ref + y_ref + z_ref));
+                    total_error = abs((current_x + current_y + current_z/2) - (x_ref + y_ref + z_ref/2));
                 }
                 else{
                     z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //100 because it is 3 cm below floor height
