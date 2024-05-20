@@ -56,15 +56,14 @@ private:
     // Variable to check if waypoint is reached and new data is requested
     bool data_request = true;
 
-
     
     //*Hover test
-    const static int array_size = 11;                           // size of array
-    float x_ref_list[array_size] = {1016, 1420, 358, -1082, -1780, -1362, -87, -110, -528, 1211};
-    float y_ref_list[array_size] = {-970, 370, 1439, 1158, 488, -997, -1494, 33, 1031, -92};
-    float z_ref_list[array_size] = {500, 1000, 1200, 900, 600, 1100, 1500, 1800, 1300, 900, 500};
-    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
-    int ghetto_wait[array_size] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    const static int array_size = 8;                           // size of array
+    float x_ref_list[array_size] = {698, -1538, 818, 818, 818, -1479, 698, 698};
+    float y_ref_list[array_size] = {-851, 960, 1115, 1115, 1115, -1161, -851, -851};
+    float z_ref_list[array_size] = {500, 1500, 500, 0, 500, 1500, 500, 0};
+    float yaw_ref_list[array_size] = {0, 0, 0, 0, 0, 0, 0, 0}; //Ref is in radians
+    int ghetto_wait[array_size] = {100, 100, 100, 100, 100, 100, 100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
     int array_counter = 0;        // counter for array
 
@@ -201,7 +200,7 @@ private:
                     }
                 }
                 // Check if error is under threshold to request new data
-                else if (total_error < 80 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
+                else if (total_error < 120 && z_ref != 0){   // SKAL SÆTTES TIL AFSTAND LIMIT FØR SKIDTET VIRKER //Ændre til 50
                     ghetto_ur++;
                     if (ghetto_ur > ghetto_ref){
                         data_request = true;    // Reset data request if close to waypoint
