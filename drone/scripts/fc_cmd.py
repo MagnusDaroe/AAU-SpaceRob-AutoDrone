@@ -531,6 +531,8 @@ class FC_Commander(Node):
             manual_commander = self.fc_command.identifier == 0 and self.fc_command.cmd_mode == 0
             auto_commander = self.fc_command.identifier == 1 and self.fc_command.cmd_mode == 1
         
+            self.get_logger().info(f"manual_updated: {manual_updated}, manual commander: {manual_commander}, auto_updated: {auto_updated}, auto commander: {auto_commander}")
+
             if manual_commander and manual_updated:
                 # Send the command to the flight controller
                 self.flight_cmd()
