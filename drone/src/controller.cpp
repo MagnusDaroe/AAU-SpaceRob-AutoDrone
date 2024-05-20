@@ -209,13 +209,9 @@ private:
                 float yaw_signal = ref_signal(time_duration/1000, yaw_ref, 0, 1); // time duration is converted to seconds
                 // Generates controller value for yaw 
                 yaw_controller(yaw_signal, current_yaw);
-
-                std::cout<<"total_error: "<< total_error << std::endl;
-                std::cout<<"z_ref: "<< z_ref << std::endl;
                 
                 if (z_ref == 0 && total_error < 40){
                     ghetto_ur++;
-                    std::cout<< "Ghetto ur"<< std::endl;
                     if (ghetto_ur > ghetto_ref){
                         cmd_auto_land = 1; //Meaning it sends a request to disarm
                         data_request = true;
@@ -247,6 +243,7 @@ private:
                 control_msg.cmd_auto_roll = static_cast<int>(-regulator_roll_value); //(minus)Because of Henriks ligninger /Kamera
                 control_msg.cmd_auto_pitch = static_cast<int>(regulator_pitch_value);
                 control_msg.cmd_auto_thrust = static_cast<int>(regulator_altitude_value);
+                std::cout << "regulator_altitude_value: " << regulator_altitude_value << std::endl;
 
                 if(spinThat_ref == 0){
                     control_msg.cmd_auto_yaw = static_cast<int>(-regulator_yaw_value);  //Minus because fc coordinates system is downwards maybe                
@@ -258,9 +255,6 @@ private:
                 control_msg.identifier = 1;
                 control_msg.timestamp = time_since_epoch_double;
                 control_msg.cmd_auto_disarm = cmd_auto_land;
-                if(z_ref == 0){
-                    std::cout << "total_error: " << total_error << std::endl;
-                }
                 if(cmd_auto_land == 1){
                     disarm_start = std::chrono::system_clock::now();
                 }
