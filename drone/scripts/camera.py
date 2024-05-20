@@ -80,6 +80,7 @@ class T265(Node):
         #self.start_y=0
         #self.start_z=0
         #self.start_diff_first=True
+        t_vec_global_FC=np.array([0,0,0])
 
 
     def camera_init(self):
@@ -135,7 +136,7 @@ class T265(Node):
 
             self.diff_x=(-1*self.vicon_x)-self.t_vec_global_FC[0] #mm
             self.diff_y=(-1*self.vicon_y)-self.t_vec_global_FC[1] #mm
-            self.diff_z=self.vicon_z-self.T_global_FC[2] #mm
+            self.diff_z=self.vicon_z-self.t_vec_global_FC[2] #mm
             self.get_logger().info(f"vicon-t_vec_global_FC: x: {round(self.diff_x,2)}, y: {round(self.diff_y,2)}, z: {round(self.diff_z,2)}")
             self.log_data()
 
