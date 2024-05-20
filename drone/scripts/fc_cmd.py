@@ -95,14 +95,14 @@ class FC_Commander(Node):
             DroneCommand,
             '/cmd_fc',
             self.command_callback,
-            10
+            50
         )
 
         # Define publisher
         self.publisher_status= self.create_publisher(
             DroneStatus,
             '/status_fc',
-            10
+            50
         )
         self.publish_timer = self.create_timer(5, self.status_publisher)
 
