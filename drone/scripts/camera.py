@@ -130,6 +130,11 @@ class T265(Node):
             self.vicon_x=msg.vicon_x
             self.vicon_y=msg.vicon_y
             self.vicon_z=msg.vicon_z
+
+            self.vicon_roll_=msg.vicon_roll
+            self.vicon_pitch_=msg.vicon_pitch
+            self.vicon_yaw_=msg.vicon_yaw
+
             diff_x=self.diff_x
             diff_y=self.diff_y
             diff_z=self.diff_z
@@ -327,8 +332,8 @@ class T265(Node):
     def log_data(self):
         """Log the timestamp, diff_x, diff_y, diff_z, self.euler_xyz[0], self.euler_xyz[1], self.euler_xyz[2], msg.vicon_roll, msg.vicon_pitch, msg.vicon_yaw to a csv document
         """
-        with open('camera_data_diskret.csv', 'a') as file:
-            file.write(f"{self.time_stamp},{self.diff_x},{self.diff_y},{self.diff_z},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_x},{self.vicon_y},{self.vicon_z}\n")
+        with open('camera_data_diskret_1.csv', 'a') as file:
+            file.write(f"{self.time_stamp},{self.diff_x},{self.diff_y},{self.diff_z},{self.euler_xyz[0]},{self.euler_xyz[1]},{self.euler_xyz[2]},{self.vicon_roll_},{self.vicon_pitch_},{self.vicon_yaw_}\n")
     
     def run(self):
         
