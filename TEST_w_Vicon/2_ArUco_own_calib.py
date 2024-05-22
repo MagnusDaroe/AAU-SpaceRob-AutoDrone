@@ -79,7 +79,7 @@ class T265():
         y_left_Cam=32.000 #mm
 
         P_Cam_marker=np.array([[t_vec_flat_meter[2]*1000],[t_vec_flat_meter[0]*1000+y_left_Cam],[t_vec_flat_meter[1]*1000]])
-        theta=np.deg2rad(75)
+        theta=np.deg2rad(-75)
         roty_75=np.array([[np.cos(theta),0,np.sin(theta)],[0,1,0],[-np.sin(theta),0,np.cos(theta)]])
         P_CamFlat_marker=roty_75@P_Cam_marker
         P_FC_Cam=np.array([[154.763],[-9.100],[92.357]]) #mm
@@ -115,8 +115,11 @@ class T265():
                 
                 #print the pos data on the image top left corner of the marker
                 top_left_coner=coner[i][0][0].astype(int)
-                cv2.putText(image_rgb, str("Cam to Marker [cm] x: {}, y: {}, z: {}".format(round(t_vec_flat[0]*100,3),round(t_vec_flat[1]*100,3),round(t_vec_flat[2]*100,3))),(20, 20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
-                cv2.putText(image_rgb, str("FC_Vicon to Marker [cm] x: {}, y: {}, z: {}".format(round(t_FCvicon_marker_[0]*0.1,3),round(t_FCvicon_marker_[1]*0.1,3),round(t_FCvicon_marker_[2]*0.1,3))),(20, 40), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
+                
+                cv2.putText(image_rgb, str("Image to Marker [cm] x: {}, y: {}, z: {}".format(round(t_vec_flat[0]*100,3),round(t_vec_flat[1]*100,3),round(t_vec_flat[2]*100,3))),(20, 20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                #cv2.putText(image_rgb, str("Cam to Marker [cm] x: {}, y: {}, z: {}".format(round(t_vec_flat[0]*100,3),round(t_vec_flat[1]*100,3),round(t_vec_flat[2]*100,3))),(20, 20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                cv2.putText(image_rgb, str("Drone to Marker [cm] x: {}, y: {}, z: {}".format(round(-t_FCvicon_marker_[0]*0.1,2),round(-t_FCvicon_marker_[1]*0.1,2),round(t_FCvicon_marker_[2]*0.1,2))),(20, 40), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
+                #cv2.putText(image_rgb, str("FC_Vicon to Marker [cm] x: {}, y: {}, z: {}".format(round(t_FCvicon_marker_[0]*0.1,3),round(t_FCvicon_marker_[1]*0.1,3),round(t_FCvicon_marker_[2]*0.1,3))),(20, 40), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
         return image_rgb, self.marker_data
 
 
