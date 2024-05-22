@@ -14,3 +14,6 @@ This repository contains the code for Robotics Group 465 at AAU. The project was
 - ROS2 Distribution: FOXY - Developed our own package.
 
 For more information, check out the documentation page: Wiki
+
+### TEST:
+The test folder contains the test data and scripts used to analyze the data in the report, for tests 2-5.
