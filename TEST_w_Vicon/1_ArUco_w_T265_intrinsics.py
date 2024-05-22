@@ -34,8 +34,8 @@ def my_estimatePoseSingleMarkers(corners, marker_size, mtx, distortion):
 
 
 # Define the type of aruco markers to detect (number of squares in the marker)
-#ARUCO_DICT=cv2.aruco.DICT_5X5_100
-ARUCO_DICT=cv2.aruco.DICT_4X4_100
+ARUCO_DICT=cv2.aruco.DICT_5X5_100
+#ARUCO_DICT=cv2.aruco.DICT_4X4_100
 
 MAKER_SIZE=0.1515152 #meters
 

@@ -25,8 +25,8 @@ class T265():
     
     def __init__(self):
         # Define the dictionary and the marker size
-        #ARUCO_DICT = cv2.aruco.DICT_5X5_100  # Dictionary ID
-        ARUCO_DICT = cv2.aruco.DICT_4X4_100
+        ARUCO_DICT = cv2.aruco.DICT_5X5_100  # Dictionary ID
+        #ARUCO_DICT = cv2.aruco.DICT_4X4_100
 
         #Marker size in m
         self.MARKER_SIZE=0.1515152 # meters

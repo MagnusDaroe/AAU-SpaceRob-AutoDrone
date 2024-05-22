@@ -1,0 +1,146 @@
+#### ArUco Marrker ####
+x=-842.3 #mm
+y=1269.8 #mm
+z=4.5 #mm
+
+###############
+#### Drone ####
+###############
+
+### Test 1 ###
+Marker Data:
+ID_2: [ -24.576 -272.991  869.896]
+t_FCvicon_marker [mm]  [-116.319, -1.669, 818.142]
+
+
+RX=0.79 #deg
+RY=-1.95 #deg
+RZ=-0.22 #deg
+TX=-234.6 #mm
+TY=1288.6 #mm
+TZ=866.25 #mm
+
+### Test 2 ###
+ID_2: [  -1.836 -314.069  876.631]
+t_FCvicon_marker [mm]  [-77.867, 21.068, 836.683]
+
+
+RX=0.75 #deg
+RY=-2.93 #deg
+RZ=-24.76 #deg
+TX=-272.95 #mm
+TY=993.34 #mm
+TZ=866.65 #mm
+
+### Test 3 ###
+Marker Data:
+ID_2: [ -13.838 -181.344  832.138]
+t_FCvicon_marker [mm]  [-194.947, 9.113, 757.015]
+
+RX=0.90 #deg
+RY=-2.44 #deg
+RZ=30.32 #deg
+
+TX=-416.83 #mm
+TY=1546.39 #mm
+TZ=863.6 #mm
+
+### Test 4 ###
+Marker Data:
+ID_2: [-127.656 -483.907 1726.001]
+t_FCvicon_marker [mm]  [-134.303, -104.678, 1698.445]
+
+RX=1.54 #deg
+RY=-1.932 #deg
+RZ=2.178 #deg
+TX=126.98 #mm
+TY=1385.9 #mm
+TZ=1579.9 #mm
+
+### Test 5 ###
+Marker Data:
+ID_2: [ -53.425 -382.485  505.548]
+t_FCvicon_marker [mm]  [83.844, -30.525, 494.959]
+
+RX=-0.29
+RY=-3.09
+RZ=-88.19
+TX=-779.6
+TY=640.289
+TZ=490.52
+
+### Test 6 ###
+Marker Data:
+ID_2: [ 104.871 -215.212  462.607]
+t_FCvicon_marker [mm]  [-66.653, 127.73, 410.209]
+
+RX=-0.15
+RY=-3.21
+RZ=-97.01
+TX=-1005.57
+TY=829.38
+TZ=489.54
+
+### Test 7 ###
+Marker Data:
+ID_2: [-17.939 -82.562 415.907]
+t_FCvicon_marker [mm]  [-182.755, 4.963, 330.613]
+
+RX=3.93
+RY=3.6
+RZ=188.2
+TX=-1165.88
+TY=1200.23
+TZ=489.76
+
+### Test 8 ###
+Marker Data:
+ID_2: [ -22.715 -487.583  940.771]
+t_FCvicon_marker [mm]  [72.541, 0.247, 941.976]
+
+RX=0.412
+RY=-2.19
+RZ=-37.95
+TX=-196.69
+TY=772.876
+TZ=863.57
+
+### Test 9 ###
+Marker Data:
+ID_2: [ -43.369 -356.115  897.817]
+t_FCvicon_marker [mm]  [-43.49, -20.183, 865.168]
+
+RX=-0.188
+RY=-2.099
+RZ=-73.017
+TX=-615.675
+TY=619.32
+TZ=862.2
+
+### Test 10 ###
+#!!!!!!aflæsningsfejl på TX coordinatet!!!!!!
+#       skrev RZ ind i stedet for TX
+"""
+Marker Data:
+ID_2: [ -75.661 -352.599  892.698]
+t_FCvicon_marker [mm]  [-45.226, -52.761, 861.183]
+
+RX=1.837
+RY=-1.59
+RZ=49.41
+TX=-49.6
+TY=1839.69
+TZ=864.9
+"""
+### Test 11 ###
+Marker Data:
+ID_2: [ 109.377 -340.53   898.029]
+t_FCvicon_marker [mm]  [-58.472, 132.176, 861.348]
+
+RX=1.28
+RY=-1.685
+RZ=31.46
+TX=-213.95
+TY=1532.81
+TZ=865.06
+

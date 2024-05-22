@@ -34,13 +34,35 @@ def T_Vicon_FCvicon(roll,pitch,yaw,t_flat,Extrinsic=True):
                             [R_vicon_FCvicon[2][0],R_vicon_FCvicon[2][1],R_vicon_FCvicon[2][2],t[2]],
                             [0,0,0,1]])
     return T_vicon_FCvicon
-
+"""
 roll=0 #rad
 pitch=0 #rad
 yaw=0 #rad
 t=[0,0,0] #mm
 
-Marker=[1,2,3] #mm
+roll=0.01 #rad
+pitch=-0.04 #rad
+yaw=0.06 #rad
+t=[-1091, 572, 1592]
+
+Marker=[-465.34, -95.109, -1680.851] #mm
+
+roll=np.deg2rad(-0.29) #rad
+pitch=np.deg2rad(-3.09) #rad
+yaw=np.deg2rad(-88.19) #rad
+t=[-779.6, 640.289, 490.52]
+
+Marker=[-66.603, 127.51, 410.422] #mm
+"""
+
+
+roll=np.deg2rad(1.28) #rad
+pitch=np.deg2rad(-1.685) #rad
+yaw=np.deg2rad(31.46) #rad
+t=[-213.95, 1532.81, 865.06]
+
+Marker=[-58.472, 132.176, 861.348] #mm
+
 
 T_Vicon_FCvicon_=T_Vicon_FCvicon(roll,pitch,yaw,t,Extrinsic=True)
 
