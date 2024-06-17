@@ -68,11 +68,11 @@ private:
 
     //*Task test new coords 28-05
     const static int array_size = 13;                           // size of array
-    float x_ref_list[array_size] = {1900, 775, -300, 780, 2000, 2000, 2000, 2000, 850, -190, 775, 1900, 1900};
-    float y_ref_list[array_size] = {-400, 525, 1500, 1530, 1550, 1550, 1550, 1550, 450, -500, -425, -400, -400};
-    float z_ref_list[array_size] = {500, 1000, 1500, 1000, 500,  0,    500, 500, 1000, 1500, 1000, 500,   0};
-    float yaw_ref_list[array_size] = {0,  0,    0,     0,    0,  0,     0,   0,    0,    0,    0,    0,   0}; //Ref is in radians
-    int ghetto_wait[array_size] = {100,   1,    500,   1,   100, 100,  100, 100,   1,   500,   1,  100, 100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
+    float x_ref_list[array_size] = { 1040,   100, -1165,    0, 1180, 1180, 1180,    50, -1030,    10,  1040,  1040};
+    float y_ref_list[array_size] = {-1247,  -350,   610,  660,  715,  715,  715,  -300, -1370, -1310, -1247, -1247};
+    float z_ref_list[array_size] = {  500,  1000,  1500, 1000,  500,    0,  500,  1000,  1500,  1000,   500,     0};
+    float yaw_ref_list[array_size] = {  0,     0,     0,    0,    0,    0,    0,     0,     0,     0,     0,     0}; //Ref is in radians
+    int ghetto_wait[array_size] = {   100,     1,   500,    1,  100,  100,  100,     1,   500,     1,   100,   100}; //Time to wait in point. 100 = 1 second when sample time is 0.01
 
 
 
