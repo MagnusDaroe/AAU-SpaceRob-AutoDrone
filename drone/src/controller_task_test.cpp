@@ -168,7 +168,7 @@ private:
                 // XY controller
                 // Generates a reference signal according to exponential function
                 // Signal function requires current time, final reference signal, and time constant
-                float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds
+                float x_ref_signal = ref_signal(time_duration/1000, x_ref, x_ref_old, 1); // time duration is converted to seconds 380
                 float y_ref_signal = ref_signal(time_duration/1000, y_ref, y_ref_old, 1); // time duration is converted to seconds
 
                 // Denoise the recieved position variables
@@ -190,8 +190,8 @@ private:
                     total_error = abs((current_x + current_y + current_z) - (x_ref + y_ref + z_ref));
                 }
                 else{
-                    z_ref_signal = ref_signal(time_duration/1000, 100, z_ref_old, 4); //100 because it is 3 cm below floor height
-                    total_error = abs((current_z) - (130));
+                    z_ref_signal = ref_signal(time_duration/1000, 130, z_ref_old, 4); //100 because it is 3 cm below floor height
+                    total_error = abs((current_z) - (160));
                 }
                 std::cout << "total_error: " << total_error << std::endl;
                 // Generates controller value for altitude
